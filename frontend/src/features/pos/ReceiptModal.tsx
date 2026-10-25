@@ -577,7 +577,7 @@ We look forward to serving you again.`;
                   onClose();
                   onNewSale();
                 }}
-                className="bg-[#9D2558] hover:bg-[#1B44B8] text-white text-xs gap-1 h-8 px-2.5 sm:px-3 font-semibold shrink-0"
+                className="bg-[#9D2558] hover:bg-[#851C47] text-white text-xs gap-1 h-8 px-2.5 sm:px-3 font-semibold shrink-0"
               >
                 <PlusCircle className="w-3.5 h-3.5" />
                 <span>New Sale</span>

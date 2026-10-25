@@ -126,7 +126,7 @@ export const reviseBooking = async (tx, b, input, actor) => {
     endTime: plan.endTime, durationMinutes: plan.durationMinutes, assignedStaffId: plan.assignedStaffId, assignedStaffName: plan.assignedStaffName,
     notes: input.notes, specialRequirements: input.specialRequirements, ...prices, revision: { increment: 1 }, updatedById: actor.id, updatedByName: actor.name,
     items: { create: createItems(plan.items) } } });
-  await bookingHistory(tx, b, actor, 'BOOKING_REVISED', { totalAmount: Number(b.totalAmount), eventDate: ymd(b.eventDate), serviceTime: b.serviceTime, items: b.items }, { totalAmount: Number(prices.totalAmount), eventDate: input.eventDate, serviceTime: input.serviceTime, items: plan.items }, input.reason);
+  await bookingHistory(tx, b, actor, 'BOOKING_REVISED', { totalAmount: Number(b.totalAmount), eventDate: ymd(b.eventDate), serviceTime: b.serviceTime, items: b.items }, { totalAmount: Number(prices.totalAmount), date: await getBusinessDate(tx), eventDate: input.eventDate, serviceTime: input.serviceTime, items: plan.items }, input.reason);
   return loadBooking(tx, actor, b.id);
 };
 export const updateBooking = (id, input, actor) => { admin(actor); return prisma.$transaction(async tx => toBookingDTO(await reviseBooking(tx, await loadBooking(tx, actor, id, { lock: true, editable: true }), input, actor))); };
@@ -184,7 +184,7 @@ export const cancelBooking = (id, input, actor, request) => { admin(actor); retu
   if (!fee.plus(refund).equals(net)) throw badRequest('CANCELLATION_ALLOCATION', 'Refund plus retained cancellation charge must equal the held advance.');
   if (refund.greaterThan(0)) await recordPaymentInTx(tx, b, { ...input.refundPayment, notes: input.reason }, actor, true);
   await tx.booking.update({ where: { id }, data: { status: input.status, cancellationCharge: fee, cancellationReason: input.reason, revision: { increment: 1 }, updatedById: actor.id, updatedByName: actor.name } });
-  await bookingHistory(tx, b, actor, 'BOOKING_CANCELLED', { totalAmount: Number(b.totalAmount) }, { totalAmount: fee.toNumber(), refund: refund.toNumber(), status: input.status }, input.reason);
+  await bookingHistory(tx, b, actor, 'BOOKING_CANCELLED', { totalAmount: Number(b.totalAmount) }, { totalAmount: fee.toNumber(), date: await getBusinessDate(tx), refund: refund.toNumber(), status: input.status }, input.reason);
   return toBookingDTO(await loadBooking(tx, actor, id));
 }); };
 export const updateStatus = (id, input, actor) => { admin(actor); return prisma.$transaction(async tx => {
@@ -196,17 +196,21 @@ export const updateStatus = (id, input, actor) => { admin(actor); return prisma.
 }); };
 export const getLedger = async (actor, id) => {
   const b = await loadBooking(prisma, actor, id);
+  const stamp = (date, clock) => {
+    const value = minutes(clock || '00:00');
+    return new Date(`${ymd(date instanceof Date ? date : dateOnly(date))}T${String(Math.floor(value / 60)).padStart(2, '0')}:${String(value % 60).padStart(2, '0')}:00+05:00`);
+  };
   const events = b.history.filter(h => ['BOOKING_CREATED', 'BOOKING_REVISED', 'BOOKING_CANCELLED'].includes(h.type));
-  const rows = events.map(h => ({ id: h.id, date: h.createdAt, reference: b.bookingNumber, description: h.type, debit: round2(toDec(h.after?.totalAmount).minus(h.before?.totalAmount || 0)).toNumber(), credit: 0, byName: h.userName, notes: h.reason }));
+  const rows = events.map(h => ({ id: h.id, date: h.after?.date ? stamp(h.after.date, toTimeString(h.createdAt)) : h.createdAt, reference: b.bookingNumber, description: h.type, debit: round2(toDec(h.after?.totalAmount).minus(h.before?.totalAmount || 0)).toNumber(), credit: 0, byName: h.userName, notes: h.reason }));
   rows.push(...b.payments.map(p => ({ id: p.id, date: new Date(`${ymd(p.date)}T${p.time}:00+05:00`), reference: p.receiptNumber, description: p.isRefund ? 'Refund' : 'Installment', debit: p.isRefund ? Number(p.amount) : 0, credit: p.isRefund ? 0 : Number(p.amount), byName: p.processedByName, notes: p.notes })));
   if (b.invoice) {
     const inv = b.invoice;
-    rows.push({ id: `transfer-${inv.id}`, date: inv.createdAt, reference: inv.invoiceNumber, description: 'Booking transferred to final invoice (including POS additions)', debit: round2(toDec(inv.total).minus(inv.tip).minus(b.totalAmount)).toNumber(), credit: 0, byName: inv.processedByName });
+    rows.push({ id: `transfer-${inv.id}`, date: stamp(inv.date, inv.time), reference: inv.invoiceNumber, description: 'Booking transferred to final invoice (including POS additions)', debit: round2(toDec(inv.total).minus(inv.tip).minus(b.totalAmount)).toNumber(), credit: 0, byName: inv.processedByName });
     for (const p of inv.payments) {
-      rows.push({ id: p.id, date: p.createdAt, reference: p.receiptNumber, description: p.kind === 'DUES_COLLECTION' ? 'Invoice dues collection' : 'Final checkout collection', debit: 0, credit: Number(p.billAmountAllocated), byName: p.processedByName });
-      if (p.reversedAt) rows.push({ id: `reversal-${p.id}`, date: p.reversedAt, reference: p.receiptNumber, description: 'Invoice collection reversed', debit: Number(p.billAmountAllocated), credit: 0, byName: p.reversedByName });
+      rows.push({ id: p.id, date: stamp(p.date, p.time), reference: p.receiptNumber, description: p.kind === 'DUES_COLLECTION' ? 'Invoice dues collection' : 'Final checkout collection', debit: 0, credit: Number(p.billAmountAllocated), byName: p.processedByName });
+      if (p.reversedAt) rows.push({ id: `reversal-${p.id}`, date: p.reversalDate ? stamp(p.reversalDate, toTimeString(p.reversedAt)) : p.reversedAt, reference: p.receiptNumber, description: 'Invoice collection reversed', debit: Number(p.billAmountAllocated), credit: 0, byName: p.reversedByName });
     }
-    for (const r of inv.refunds) rows.push({ id: r.id, date: r.createdAt, reference: r.refundNumber, description: 'Invoice refund / void adjustment', debit: Number(r.cashOut) - Number(r.tipReversed), credit: Number(r.netReversed) + Number(r.taxReversed), byName: r.byName, notes: r.reason });
+    for (const r of inv.refunds) rows.push({ id: r.id, date: stamp(r.refundDate, toTimeString(r.createdAt)), reference: r.refundNumber, description: 'Invoice refund / void adjustment', debit: Number(r.cashOut) - Number(r.tipReversed), credit: Number(r.netReversed) + Number(r.taxReversed), byName: r.byName, notes: r.reason });
   }
   rows.sort((a, c) => new Date(a.date) - new Date(c.date));
   let balance = toDec(0);

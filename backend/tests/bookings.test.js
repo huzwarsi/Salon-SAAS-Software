@@ -193,5 +193,44 @@ describe('Booking lifecycle', () => {
     const ledger = ok(await as('admin').get(`/bookings/${b.id}/ledger`));
     expect(ledger.rows.at(-1).balance).toBe(inv.amountDue);
   });
+  it('reconciles client ledger and dated revenue after a partially paid booking invoice is voided', async () => {
+    const { toDateString } = await import('../src/lib/dates.js');
+    const day = toDateString();
+    const endpoint = `/reports/income-expense?startDate=${day}&endDate=${day}`;
+    const before = ok(await as('admin').get(endpoint));
+    const b = ok(await as('admin').post('/bookings', { ...custom(1000), advancePayment: { amount: 200, method: 'CASH' } }, key('ledger-void')), 201);
+    const inv = ok(await as('admin').post('/pos/invoices/checkout', { bookingId: b.id, bookingRevision: b.revision,
+      payments: [{ method: 'CASH', amount: 300, billAllocation: 300 }] }, key('ledger-void-post')), 201);
+    const during = ok(await as('admin').get(endpoint));
+    expect(during.kpis.totalRecognizedIncome - before.kpis.totalRecognizedIncome).toBeCloseTo(1000, 2);
+    ok(await as('admin').post(`/invoices/${inv.id}/refunds`, { type: 'VOID', reason: 'Customer cancelled final service' }, key('ledger-void-refund')), 201);
+    const after = ok(await as('admin').get(endpoint));
+    expect(after.kpis.totalRecognizedIncome).toBeCloseTo(before.kpis.totalRecognizedIncome, 2);
+    const refreshed = ok(await as('admin').get(`/invoices/${inv.id}`));
+    expect(refreshed.refunds[0]).toMatchObject({ cashOut: 500, netReversed: 1000, receivableCancelled: 500 });
+    const { buildClientLedger } = await import('../../frontend/src/features/clients/clientLedger.ts');
+    const entries = buildClientLedger({ bookings: [ok(await as('admin').get(`/bookings/${b.id}`))], invoices: [refreshed] });
+    expect(entries[0].balance).toBe(0);
+    expect(entries.some(e => e.description.includes('Invoice void'))).toBe(true);
+  });
+  it('keeps invoice income on the sale date and void reversal on the selected business date', async () => {
+    const { setBusinessDate, toDateString } = await import('../src/lib/dates.js');
+    const day = toDateString();
+    const nextDay = new Date(new Date(`${day}T00:00:00Z`).getTime() + 86400000).toISOString().slice(0, 10);
+    const report = async date => ok(await as('admin').get(`/reports/income-expense?startDate=${date}&endDate=${date}`));
+    const before = await report(day); const nextBefore = await report(nextDay);
+    const b = ok(await as('admin').post('/bookings', custom(2000), key('dated-void')), 201);
+    const inv = ok(await as('admin').post('/pos/invoices/checkout', { bookingId: b.id, bookingRevision: b.revision }, key('dated-void-post')), 201);
+    try {
+      await setBusinessDate(nextDay);
+      ok(await as('admin').post(`/invoices/${inv.id}/refunds`, { type: 'VOID', reason: 'Reversal on following business date' }, key('dated-void-refund')), 201);
+      expect((await report(day)).kpis.totalRecognizedIncome).toBeCloseTo(before.kpis.totalRecognizedIncome + 2000, 2);
+      expect((await report(nextDay)).kpis.totalRecognizedIncome).toBeCloseTo(nextBefore.kpis.totalRecognizedIncome - 2000, 2);
+      const ledger = ok(await as('admin').get(`/bookings/${b.id}/ledger`));
+      const reversal = ledger.rows.find(r => r.description === 'Invoice refund / void adjustment');
+      expect(toDateString(new Date(reversal.date))).toBe(nextDay);
+      expect(ledger.rows.at(-1).balance).toBe(0);
+    } finally { await setBusinessDate(day); }
+  });
 });
 const toNumber = v => Number(v);

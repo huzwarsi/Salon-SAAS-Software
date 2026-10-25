@@ -191,3 +191,20 @@ Completion: all seven implementation steps are complete. Backend, frontend build
 existing-POS browser smoke checks passed. The former separate BookingCheckout component and
 router interception have been removed. Browser runner: frontend/scripts/verify-booking-pos.cjs
 (pass a local playwright-core module path).
+
+## Read-only live-data audit — 2026-10-25
+
+Actual database/API/browser checks passed: 4 bookings, 4 clients, 4 advance receipts and
+3 linked invoices. PKR 14,000 matched booking payments, cash custody and Income & Expense
+cash receipts, with zero advance recognized as service revenue. All four actual client
+ledgers and the actual report were opened in the browser without mocked data or writes.
+
+The audit fixed booking-scoped advance credits, cancellation/refund/void client ledger
+entries, business-date handling, invoice refund DTOs, report reversal accounting and cash
+display/export signs. Unapplied advances appear as client credit separately from invoice
+dues. Current UI uses Calendar / Bookings Table; receipt-date collections remain available
+through `/bookings/collections` and Income & Expense cash-flow rows.
+
+79/79 isolated regression tests, TypeScript and production build passed. The working
+database has no bank booking receipts/refunds; those cases were tested in isolation.
+Evidence: `artifacts/booking-audit-report.md` and `artifacts/booking-data-audit.json`.

@@ -201,13 +201,13 @@ const liveMethods: SalonServiceContract = {
     const invoices = branchInvoices
       .filter((i: Invoice) => i.clientId === id || (phone && normalizeDigits(i.clientPhone) === phone))
       .sort((a, b) => b.date.localeCompare(a.date) || b.time.localeCompare(a.time));
-    const outstandingInvoices = invoices.filter((i) => (i.status === 'UNPAID' || i.status === 'PARTIAL') && i.amountDue > 0);
+    const outstandingInvoices = invoices.filter((i) => i.lifecycle !== 'VOIDED' && (i.status === 'UNPAID' || i.status === 'PARTIAL') && i.amountDue > 0);
 
     const visitDates = new Set<string>();
     invoices.forEach((i) => i.lineItems?.length && visitDates.add(i.date));
     appointments.forEach((a) => a.status === 'COMPLETED' && visitDates.add(a.date));
     const sorted = [...visitDates].sort();
-    const totalSpend = Math.round(invoices.reduce((s, i) => s + (i.netSales || 0), 0) * 100) / 100;
+    const totalSpend = Math.round(invoices.reduce((s, i) => i.lifecycle === 'VOIDED' ? s : s + Math.max(0, (i.netSales || 0) - (i.refunds || []).reduce((n, r) => n + r.netReversed, 0)), 0) * 100) / 100;
 
     return {
       client: {
@@ -232,7 +232,7 @@ const liveMethods: SalonServiceContract = {
         ...bookings.flatMap((b) =>
           (b.payments || []).map((p) => ({
             ...p,
-            invoiceNumber: `${b.bookingNumber} (${b.type === 'BRIDAL' ? 'Bridal' : 'Groom'} Advance)`,
+            invoiceNumber: `${b.bookingNumber} (${b.type === 'BRIDAL' ? 'Bridal' : 'Groom'} ${p.isRefund ? 'Refund' : 'Advance'})`,
             invoiceId: b.id,
             clientName: b.clientName,
             invoiceTotal: b.totalAmount,

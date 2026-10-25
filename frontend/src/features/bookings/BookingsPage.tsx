@@ -1356,14 +1356,10 @@ export function BookingsPage() {
             size="sm"
             className="h-9 px-3 text-xs sm:text-sm"
             onClick={() => printBookingDocument(
-              view === 'collections' ? 'Booking advance collections' : 'Bridal / Groom bookings',
+              'Bridal / Groom bookings',
               branches.find(b => b.id === branchId)?.name || '',
-              view === 'collections'
-                ? ['Receipt', 'Date', 'Booking', 'Client', 'Method', 'Received', 'Refunded']
-                : ['Booking', 'Type', 'Event', 'Client', 'Total', 'Received', 'Remaining'],
-              view === 'collections'
-                ? collections.map(p => [p.receiptNumber, p.date, p.bookingNumber, p.clientName, p.method, p.isRefund ? 0 : p.amount, p.isRefund ? p.amount : 0])
-                : rows.map(b => [b.bookingNumber, b.type, b.eventDate, b.clientName, b.totalAmount, b.receivedAmount, b.remainingBalance])
+              ['Booking', 'Type', 'Event', 'Client', 'Total', 'Received', 'Remaining'],
+              rows.map(b => [b.bookingNumber, b.type, b.eventDate, b.clientName, b.totalAmount, b.receivedAmount, b.remainingBalance])
             )}
           >
             Print Report

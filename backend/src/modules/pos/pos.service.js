@@ -28,6 +28,7 @@ import { toInvoiceDTO } from './pos.mapper.js';
 export const invoiceInclude = {
   lines:    { include: { components: true, batches: true } },
   payments: true,
+  refunds: { include: { lines: true } },
 };
 
 const clockTime = () => formatMinutesToTime(parseTimeToMinutes(toTimeString(new Date())));

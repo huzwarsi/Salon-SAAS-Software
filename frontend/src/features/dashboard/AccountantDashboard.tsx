@@ -137,7 +137,7 @@ export const AccountantDashboard: React.FC = () => {
           subtitle="Net in cashier custody"
           icon={Wallet}
           label="Custody"
-          gradient="from-[#9D2558] via-[#1B44B8] to-[#1236A8]"
+          gradient="from-[#9D2558] via-[#851C47] to-[#6B133A]"
         />
         <SalesMetricCard
           title="Today's Cash Inflow"

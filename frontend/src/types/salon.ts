@@ -892,6 +892,11 @@ export type PaymentMethod = 'CASH' | 'ONLINE_ACCOUNT' | 'SPLIT';
 export type InvoiceStatus = 'PAID' | 'UNPAID' | 'PARTIAL';
 
 export interface PaymentRecord {
+  kind?: 'POS' | 'DUES_COLLECTION';
+  reversedAt?: string;
+  reversedByName?: string;
+  reversalReason?: string;
+  reversalDate?: string;
   receiptNumber?: string;
   id: string;
   invoiceId: string;

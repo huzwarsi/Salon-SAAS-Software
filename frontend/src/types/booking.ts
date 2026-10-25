@@ -30,12 +30,13 @@ export interface BookingCollection extends BookingPayment {
   bookingId: string; bookingNumber: string; type: BookingType; clientName: string; clientPhone: string;
 }
 export interface Booking extends Omit<BookingInput, 'items'> {
+  createdAt?: string; updatedAt?: string; cancellationReason?: string;
   id: string; bookingNumber: string; revision: number; status: BookingStatus;
   paymentStatus: 'UNPAID' | 'PARTIALLY_PAID' | 'FULLY_PAID'; assignedStaffName?: string;
   subtotal: number; discount: number; taxAmount: number; totalAmount: number;
   advancePaid: number; receivedAmount: number; remainingBalance: number; cancellationCharge: number;
   linkedInvoiceId?: string; linkedInvoiceNumber?: string; items: BookingItem[];
-  payments: BookingPayment[]; history: { id: string; type: string; reason?: string; userName: string; createdAt: string }[];
+  payments: BookingPayment[]; history: { id: string; type: string; reason?: string; userName: string; createdAt: string; before?: Record<string, unknown>; after?: Record<string, unknown> }[];
 }
 export interface BookingQuery {
   [key: string]: string | undefined;

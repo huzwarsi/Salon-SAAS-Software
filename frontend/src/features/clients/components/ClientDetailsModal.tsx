@@ -36,6 +36,9 @@ import {
   Wallet,
 } from 'lucide-react';
 import { CollectDuesModal } from './CollectDuesModal';
+import { buildClientLedger } from '../clientLedger';
+import { BookingDetailsModal } from '../../bookings/BookingDetailsModal';
+import type { Booking } from '@/types/booking';
 
 interface ClientDetailsModalProps {
   isOpen: boolean;
@@ -59,12 +62,13 @@ export const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({
   const { user, allBranches } = useAuth();
   const { navigate } = useRouter();
 
-  const [selectedBookingForView, setSelectedBookingForView] = useState<any>(null);
+  const [selectedBookingForView, setSelectedBookingForView] = useState<Booking | null>(null);
   const [activeTab, setActiveTab] = useState<'ledger' | 'invoices' | 'receipts' | 'dues' | 'appointments' | 'bookings'>('ledger');
   const [reversalError, setReversalError] = useState('');
   const [reversing, setReversing] = useState(false);
   const reversalBusy = React.useRef(false);
   const [loading, setLoading] = useState<boolean>(true);
+  const [loadError, setLoadError] = useState('');
   const [details, setDetails] = useState<{
     client: Client;
     bookings?: import('@/types/booking').Booking[];
@@ -83,10 +87,12 @@ export const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({
   const loadClientDetails = async () => {
     if (!clientId) return;
     setLoading(true);
+    setLoadError('');
     try {
       const data = await salonService.getClientDetails(clientId, user || undefined);
       setDetails(data);
     } catch (err) {
+      setLoadError(err instanceof Error ? err.message : 'Could not load the client ledger.');
       console.error('Failed to load client details', err);
     } finally {
       setLoading(false);
@@ -102,140 +108,7 @@ export const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({
     }
   }, [isOpen, clientId]);
 
-  // 100% Real PostgreSQL Customer Ledger Calculation
-  const ledgerEntries = useMemo(() => {
-    if (!details) return [];
-    interface LedgerItem {
-      id: string;
-      date: string;
-      time: string;
-      type: 'INVOICE' | 'PAYMENT';
-      reference: string;
-      description: string;
-      debit: number;
-      credit: number;
-      balance: number;
-      status: string;
-      method?: string;
-      processedBy?: string;
-      rawInvoice?: Invoice;
-    }
-
-    const items: LedgerItem[] = [];
-
-    // Track recorded booking payment IDs to avoid duplicate advance credits
-    const recordedBookingPayments = new Set<string>();
-
-    // 1. All booking payments (advances, installments, refunds)
-    (details.bookings || []).forEach((b) => {
-      (b.payments || []).forEach((p: any) => {
-        recordedBookingPayments.add(b.id);
-        items.push({
-          id: `booking-pay-${p.id}`,
-          date: p.date,
-          time: p.time || '10:00 AM',
-          type: p.isRefund ? 'INVOICE' : 'PAYMENT',
-          reference: p.receiptNumber || b.bookingNumber,
-          description: p.isRefund
-            ? `Booking Advance Refund (${b.bookingNumber} • ${p.method})`
-            : `Booking Advance Payment (${b.bookingNumber} • ${b.type === 'BRIDAL' ? 'Bridal' : 'Groom'} • ${p.method}${p.paymentAccountName ? ` • ${p.paymentAccountName}` : ''})`,
-          debit: p.isRefund ? p.amount : 0,
-          credit: p.isRefund ? 0 : p.amount,
-          balance: 0,
-          status: p.isRefund ? 'REFUNDED' : 'CLEARED',
-          method: p.method,
-          processedBy: p.processedByName,
-        });
-      });
-    });
-
-    // 2. All sales invoices
-    details.invoices.forEach((inv) => {
-      items.push({
-        id: `inv-${inv.id}`,
-        date: inv.date,
-        time: inv.time || '10:00 AM',
-        type: 'INVOICE',
-        reference: inv.invoiceNumber,
-        description: `Sales Bill (${inv.lineItems?.length || (inv as any).lines?.length || 1} item${(inv.lineItems?.length || 1) > 1 ? 's' : ''})`,
-        debit: inv.total,
-        credit: 0,
-        balance: 0,
-        status: inv.status,
-        processedBy: inv.processedByName,
-        rawInvoice: inv,
-      });
-
-      // If invoice applied advance, but the booking payment was NOT captured above, credit it
-      if (inv.advanceAdjusted) {
-        const alreadyCredited = recordedBookingPayments.size > 0;
-        items.push({
-          id: `advance-${inv.id}`,
-          date: inv.date,
-          time: inv.time || '10:00 AM',
-          type: 'PAYMENT',
-          reference: inv.invoiceNumber,
-          description: alreadyCredited
-            ? `Prior booking advance applied to invoice (${formatCurrency(inv.advanceAdjusted)})`
-            : 'Prior booking advance applied (previously collected)',
-          debit: 0,
-          credit: alreadyCredited ? 0 : inv.advanceAdjusted,
-          balance: 0,
-          status: 'APPLIED',
-          rawInvoice: inv,
-        });
-      }
-
-      (inv.payments || []).forEach((p: any) => {
-        if (p.reversedAt) {
-          items.push({
-            id: `rev-${p.id}`,
-            date: p.reversalDate,
-            time: p.time,
-            type: 'INVOICE',
-            reference: p.receiptNumber || inv.invoiceNumber,
-            description: `Collection reversed: ${p.reversalReason}`,
-            debit: p.amount,
-            credit: 0,
-            balance: 0,
-            status: 'REVERSED',
-            processedBy: p.reversedByName,
-            rawInvoice: inv,
-          });
-        }
-        items.push({
-          id: `pay-${p.id}`,
-          date: p.date,
-          time: p.time || '10:00 AM',
-          type: 'PAYMENT',
-          reference: p.receiptNumber || `Receipt (${inv.invoiceNumber})`,
-          description:
-            p.kind === 'DUES_COLLECTION'
-              ? `Dues Collection (${p.method}${p.paymentAccountName ? ` • ${p.paymentAccountName}` : ''})`
-              : `POS Payment (${p.method}${p.paymentAccountName ? ` • ${p.paymentAccountName}` : ''})`,
-          debit: 0,
-          credit: p.amount,
-          balance: 0,
-          status: p.reversedAt ? 'REVERSED' : 'CLEARED',
-          method: p.method,
-          processedBy: p.processedByName,
-          rawInvoice: inv,
-        });
-      });
-    });
-
-    // Chronological order ascending for calculating running balance
-    items.sort((a, b) => (a.date || '').localeCompare(b.date || '') || (a.time || '').localeCompare(b.time || ''));
-
-    let running = 0;
-    items.forEach((item) => {
-      running = Math.round((running + item.debit - item.credit) * 100) / 100;
-      item.balance = running;
-    });
-
-    // Reverse for display (newest on top)
-    return [...items].reverse();
-  }, [details]);
+  const ledgerEntries = useMemo(() => details ? buildClientLedger(details) : [], [details]);
 
   const reverseReceipt = async (receipt: any) => {
     if (reversalBusy.current || !salonService.reverseCollection) return;
@@ -255,7 +128,7 @@ export const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        {loading || !client ? (
+        {loadError ? <div role="alert" className="space-y-3 p-6 text-sm text-rose-700"><p>{loadError}</p><Button variant="outline" onClick={() => void loadClientDetails()}>Retry loading client ledger</Button></div> : loading || !client ? (
           <div className="py-16 text-center text-slate-500">
             <div className="w-8 h-8 rounded-full border-2 border-[#9D2558] border-t-transparent animate-spin mx-auto mb-3" />
             <p className="text-xs font-medium">Loading customer profile & history...</p>
@@ -350,7 +223,7 @@ export const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({
             {!!details.bookings?.length && <section className="rounded-xl border border-violet-200 bg-violet-50 p-4 space-y-3">
               <h3 className="text-sm font-semibold">Bridal / Groom booking commitments</h3>
               <p className="text-xs text-slate-600">Pending reservations are separate from invoiced dues. Each booking has its own installment and adjustment ledger.</p>
-              {details.bookings.map(b => <div key={b.id} className="text-xs flex flex-wrap justify-between gap-2 border-t border-violet-100 pt-2"><span>{b.bookingNumber} · {b.type} · {b.eventDate} · {b.status}</span><span>Received {formatCurrency(b.advancePaid)} · Remaining {formatCurrency(b.remainingBalance)}</span><Button size="sm" variant="outline" onClick={() => { onClose(); navigate(`/operations/bookings?clientId=${clientId}&bookingId=${b.id}`); }}>View booking ledger</Button></div>)}
+              {details.bookings.map(b => <div key={b.id} className="text-xs flex flex-wrap justify-between gap-2 border-t border-violet-100 pt-2"><span>{b.bookingNumber} · {b.type} · {b.eventDate} · {b.status}</span><span>Received {formatCurrency(b.receivedAmount ?? b.advancePaid)} · Remaining {formatCurrency(b.remainingBalance)}</span><Button size="sm" variant="outline" onClick={() => { onClose(); navigate(`/operations/bookings?clientId=${clientId}&bookingId=${b.id}`); }}>View booking ledger</Button></div>)}
             </section>}
             {/* KPI Cards Bar */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -495,11 +368,12 @@ export const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({
                     <span className="text-slate-500 font-medium">
                       Complete transactional ledger & payment history derived from real database records.
                     </span>
-                    <span className="font-bold text-slate-800 font-mono">
-                      Current Net Dues: {formatCurrency(client.outstandingBalance || 0)}
+                    <span className="font-bold text-slate-800 font-mono" data-testid="client-ledger-closing-balance">
+                      Ledger Balance: {formatCurrency(ledgerEntries[0]?.balance || 0)}
                     </span>
                   </div>
 
+                  {(ledgerEntries[0]?.balance || 0) < 0 && <p className="text-xs text-emerald-700">Negative balance represents customer advance credit. Invoiced dues are shown separately above.</p>}
                   {ledgerEntries.length === 0 ? (
                     <div className="p-8 text-center text-slate-400 text-xs">
                       No ledger transactions found for this customer.
@@ -727,8 +601,8 @@ export const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({
                               <td className="py-2.5 px-3 whitespace-nowrap text-slate-600">
                                 {rcpt.paymentAccountName || 'Counter Cash Drawer'}
                               </td>
-                              <td className="py-2.5 px-3 text-right font-bold text-emerald-700 whitespace-nowrap font-mono">
-                                +{formatCurrency(rcpt.amount)}
+                              <td className={`py-2.5 px-3 text-right font-bold ${rcpt.isRefund ? 'text-rose-700' : 'text-emerald-700'} whitespace-nowrap font-mono`}>
+                                {rcpt.isRefund ? '-' : '+'}{formatCurrency(rcpt.amount)}
                               </td>
                               <td className="py-2.5 px-3 whitespace-nowrap text-slate-500 text-[11px]">
                                 {rcpt.processedByName || 'System'}

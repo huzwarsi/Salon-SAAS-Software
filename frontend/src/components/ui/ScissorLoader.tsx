@@ -87,9 +87,9 @@ export const ScissorLoader: React.FC<ScissorLoaderProps> = ({ size = 'md', class
               {/* Upper cutting blade */}
               <path d="M12 12 L21 4.5" stroke="#9D2558" strokeWidth="2.2" />
               {/* Lower connecting arm */}
-              <path d="M12 12 L8.2 15.8" stroke="#1B44B8" strokeWidth="2" />
+              <path d="M12 12 L8.2 15.8" stroke="#851C47" strokeWidth="2" />
               {/* Lower finger loop */}
-              <circle cx="6" cy="18" r="3.2" stroke="#1B44B8" strokeWidth="1.8" fill="#EEF2FF" />
+              <circle cx="6" cy="18" r="3.2" stroke="#851C47" strokeWidth="1.8" fill="#FCE8EC" />
             </g>
 
             {/* Bottom Blade & Top Handle Ring */}
@@ -97,9 +97,9 @@ export const ScissorLoader: React.FC<ScissorLoaderProps> = ({ size = 'md', class
               {/* Lower cutting blade */}
               <path d="M12 12 L21 19.5" stroke="#9D2558" strokeWidth="2.2" />
               {/* Upper connecting arm */}
-              <path d="M12 12 L8.2 8.2" stroke="#1B44B8" strokeWidth="2" />
+              <path d="M12 12 L8.2 8.2" stroke="#851C47" strokeWidth="2" />
               {/* Upper finger loop */}
-              <circle cx="6" cy="6" r="3.2" stroke="#1B44B8" strokeWidth="1.8" fill="#EEF2FF" />
+              <circle cx="6" cy="6" r="3.2" stroke="#851C47" strokeWidth="1.8" fill="#FCE8EC" />
             </g>
 
             {/* Pivot screw rivet in center */}

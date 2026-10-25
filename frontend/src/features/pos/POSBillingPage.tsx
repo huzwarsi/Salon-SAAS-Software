@@ -1685,7 +1685,7 @@ export const POSBillingPage: React.FC = () => {
       const payload: CreatePOSInvoiceInput = {
         bookingId: loadedBooking?.id,
         bookingRevision: loadedBooking?.revision,
-        bookingUpdate: loadedBooking && hasBookingChanges ? cartToBookingUpdate(loadedBooking, cart, discountType, discountValue, bookingChangeReason.trim()) : undefined,
+        bookingUpdate: loadedBooking && hasBookingChanges ? cartToBookingUpdate(loadedBooking, cart, discountType, discountValue, bookingChangeReason.trim() || 'POS billing checkout adjustments') : undefined,
         branchId: currentBranch.id,
         appointmentId: loadedAppointment?.id,
         clientId: selectedClientId,
@@ -1808,19 +1808,19 @@ export const POSBillingPage: React.FC = () => {
   const currentCartCount = cart.reduce((sum, ci) => sum + ci.quantity, 0);
 
   const renderCartPanel = (isMobileSheet = false) => (
-    <div className="w-full h-full min-h-0 flex flex-col justify-between overflow-hidden">
+    <div className="w-full min-h-full flex flex-col justify-between">
       {/* Top Zone: Header + Cart Items */}
-      <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+      <div className="flex-1 min-h-[160px] flex flex-col">
         {/* Sale Card Header */}
-        <div className="shrink-0 flex items-center justify-between pb-2.5 border-b border-slate-100 flex-wrap gap-1.5">
+        <div className="shrink-0 flex items-center justify-between pb-2 border-b border-slate-100 flex-wrap gap-1.5">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#9D2558] to-blue-700 text-white flex items-center justify-center font-bold shadow-xs shrink-0">
-              <ShoppingCart className="w-4 h-4" />
+            <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#9D2558] to-[#851C47] text-white flex items-center justify-center font-bold shadow-xs shrink-0">
+              <ShoppingCart className="w-3.5 h-3.5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
                 <h3 className="font-bold text-slate-900 text-xs sm:text-sm tracking-tight">Current Sale</h3>
-                <Badge variant="neutral" className="text-[10px] font-bold bg-[#FDF2F5] text-[#9D2558] border-[#F1DEE3] py-0.5 px-2">
+                <Badge variant="neutral" className="text-[10px] font-bold bg-[#FDF2F5] text-[#9D2558] border-[#F1DEE3] py-0 px-1.5">
                   {currentCartCount} item{currentCartCount !== 1 ? 's' : ''}
                 </Badge>
               </div>
@@ -1830,7 +1830,7 @@ export const POSBillingPage: React.FC = () => {
           <div className="flex items-center gap-1.5">
             {cart.length > 0 && staffList.length > 0 && (
               <Select onValueChange={(val) => handleAssignStaffToAll(val)}>
-                <SelectTrigger className="text-[11px] h-7 px-2 bg-[#FDF2F5]/70 border-[#F1DEE3] text-[#9D2558] font-semibold rounded-lg shadow-2xs">
+                <SelectTrigger className="text-[11px] h-6.5 px-2 bg-[#FDF2F5]/70 border-[#F1DEE3] text-[#9D2558] font-semibold rounded-lg shadow-2xs">
                   <SelectValue placeholder="Assign all..." />
                 </SelectTrigger>
                 <SelectContent className="z-[70]">
@@ -1851,10 +1851,10 @@ export const POSBillingPage: React.FC = () => {
                 variant="ghost"
                 size="sm"
                 onClick={handleClearCart}
-                className="text-xs h-7 text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-2 rounded-lg cursor-pointer transition-colors"
+                className="text-xs h-6.5 text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-2 rounded-lg cursor-pointer transition-colors"
                 title="Clear Sale Card"
               >
-                <Trash2 className="w-3.5 h-3.5 mr-1" /> Clear
+                <Trash2 className="w-3 h-3 mr-1" /> Clear
               </Button>
             )}
 
@@ -1863,32 +1863,32 @@ export const POSBillingPage: React.FC = () => {
                 variant="ghost"
                 size="icon"
                 onClick={() => setMobileCartOpen(false)}
-                className="h-7 w-7 text-slate-400 hover:text-slate-700 rounded-lg p-0 cursor-pointer"
+                className="h-6.5 w-6.5 text-slate-400 hover:text-slate-700 rounded-lg p-0 cursor-pointer"
                 title="Close Cart"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3.5 h-3.5" />
               </Button>
             )}
           </div>
         </div>
 
-        {isBookingLoading && <p role="status" className="p-3 text-sm text-[#9D2558]">Loading booking into POS...</p>}
-        {bookingLoadError && <div role="alert" className="my-2 rounded-xl bg-rose-50 p-3 text-sm text-rose-700">{bookingLoadError}<Button variant="ghost" size="sm" onClick={handleClearCart}>Clear booking</Button></div>}
+        {isBookingLoading && <p role="status" className="p-2 text-xs text-[#9D2558]">Loading booking into POS...</p>}
+        {bookingLoadError && <div role="alert" className="my-1.5 rounded-xl bg-rose-50 p-2 text-xs text-rose-700">{bookingLoadError}<Button variant="ghost" size="sm" onClick={handleClearCart} className="text-xs ml-2">Clear</Button></div>}
         {loadedBooking && (
-          <div className="shrink-0 p-2.5 my-1.5 bg-[#FDF2F5] border border-[#F1DEE3] rounded-xl flex items-center justify-between text-xs text-[#23151D] shadow-2xs">
-            <div className="flex items-center gap-2 min-w-0">
-              <Sparkles className="w-4 h-4 text-[#9D2558] shrink-0" />
+          <div className="shrink-0 px-2.5 py-1.5 my-1.5 bg-[#FDF2F5] border border-[#F1DEE3] rounded-xl flex items-center justify-between text-xs text-[#23151D] shadow-2xs">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <Sparkles className="w-3.5 h-3.5 text-[#9D2558] shrink-0" />
               <div className="truncate">
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="font-bold text-slate-900">{loadedBooking.bookingNumber}</span>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#FCE8EC] text-[#9D2558]">
+                  <span className="font-bold text-slate-900 text-xs">{loadedBooking.bookingNumber}</span>
+                  <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-[#FCE8EC] text-[#9D2558]">
                     {loadedBooking.type}
                   </span>
-                  <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100/90 px-2 py-0.5 rounded-md border border-emerald-300">
+                  <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100/90 px-1.5 py-0.2 rounded-md border border-emerald-300">
                     Adv: {formatCurrency(loadedBooking.advancePaid)}
                   </span>
                 </div>
-                <span className="text-[10px] text-slate-500 block truncate mt-0.5">
+                <span className="text-[10px] text-slate-500 block truncate">
                   {loadedBooking.clientName} • {loadedBooking.eventDate} ({loadedBooking.serviceTime || '10:00 AM'})
                 </span>
               </div>
@@ -1898,7 +1898,7 @@ export const POSBillingPage: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={handleClearCart}
-              className="h-6 text-xs text-rose-600 hover:bg-rose-50 px-2 shrink-0 cursor-pointer"
+              className="h-5 text-xs text-rose-600 hover:bg-rose-50 px-1.5 shrink-0 cursor-pointer"
             >
               Clear
             </Button>
@@ -1906,8 +1906,8 @@ export const POSBillingPage: React.FC = () => {
         )}
         {/* Linked Appointment Badge */}
         {loadedAppointment && (
-          <div className="shrink-0 p-2 my-2 bg-[#FDF2F5]/80 border border-[#F1DEE3] rounded-xl flex items-center justify-between text-xs text-[#23151D]">
-            <div className="flex items-center gap-2">
+          <div className="shrink-0 px-2.5 py-1.5 my-1.5 bg-[#FDF2F5]/80 border border-[#F1DEE3] rounded-xl flex items-center justify-between text-xs text-[#23151D]">
+            <div className="flex items-center gap-1.5">
               <Calendar className="w-3.5 h-3.5 text-[#9D2558] shrink-0" />
               <div>
                 <span className="font-bold">Linked:</span> {loadedAppointment.appointmentNumber || loadedAppointment.id}
@@ -1925,14 +1925,14 @@ export const POSBillingPage: React.FC = () => {
               className="h-5 w-5 p-0 text-[#9D2558] hover:text-[#6A1237]"
               title="Unlink Appointment"
             >
-              <X className="w-3.5 h-3.5" />
+              <X className="w-3 h-3" />
             </Button>
           </div>
         )}
 
         {/* Price Quote Discrepancy Banner */}
         {bookingPriceDiscrepancy && (
-          <div className="shrink-0 p-2 my-2 bg-amber-50 border border-amber-200 rounded-xl text-xs space-y-1">
+          <div className="shrink-0 p-2 my-1.5 bg-amber-50 border border-amber-200 rounded-xl text-xs space-y-1">
             <div className="flex items-start gap-1.5 text-amber-900">
               <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
               <div>
@@ -1957,64 +1957,60 @@ export const POSBillingPage: React.FC = () => {
 
         {/* Cart Items List OR Clean Empty State with Dedicated Scroller */}
         {cart.length === 0 ? (
-          <div className="flex-1 min-h-0 flex flex-col items-center justify-center bg-slate-50/60 rounded-xl border border-dashed border-slate-200/90 text-xs my-2 py-6 px-4 text-center">
-            <div className="w-10 h-10 rounded-full bg-[#FDF2F5] flex items-center justify-center text-[#9D2558] mb-2 border border-[#F1DEE3]">
-              <ShoppingCart className="w-5 h-5 opacity-75" />
+          <div className="flex-1 min-h-[90px] max-h-[160px] flex flex-col items-center justify-center bg-slate-50/60 rounded-xl border border-dashed border-slate-200/90 text-xs my-1 py-3 px-3 text-center">
+            <div className="w-7 h-7 rounded-full bg-[#FDF2F5] flex items-center justify-center text-[#9D2558] mb-1 border border-[#F1DEE3]">
+              <ShoppingCart className="w-3.5 h-3.5 opacity-75" />
             </div>
-            <span className="font-bold text-slate-700 text-xs sm:text-sm">Sale Card is empty</span>
-            <span className="text-[11px] text-slate-400 mt-0.5 max-w-[220px]">Click any service, product, or package on the catalogue to add</span>
+            <span className="font-bold text-slate-700 text-xs">No items selected</span>
+            <span className="text-[10px] text-slate-400 mt-0.5">Click any service, package, or product to add</span>
           </div>
         ) : (
-          <div className="min-h-[140px] max-h-[380px] flex-1 overflow-y-auto space-y-2 py-1.5 pr-1 pos-cart-scroller">
+          <div className="min-h-[140px] flex-1 overflow-y-auto space-y-1.5 py-1 pr-1 pos-cart-scroller">
             {cart.map((ci) => (
               <div
                 key={ci.cartInstanceId}
-                className="p-2.5 sm:p-3 rounded-xl border transition-all space-y-2 bg-slate-50/80 hover:bg-slate-50/95 border-slate-200/80"
+                className="p-2 sm:p-2.5 rounded-xl border transition-all space-y-1.5 bg-slate-50/90 hover:bg-slate-50 border-slate-200/80 shadow-2xs"
               >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="font-bold text-slate-900 truncate text-xs sm:text-[13px]">{ci.item.name}</span>
-                      {ci.type === 'PACKAGE' ? (
-                        <Badge variant="neutral" className="text-[9px] bg-purple-50 text-purple-700 border-purple-200 py-0 px-1.5 font-bold">
-                          Pkg
-                        </Badge>
-                      ) : ci.type === 'PRODUCT' ? (
-                        <Badge variant="neutral" className="text-[9px] bg-emerald-50 text-emerald-700 border-emerald-200 py-0 px-1.5 font-bold">
-                          Prd
-                        </Badge>
-                      ) : null}
-                    </div>
-                    <span className="font-mono text-[11px] text-slate-400 font-medium">
-                      {formatCurrency(getCatalogueSellingPrice(ci.item))}
-                    </span>
+                {/* Header row: Service name, Badge, Quantity, Price, Delete */}
+                <div className="flex items-center justify-between gap-1.5">
+                  <div className="min-w-0 flex-1 flex items-center gap-1.5">
+                    <span className="font-bold text-slate-900 truncate text-xs">{ci.item.name}</span>
+                    {ci.type === 'PACKAGE' ? (
+                      <Badge variant="neutral" className="text-[9px] bg-purple-50 text-purple-700 border-purple-200 py-0 px-1 font-bold">
+                        Pkg
+                      </Badge>
+                    ) : ci.type === 'PRODUCT' ? (
+                      <Badge variant="neutral" className="text-[9px] bg-emerald-50 text-emerald-700 border-emerald-200 py-0 px-1 font-bold">
+                        Prd
+                      </Badge>
+                    ) : null}
                   </div>
 
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-1.5 shrink-0">
                     {/* Quantity Adjuster */}
-                    <div className="flex items-center bg-white border border-slate-200 rounded-lg p-0.5 shadow-2xs">
+                    <div className="flex items-center bg-white border border-slate-200 rounded-md p-0.5 shadow-2xs h-6">
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => handleUpdateQuantity(ci.cartInstanceId, -1)}
-                        className="w-5.5 h-5.5 p-0 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded"
+                        className="w-4.5 h-4.5 p-0 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded"
                       >
-                        <Minus className="w-3 h-3" />
+                        <Minus className="w-2.5 h-2.5" />
                       </Button>
-                      <span className="font-mono font-bold px-1.5 text-xs text-slate-900 min-w-5 text-center">
+                      <span className="font-mono font-bold px-1 text-[11px] text-slate-900 min-w-4 text-center">
                         {ci.quantity}
                       </span>
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => handleUpdateQuantity(ci.cartInstanceId, 1)}
-                        className="w-5.5 h-5.5 p-0 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded"
+                        className="w-4.5 h-4.5 p-0 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded"
                       >
-                        <Plus className="w-3 h-3" />
+                        <Plus className="w-2.5 h-2.5" />
                       </Button>
                     </div>
 
-                    <span className="font-mono font-bold text-slate-900 w-20 text-right text-xs sm:text-[13px]">
+                    <span className="font-mono font-bold text-slate-900 w-18 text-right text-xs">
                       {formatCurrency(getCatalogueSellingPrice(ci.item) * ci.quantity)}
                     </span>
 
@@ -2022,42 +2018,67 @@ export const POSBillingPage: React.FC = () => {
                       variant="ghost"
                       size="icon"
                       onClick={() => handleRemoveItem(ci.cartInstanceId)}
-                      className="w-6 h-6 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md p-0 transition-colors"
+                      className="w-5 h-5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded p-0 transition-colors"
                       title="Remove item"
                     >
-                      <X className="w-3.5 h-3.5" />
+                      <X className="w-3 h-3" />
                     </Button>
                   </div>
                 </div>
 
                 {/* Staff Assignment */}
                 {loadedBooking && ci.type !== 'PRODUCT' ? (
-                  <div className="space-y-2 border-t border-slate-200/60 pt-2">
-                    {ci.type === 'PACKAGE' ? ci.packageComponents?.map(c => (
-                      <label key={c.serviceId} className="flex items-center justify-between gap-2 text-xs"><span>{c.serviceName}</span>
-                        <select aria-label={`Staff for ${c.serviceName}`} className="max-w-[190px] rounded-lg border border-slate-200 bg-white p-1.5" value={c.staffId || 'house'} onChange={e => handleAssignPackageComponentStaff(ci.cartInstanceId, c.serviceId, e.target.value)}>
-                          <option value="house">House / Salon (No Staff)</option>{staffList.map(st => <option key={st.id} value={st.id}>{st.name}</option>)}
+                  <div className="pt-1 border-t border-slate-200/60">
+                    {ci.type === 'PACKAGE' ? (
+                      <div className="space-y-1">
+                        {ci.packageComponents?.map((c) => (
+                          <div key={c.serviceId} className="flex items-center justify-between gap-1.5 text-[11px]">
+                            <span className="truncate text-slate-600 max-w-[110px]">{c.serviceName}</span>
+                            <select
+                              aria-label={`Staff for ${c.serviceName}`}
+                              className="flex-1 max-w-[190px] h-6 text-[11px] font-medium rounded-md border border-slate-200 bg-white px-1.5 py-0 focus:outline-none focus:border-[#9D2558] truncate"
+                              value={c.staffId || 'house'}
+                              onChange={(e) => handleAssignPackageComponentStaff(ci.cartInstanceId, c.serviceId, e.target.value)}
+                            >
+                              <option value="house">House / Salon (No Staff)</option>
+                              {staffList.map((st) => (
+                                <option key={st.id} value={st.id}>{st.name} ({st.roleTitle})</option>
+                              ))}
+                            </select>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between gap-1.5 text-[11px]">
+                        <span className="text-slate-500 font-medium flex items-center gap-1 shrink-0">
+                          <User className="w-3 h-3 text-[#9D2558]" />
+                          <span>Staff:</span>
+                        </span>
+                        <select
+                          aria-label={`Staff for ${ci.item.name}`}
+                          className="flex-1 max-w-[210px] h-6 text-[11px] font-medium rounded-md border border-slate-200 bg-white px-2 py-0 focus:outline-none focus:border-[#9D2558] truncate"
+                          value={ci.staffId || 'house'}
+                          onChange={(e) => handleAssignStaff(ci.cartInstanceId, e.target.value)}
+                        >
+                          <option value="house">House / Salon (No Staff)</option>
+                          {staffList.map((st) => (
+                            <option key={st.id} value={st.id}>{st.name} ({st.roleTitle})</option>
+                          ))}
                         </select>
-                      </label>
-                    )) : <label className="flex items-center justify-between gap-2 text-xs"><span>Assigned staff</span>
-                      <select aria-label={`Staff for ${ci.item.name}`} className="max-w-[190px] rounded-lg border border-slate-200 bg-white p-1.5" value={ci.staffId || 'house'} onChange={e => handleAssignStaff(ci.cartInstanceId, e.target.value)}>
-                        <option value="house">House / Salon (No Staff)</option>{staffList.map(st => <option key={st.id} value={st.id}>{st.name}</option>)}
-                      </select>
-                    </label>}
+                      </div>
+                    )}
                   </div>
                 ) : ci.type === 'PRODUCT' ? (
-                  <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-200/60">
-                    <span className="text-[11px] text-slate-600 font-medium flex items-center gap-1.5 shrink-0">
-                      <User className="w-3.5 h-3.5 text-slate-400" />
+                  <div className="flex items-center justify-between gap-1.5 pt-1 border-t border-slate-200/60 text-[11px]">
+                    <span className="text-slate-500 font-medium flex items-center gap-1 shrink-0">
+                      <User className="w-3 h-3 text-slate-400" />
                       <span>Sales Staff:</span>
                     </span>
                     <Select
                       value={ci.staffId || 'unassigned'}
                       onValueChange={(val) => handleAssignStaff(ci.cartInstanceId, val)}
                     >
-                      <SelectTrigger
-                        className="flex-1 sm:w-[170px] text-xs h-7.5 bg-white border-slate-200 text-slate-700 rounded-lg shadow-2xs font-normal"
-                      >
+                      <SelectTrigger className="flex-1 max-w-[210px] text-[11px] h-6 bg-white border-slate-200 text-slate-700 rounded-md shadow-2xs font-normal">
                         <SelectValue placeholder="Select Staff..." />
                       </SelectTrigger>
                       <SelectContent className="z-[70]">
@@ -2077,7 +2098,7 @@ export const POSBillingPage: React.FC = () => {
                   </div>
                 ) : (
                   /* Package & Service Multi-Staff Allocation */
-                  <div className="pt-2 border-t border-slate-200/60 space-y-1.5">
+                  <div className="pt-1 border-t border-slate-200/60 space-y-1">
                     <div className="flex items-center justify-between flex-wrap gap-1">
                       <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
                         <Users className="w-3 h-3 text-[#9D2558]" />
@@ -2098,7 +2119,7 @@ export const POSBillingPage: React.FC = () => {
                     </div>
 
                     {ci.assignedStaff && ci.assignedStaff.length > 0 && (
-                      <div className="space-y-1 bg-white p-1.5 rounded-lg border border-slate-200">
+                      <div className="space-y-1 bg-white p-1 rounded-md border border-slate-200">
                         {ci.assignedStaff.map((st) => {
                           const lineTotalAmount = getCatalogueSellingPrice(ci.item) * ci.quantity;
                           const currentAmount = st.allocatedAmount ?? (ci.assignedStaff?.length === 1 ? lineTotalAmount : Math.round(lineTotalAmount / (ci.assignedStaff?.length || 1)));
@@ -2106,7 +2127,7 @@ export const POSBillingPage: React.FC = () => {
                           return (
                             <div
                               key={st.staffId}
-                              className="flex items-center justify-between gap-1.5 text-xs py-0.5"
+                              className="flex items-center justify-between gap-1 text-[11px] py-0.2"
                             >
                               <span className="font-semibold text-slate-800 truncate text-[11px]">{st.staffName}</span>
                               <div className="flex items-center gap-1">
@@ -2122,14 +2143,14 @@ export const POSBillingPage: React.FC = () => {
                                       Number(e.target.value) || 0
                                     )
                                   }
-                                  className="w-16 h-6 px-1.5 text-right font-mono font-bold text-xs bg-slate-50 border border-slate-200 rounded-md"
+                                  className="w-14 h-5 px-1 text-right font-mono font-bold text-[11px] bg-slate-50 border border-slate-200 rounded"
                                 />
                                 <button
                                   type="button"
                                   onClick={() => handleRemoveStaffFromPackage(ci.cartInstanceId, st.staffId)}
-                                  className="p-1 text-slate-400 hover:text-rose-600 rounded"
+                                  className="p-0.5 text-slate-400 hover:text-rose-600 rounded"
                                 >
-                                  <X className="w-3.5 h-3.5" />
+                                  <X className="w-3 h-3" />
                                 </button>
                               </div>
                             </div>
@@ -2146,9 +2167,9 @@ export const POSBillingPage: React.FC = () => {
                             if (val) handleAddStaffToPackage(ci.cartInstanceId, val);
                           }}
                         >
-                          <SelectTrigger className="text-xs h-6 bg-[#FDF2F5]/60 border-[#F1DEE3] text-[#9D2558] px-2 font-medium rounded-md">
+                          <SelectTrigger className="text-[11px] h-6 bg-[#FDF2F5]/60 border-[#F1DEE3] text-[#9D2558] px-2 font-medium rounded-md">
                             <div className="flex items-center gap-1 min-w-0">
-                              <Plus className="w-3.5 h-3.5 text-[#9D2558] shrink-0" />
+                              <Plus className="w-3 h-3 text-[#9D2558] shrink-0" />
                               <SelectValue placeholder="Add Staff" />
                             </div>
                           </SelectTrigger>
@@ -2178,38 +2199,37 @@ export const POSBillingPage: React.FC = () => {
       </div>
 
       {/* Bottom Zone: Customer Attribution + Discount & Tip + Breakdown + Action */}
-      {cart.length > 0 && (
-        <div className="shrink-0 pt-2 border-t border-slate-200/90 space-y-2 bg-white">
+      <div className="shrink-0 pt-1.5 border-t border-slate-200/90 space-y-1.5 bg-white">
           {/* Customer Attribution (Walk-in or Custom Name/Phone) */}
           {!selectedClient ? (
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-1.5">
               <div className="relative">
-                <User className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-400" />
+                <User className="w-3 h-3 absolute left-2 top-2 text-slate-400" />
                 <Input
                   type="text"
-                  placeholder="Customer Name (Walk-in)"
+                  placeholder="Customer (Walk-in)"
                   value={clientName}
                   onChange={(e) => setClientName(e.target.value)}
-                  className="pl-8 text-xs h-8 bg-white border-slate-200 rounded-xl font-medium placeholder:text-slate-400 focus:border-[#9D2558]"
+                  className="pl-7 text-[11px] h-7 bg-white border-slate-200 rounded-lg font-medium placeholder:text-slate-400 focus:border-[#9D2558]"
                 />
               </div>
               <div className="relative">
-                <Phone className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-400" />
+                <Phone className="w-3 h-3 absolute left-2 top-2 text-slate-400" />
                 <Input
                   type="tel"
                   placeholder="Phone (Optional)"
                   value={clientPhone}
                   onChange={(e) => setClientPhone(e.target.value)}
-                  className="pl-8 text-xs h-8 bg-white border-slate-200 rounded-xl font-mono placeholder:text-slate-400 focus:border-[#9D2558]"
+                  className="pl-7 text-[11px] h-7 bg-white border-slate-200 rounded-lg font-mono placeholder:text-slate-400 focus:border-[#9D2558]"
                 />
               </div>
             </div>
           ) : (
-            <div className="flex items-center justify-between px-3 py-1.5 bg-[#FDF2F5]/70 border border-[#F1DEE3] rounded-xl text-xs">
-              <div className="flex items-center gap-2 truncate">
+            <div className="flex items-center justify-between px-2.5 py-1 bg-[#FDF2F5]/70 border border-[#F1DEE3] rounded-lg text-xs">
+              <div className="flex items-center gap-1.5 truncate">
                 <UserCheck className="w-3.5 h-3.5 text-[#9D2558] shrink-0" />
-                <span className="font-bold text-slate-800 truncate">{selectedClient.name}</span>
-                <span className="text-[11px] text-slate-500 font-mono">{selectedClient.phone}</span>
+                <span className="font-bold text-slate-800 truncate text-[11px]">{selectedClient.name}</span>
+                <span className="text-[10px] text-slate-500 font-mono">{selectedClient.phone}</span>
               </div>
               <button
                 type="button"
@@ -2222,24 +2242,24 @@ export const POSBillingPage: React.FC = () => {
           )}
 
           {/* 1. Discount & Tip (Spaced Side-by-Side) */}
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-1.5">
             {/* Discount Field */}
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               <div className="flex items-center justify-between">
-                <label className="text-[11px] font-bold text-slate-700 flex items-center gap-1">
-                  <Tag className="w-3 h-3 text-[#9D2558]" />
+                <label className="text-[10px] font-bold text-slate-700 flex items-center gap-1">
+                  <Tag className="w-2.5 h-2.5 text-[#9D2558]" />
                   <span>Discount</span>
                 </label>
                 <button
                   type="button"
                   onClick={() => setDiscountType(discountType === 'FIXED' ? 'PERCENTAGE' : 'FIXED')}
-                  className="text-[10px] font-bold text-[#9D2558] hover:text-[#6A1237] hover:underline cursor-pointer transition-colors"
+                  className="text-[9px] font-bold text-[#9D2558] hover:text-[#6A1237] hover:underline cursor-pointer"
                 >
                   {discountType === 'FIXED' ? '% Switch' : 'PKR Switch'}
                 </button>
               </div>
-              <div className="flex items-center rounded-xl border border-slate-200 overflow-hidden bg-white shadow-2xs h-8 focus-within:border-[#9D2558] focus-within:ring-2 focus-within:ring-[#9D2558]/10 transition-all">
-                <span className="px-2.5 text-[10px] font-bold bg-slate-50 text-slate-600 border-r border-slate-200 h-full flex items-center shrink-0">
+              <div className="flex items-center rounded-lg border border-slate-200 overflow-hidden bg-white shadow-2xs h-7 focus-within:border-[#9D2558]">
+                <span className="px-2 text-[9px] font-bold bg-slate-50 text-slate-600 border-r border-slate-200 h-full flex items-center shrink-0">
                   {discountType === 'FIXED' ? 'PKR' : '%'}
                 </span>
                 <input
@@ -2248,30 +2268,30 @@ export const POSBillingPage: React.FC = () => {
                   placeholder="0"
                   value={discountValue || ''}
                   onChange={(e) => setDiscountValue(parseFloat(e.target.value) || 0)}
-                  className="w-full h-full text-right px-2.5 text-xs font-mono font-bold text-slate-900 bg-transparent focus:outline-none"
+                  className="w-full h-full text-right px-2 text-xs font-mono font-bold text-slate-900 bg-transparent focus:outline-none"
                 />
               </div>
             </div>
 
             {/* Tip Field */}
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               <div className="flex items-center justify-between">
-                <label className="text-[11px] font-bold text-slate-700 flex items-center gap-1">
-                  <Coins className="w-3 h-3 text-amber-600" />
+                <label className="text-[10px] font-bold text-slate-700 flex items-center gap-1">
+                  <Coins className="w-2.5 h-2.5 text-amber-600" />
                   <span>Staff Tip</span>
                 </label>
                 {tipAmount > 0 && (
                   <button
                     type="button"
                     onClick={() => setTipAmount(0)}
-                    className="text-[10px] font-semibold text-slate-400 hover:text-rose-600 cursor-pointer transition-colors"
+                    className="text-[9px] font-semibold text-slate-400 hover:text-rose-600 cursor-pointer"
                   >
                     Clear
                   </button>
                 )}
               </div>
-              <div className="flex items-center rounded-xl border border-slate-200 overflow-hidden bg-white shadow-2xs h-8 focus-within:border-amber-500 focus-within:ring-2 focus-within:ring-amber-500/10 transition-all">
-                <span className="px-2.5 text-[10px] font-bold bg-amber-50/70 text-amber-700 border-r border-slate-200 h-full flex items-center shrink-0">
+              <div className="flex items-center rounded-lg border border-slate-200 overflow-hidden bg-white shadow-2xs h-7 focus-within:border-amber-500">
+                <span className="px-2 text-[9px] font-bold bg-amber-50/70 text-amber-700 border-r border-slate-200 h-full flex items-center shrink-0">
                   PKR
                 </span>
                 <input
@@ -2280,31 +2300,31 @@ export const POSBillingPage: React.FC = () => {
                   placeholder="0"
                   value={tipAmount || ''}
                   onChange={(e) => setTipAmount(parseFloat(e.target.value) || 0)}
-                  className="w-full h-full text-right px-2.5 text-xs font-mono font-bold text-slate-900 bg-transparent focus:outline-none"
+                  className="w-full h-full text-right px-2 text-xs font-mono font-bold text-slate-900 bg-transparent focus:outline-none"
                 />
               </div>
             </div>
           </div>
 
           {/* 2. Itemized Breakdown */}
-          <div className="space-y-1.5 py-1.5 border-t border-slate-100 text-xs">
+          <div className="space-y-1 py-1 border-t border-slate-100 text-[11px]">
             <div className="flex items-center justify-between text-slate-600">
-              <span className="text-xs sm:text-[13px] font-medium">Subtotal:</span>
-              <span className="font-mono text-xs sm:text-sm font-semibold text-slate-800">
+              <span className="font-medium">Subtotal:</span>
+              <span className="font-mono font-semibold text-slate-800">
                 {formatCurrency(calculations.grossSubtotal)}
               </span>
             </div>
 
             <div className="flex items-center justify-between text-slate-600">
-              <span className="text-xs sm:text-[13px] font-medium">Discount:</span>
-              <span className={`font-mono text-xs sm:text-sm font-semibold ${calculations.calculatedDiscount > 0 ? 'text-emerald-600 font-bold' : 'text-slate-800'}`}>
+              <span className="font-medium">Discount:</span>
+              <span className={`font-mono font-semibold ${calculations.calculatedDiscount > 0 ? 'text-emerald-600 font-bold' : 'text-slate-800'}`}>
                 {calculations.calculatedDiscount > 0 ? `- ${formatCurrency(calculations.calculatedDiscount)}` : formatCurrency(0)}
               </span>
             </div>
 
             <div className="flex items-center justify-between text-slate-600">
-              <span className="text-xs sm:text-[13px] font-medium">Staff Tip:</span>
-              <span className={`font-mono text-xs sm:text-sm font-semibold ${calculations.cleanTip > 0 ? 'text-amber-700 font-bold' : 'text-slate-800'}`}>
+              <span className="font-medium">Staff Tip:</span>
+              <span className={`font-mono font-semibold ${calculations.cleanTip > 0 ? 'text-amber-700 font-bold' : 'text-slate-800'}`}>
                 {calculations.cleanTip > 0 ? `+ ${formatCurrency(calculations.cleanTip)}` : formatCurrency(0)}
               </span>
             </div>
@@ -2318,37 +2338,38 @@ export const POSBillingPage: React.FC = () => {
                   disabled={!!loadedBooking}
                   checked={applyBranchTax}
                   onChange={(e) => setApplyBranchTax(e.target.checked)}
-                  className="rounded border-slate-300 text-[#9D2558] focus:ring-[#9D2558] h-3.5 w-3.5 cursor-pointer"
+                  className="rounded border-slate-300 text-[#9D2558] focus:ring-[#9D2558] h-3 w-3 cursor-pointer"
                 />
-                <span className="text-xs sm:text-[13px] font-medium">
+                <span className="font-medium">
                   {loadedBooking ? 'Tax (saved booking rates):' : `Tax (${applyBranchTax && currentBranch?.taxRate ? `${currentBranch.taxRate}%` : '0%'}):`}
                 </span>
               </label>
-              <span className={`font-mono text-xs sm:text-sm font-semibold ${applyBranchTax && calculations.totalTax > 0 ? 'text-[#9D2558] font-bold' : 'text-slate-800'}`}>
+              <span className={`font-mono font-semibold ${applyBranchTax && calculations.totalTax > 0 ? 'text-[#9D2558] font-bold' : 'text-slate-800'}`}>
                 {applyBranchTax && calculations.totalTax > 0 ? `+${formatCurrency(calculations.totalTax)}` : formatCurrency(0)}
               </span>
             </div>
           </div>
 
           {loadedBooking && (
-            <div className="flex justify-between items-center px-2.5 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-800 shadow-2xs">
-              <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+            <div className="flex justify-between items-center px-2 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-[11px] font-bold text-emerald-800">
+              <span className="flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                 <span>Prior booking advance applied:</span>
               </span>
-              <span className="font-mono text-sm text-emerald-700">
+              <span className="font-mono text-xs text-emerald-700">
                 -{formatCurrency(calculations.advanceAdjusted)}
               </span>
             </div>
           )}
+
           {/* Net Payable Highlight Box */}
-          <div className="px-3.5 py-2 bg-gradient-to-r from-blue-50/90 via-indigo-50/50 to-blue-50/90 border border-[#F1DEE3]/90 rounded-xl flex items-center justify-between shadow-2xs">
+          <div className="px-3 py-1.5 bg-[#FDF2F5] border border-[#F1DEE3] rounded-xl flex items-center justify-between shadow-2xs">
             <div>
-              <span className="text-[10px] font-extrabold text-[#23151D] uppercase tracking-wider block">Net Payable</span>
-              <span className="text-[10px] text-[#9D2558] font-medium">Total amount due</span>
+              <span className="text-[9px] font-extrabold text-[#23151D] uppercase tracking-wider block">Net Payable</span>
+              <span className="text-[9px] text-[#9D2558] font-medium">Total amount due</span>
             </div>
             <div className="text-right">
-              <span className="font-mono font-extrabold text-xl text-[#9D2558] tracking-tight">
+              <span className="font-mono font-extrabold text-base sm:text-lg text-[#9D2558] tracking-tight">
                 {formatCurrency(calculations.fullInvoiceTotal)}
               </span>
             </div>
@@ -2356,8 +2377,9 @@ export const POSBillingPage: React.FC = () => {
 
           {/* Collect Payment & Complete Sale Button */}
           <Button
-            disabled={isBookingLoading || !!bookingLoadError || (!!loadedBooking && (isLoading || currentBranch?.id !== loadedBooking.branchId))}
+            disabled={cart.length === 0 || isBookingLoading || !!bookingLoadError || (!!loadedBooking && (isLoading || currentBranch?.id !== loadedBooking.branchId))}
             onClick={() => {
+              if (cart.length === 0) return;
               if (isMobileSheet) {
                 const unassignedService = cart.find(
                   (ci) => ci.type === 'SERVICE' && (!ci.staffId || ci.staffId === 'unassigned')
@@ -2370,20 +2392,20 @@ export const POSBillingPage: React.FC = () => {
               }
               handleOpenCheckout();
             }}
-            className="w-full bg-[#9D2558] hover:bg-[#1B44B8] active:scale-[0.99] text-white font-bold h-10 text-xs sm:text-sm rounded-xl shadow-xs flex items-center justify-between px-3.5 cursor-pointer transition-all shrink-0 mb-0.5"
+            className="w-full bg-[#9D2558] hover:bg-[#851C47] disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.99] text-white font-bold h-9 text-xs sm:text-sm rounded-xl shadow-xs flex items-center justify-between px-3 cursor-pointer transition-all shrink-0"
           >
-            <div className="flex items-center gap-2">
-              <CreditCard className="w-4 h-4" />
+            <div className="flex items-center gap-1.5">
+              <CreditCard className="w-3.5 h-3.5" />
               <span>Collect Payment & Complete Sale</span>
             </div>
-            <span className="font-mono text-xs font-black bg-white/20 px-2.5 py-0.5 rounded-lg">
+            <span className="font-mono text-xs font-black bg-white/20 px-2 py-0.5 rounded-md">
               {formatCurrency(calculations.fullInvoiceTotal)}
             </span>
           </Button>
         </div>
-      )}
     </div>
   );
+
 
   if (isLoading && !currentBranch) {
     return (
@@ -2521,7 +2543,7 @@ export const POSBillingPage: React.FC = () => {
                           type="button"
                           size="sm"
                           onClick={() => handleOpenAddClientModal(customerSearchQuery)}
-                          className="h-7 text-xs bg-[#9D2558] hover:bg-[#1B44B8] text-white gap-1 w-full rounded-lg font-bold"
+                          className="h-7 text-xs bg-[#9D2558] hover:bg-[#851C47] text-white gap-1 w-full rounded-lg font-bold"
                         >
                           <Plus className="w-3.5 h-3.5" />
                           Register "{customerSearchQuery}"
@@ -2845,8 +2867,8 @@ export const POSBillingPage: React.FC = () => {
         </div>
 
         {/* Right Column: Current Sale Card (lg:col-span-5) */}
-        <div id="pos-cart-panel" className="hidden lg:flex lg:col-span-5 flex-col h-full min-h-0 overflow-hidden">
-          <Card className="w-full h-full min-h-0 flex flex-col justify-between p-3.5 bg-white border border-slate-200/90 shadow-2xs rounded-2xl overflow-y-auto transition-all">
+        <div id="pos-cart-panel" className="hidden lg:flex lg:col-span-5 flex-col h-full min-h-0">
+          <Card className="w-full h-full min-h-0 flex flex-col p-2.5 sm:p-3 bg-white border border-slate-200/90 shadow-2xs rounded-2xl overflow-y-auto pos-cart-scroller">
             {renderCartPanel(false)}
           </Card>
         </div>
@@ -3289,7 +3311,7 @@ export const POSBillingPage: React.FC = () => {
             <Button
               disabled={isPosting}
               onClick={handlePostInvoice}
-              className="bg-[#9D2558] hover:bg-[#1B44B8] text-white text-xs font-bold gap-1.5"
+              className="bg-[#9D2558] hover:bg-[#851C47] text-white text-xs font-bold gap-1.5"
             >
               {isPosting ? <span className="w-3.5 h-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin inline-block" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
               Confirm & Print Receipt

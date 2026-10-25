@@ -617,11 +617,10 @@ export const incomeExpenseReport = async (actor, query = {}) => {
     prisma.branch.findMany({ select: { id: true, name: true, city: true } }),
     prisma.staff.findMany({ select: { id: true, name: true, employeeCode: true, branchId: true } }),
     prisma.user.findMany({ select: { id: true, name: true, role: true, branchId: true } }),
-    // 1. Valid non-voided POS Invoices
+    // Original invoice recognition remains dated; refund/void events reverse it on their own date.
     prisma.invoice.findMany({
       where: {
         date: dateRange,
-        lifecycle: { not: 'VOIDED' },
         ...branchFilter,
         ...(actor.role === 'ACCOUNTANT' ? { processedByUserId: actor.id } : {}),
       },
@@ -1071,11 +1070,13 @@ export const incomeExpenseReport = async (actor, query = {}) => {
       cashFlow: n(toDec(movement.amount).times(movement.direction === 'IN' ? 1 : -1)), paymentMethod: method, paymentEventType: movement.type, status: 'POSTED',
     });
   }
-  const cancellationEvents = await prisma.bookingHistory.findMany({ where: { type: 'BOOKING_CANCELLED', createdAt: utcRange,
+  const cancellationEvents = await prisma.bookingHistory.findMany({ where: { type: 'BOOKING_CANCELLED',
     booking: branchFilter, ...(actor.role === 'ACCOUNTANT' ? { userId: actor.id } : {}) }, include: { booking: true } });
   for (const event of cancellationEvents) {
+    const eventDate = event.after?.date || toDateString(event.createdAt);
+    if (eventDate < ctx.fromStr || eventDate > ctx.toStr) continue;
     const fee = n(toDec(event.after?.totalAmount || 0));
-    if (fee > 0) rawRows.push({ id: event.id, date: toDateString(event.createdAt), type: 'INCOME', category: 'Booking Cancellation Fees', source: 'BOOKING', reference: event.booking.bookingNumber,
+    if (fee > 0) rawRows.push({ id: event.id, date: eventDate, type: 'INCOME', category: 'Booking Cancellation Fees', source: 'BOOKING', reference: event.booking.bookingNumber,
       branchId: event.booking.branchId, branchName: branchMap.get(event.booking.branchId), userOrPayee: event.userName, description: event.reason, income: fee, expense: 0, paid: fee,
       collectionAmount: 0, discount: 0, remaining: 0, status: 'PAID', paymentMethod: 'ADVANCE_ADJUSTMENT' });
   }

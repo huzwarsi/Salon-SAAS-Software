@@ -177,7 +177,7 @@ We look forward to serving you!`;
 
                 <div className="flex items-start justify-between gap-2">
                   <span className="text-slate-500 text-[11px] flex items-center gap-1.5 shrink-0">
-                    <Scissors className="w-3.5 h-3.5 text-indigo-500" /> Services:
+                    <Scissors className="w-3.5 h-3.5 text-[#9D2558]" /> Services:
                   </span>
                   <span className="font-semibold text-slate-800 text-right truncate text-[11px] max-w-[200px]">
                     {servicesDisplay}

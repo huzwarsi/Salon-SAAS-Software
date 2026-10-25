@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { salonService } from '@/services';
+import { incomeExpenseCashFlow, incomeExpenseCashText } from './incomeExpenseDisplay';
 import { User } from '@/types/auth';
 import {
   IncomeExpenseReport,
@@ -206,7 +207,7 @@ export const IncomeExpenseReportPage: React.FC = () => {
         r.description || r.reference || '—',
         r.status || 'PAID',
         (isIncome ? r.income : r.expense) === 0 ? '0.00' : isIncome ? `+${r.income.toFixed(2)}` : `-${r.expense.toFixed(2)}`,
-        r.cashFlow !== undefined ? `${r.cashFlow >= 0 ? '+' : '-'}${Math.abs(r.cashFlow).toFixed(2)}` : isAccruedComm || paidVal === 0 ? '0.00' : isIncome ? `+${paidVal.toFixed(2)}` : `-${paidVal.toFixed(2)}`,
+        incomeExpenseCashText(r),
         (r.discount || 0).toFixed(2),
         remainingVal.toFixed(2),
         formatDateDisplay(r.date),
@@ -275,7 +276,7 @@ export const IncomeExpenseReportPage: React.FC = () => {
         r.description || r.reference || '—',
         r.status || 'PAID',
         (isIncome ? r.income : r.expense) === 0 ? '0.00' : isIncome ? `+${r.income.toFixed(2)}` : `-${r.expense.toFixed(2)}`,
-        r.cashFlow !== undefined ? `${r.cashFlow >= 0 ? '+' : '-'}${Math.abs(r.cashFlow).toFixed(2)}` : isAccruedComm || paidVal === 0 ? '0.00' : isIncome ? `+${paidVal.toFixed(2)}` : `-${paidVal.toFixed(2)}`,
+        incomeExpenseCashText(r),
         (r.discount || 0).toFixed(2),
         remainingVal.toFixed(2),
         formatDateDisplay(r.date),
@@ -708,13 +709,9 @@ export const IncomeExpenseReportPage: React.FC = () => {
 
                         {/* 9. Paid (Cash Flow) */}
                         <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                          {row.cashFlow !== undefined ? <span className={row.cashFlow >= 0 ? 'text-emerald-600' : 'text-rose-600'}>{row.cashFlow >= 0 ? '+' : '-'}{formatPKR(Math.abs(row.cashFlow))}</span> : isAccruedComm || paidValue === 0 ? (
-                            <span className="text-[13px] font-medium tabular-nums text-slate-400">0.00</span>
-                          ) : isIncome ? (
-                            <span className="text-[13px] font-semibold tabular-nums text-[#10B981]">+{formatPKR(paidValue)}</span>
-                          ) : (
-                            <span className="text-[13px] font-semibold tabular-nums text-[#EF4444]">-${formatPKR(paidValue)}</span>
-                          )}
+                          <span className={incomeExpenseCashFlow(row) < 0 ? 'text-rose-600' : incomeExpenseCashFlow(row) > 0 ? 'text-emerald-600' : 'text-slate-400'}>
+                            {incomeExpenseCashFlow(row) === 0 ? '0.00' : formatPKR(incomeExpenseCashFlow(row), true)}
+                          </span>
                         </td>
 
                         {/* 10. Discount */}

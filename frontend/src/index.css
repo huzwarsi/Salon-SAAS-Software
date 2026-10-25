@@ -186,21 +186,22 @@
 /* POS Cart Dedicated Sleek Visible Scrollbar */
 .pos-cart-scroller {
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 #f8fafc;
+  scrollbar-color: #C4728F #FDF2F5;
 }
 .pos-cart-scroller::-webkit-scrollbar {
-  width: 6px;
+  width: 7px;
+  height: 7px;
 }
 .pos-cart-scroller::-webkit-scrollbar-track {
-  background: #f8fafc;
+  background: #FDF2F5;
   border-radius: 9999px;
 }
 .pos-cart-scroller::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #C4728F;
   border-radius: 9999px;
 }
 .pos-cart-scroller::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #9D2558;
 }
 
 /* Sidebar Dedicated Sleek Scrollbar */
