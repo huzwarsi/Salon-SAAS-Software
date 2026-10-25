@@ -32,11 +32,6 @@ export const NAVIGATION_GROUPS: NavGroup[] = [
     allowedRoles: ['SUPER_ADMIN', 'ADMIN', 'ACCOUNTANT'],
     items: [
       {
-        id: 'event-bookings', label: 'Bridal / Groom Bookings', href: '/operations/bookings',
-        iconName: 'Calendar', allowedRoles: ['SUPER_ADMIN', 'ADMIN', 'ACCOUNTANT'],
-        description: 'Event reservations, installments and checkout',
-      },
-      {
         id: 'dashboard',
         label: 'Dashboard Overview',
         href: '/dashboard',
@@ -102,11 +97,17 @@ export const NAVIGATION_GROUPS: NavGroup[] = [
       {
         id: 'salon-bookings',
         label: 'Salon & Bookings',
-        href: '/operations/appointments',
+        href: '/operations/bookings',
         iconName: 'Calendar',
         allowedRoles: ['SUPER_ADMIN', 'ADMIN'],
         description: 'Multi-chair calendar, CRM client directory & service catalogue',
         children: [
+          {
+            id: 'event-bookings',
+            label: 'Bridal / Groom Bookings',
+            href: '/operations/bookings',
+            allowedRoles: ['SUPER_ADMIN', 'ADMIN'],
+          },
           {
             id: 'appointments',
             label: 'Appointments Calendar',
