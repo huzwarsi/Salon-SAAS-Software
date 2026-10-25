@@ -1,0 +1,221 @@
+import React from 'react';
+import { useAuth } from '../../context/AuthContext';
+import { useRouter } from '../../context/RouterContext';
+import { NAVIGATION_GROUPS } from '../../config/navigation';
+import { NavIcon } from './NavIcon';
+import { Scissors, ChevronRight, ChevronDown } from 'lucide-react';
+
+interface SidebarProps {
+  isCollapsed: boolean;
+  className?: string;
+  onNavigate?: () => void;
+}
+
+const isRouteMatching = (targetHref: string, currentPath: string): boolean => {
+  const baseTarget = targetHref.split('?')[0];
+  if (currentPath === baseTarget) return true;
+  if (baseTarget !== '/' && baseTarget !== '/dashboard' && currentPath.startsWith(baseTarget)) return true;
+  if (baseTarget === '/operations/inventory' && (currentPath === '/inventory' || currentPath === '/operations/inventory-suppliers')) return true;
+  if (baseTarget === '/operations/stock-in' && (currentPath === '/operations/purchases' || currentPath === '/purchases')) return true;
+  if (baseTarget === '/operations/suppliers' && (currentPath === '/suppliers' || currentPath === '/operations/vendors')) return true;
+  if (baseTarget === '/operations/supplier-ledger' && currentPath === '/operations/supplier-khata') return true;
+  if (baseTarget === '/operations/stock-adjustments' && currentPath === '/operations/adjustments') return true;
+  if (baseTarget === '/reports/sales-invoices' && currentPath === '/invoices/sales') return true;
+  if (baseTarget === '/reports/unpaid-invoices' && currentPath === '/invoices/unpaid') return true;
+  if (baseTarget === '/accounts/expenses' && currentPath === '/expenses') return true;
+  if (baseTarget === '/reports/detailed-expenses' && currentPath.startsWith('/reports/detailed-expenses')) return true;
+  if (baseTarget === '/reports/detailed-income' && (currentPath === '/reports/detailed-income' || currentPath === '/reports/income-drilldown')) return true;
+  if (baseTarget === '/reports/debit-credit' && (currentPath === '/reports/debit-credit-statement' || currentPath === '/reports/cash-drawer' || currentPath === '/reports/payment-accounts')) return true;
+  if (baseTarget === '/reports/tax' && currentPath === '/reports/tax-management') return true;
+  if (baseTarget === '/reports/attendance' && (currentPath === '/reports/attendance-overtime' || currentPath === '/reports/overtime')) return true;
+  if (baseTarget === '/reports/operating-profit' && (currentPath === '/reports/cogs' || currentPath === '/reports/cogs-report')) return true;
+  if (baseTarget === '/accounts/account-settlement' && currentPath === '/reports/settlement-history') return true;
+  if (baseTarget === '/admin/branch-settings' && (currentPath === '/admin/branch-settings' || currentPath === '/admin/salon-profile')) return true;
+  if (baseTarget === '/admin/devices' && currentPath === '/admin/device-settings') return true;
+  if (baseTarget === '/admin/data-reset' && currentPath === '/admin/reset-data') return true;
+  if (baseTarget === '/admin/users' && currentPath === '/admin/users-access') return true;
+  return false;
+};
+
+export const Sidebar: React.FC<SidebarProps> = ({
+  isCollapsed,
+  className = '',
+  onNavigate,
+}) => {
+  const { user, allBranches, activeBranchId } = useAuth();
+  const { pathname, navigate } = useRouter();
+  const [expandedMenus, setExpandedMenus] = React.useState<Record<string, boolean>>({});
+
+  const branchList = Array.isArray(allBranches) ? allBranches : [];
+  const currentBranch =
+    branchList.find((b) => b.id === (user?.role === 'SUPER_ADMIN' && activeBranchId !== 'ALL' ? activeBranchId : user?.branchId)) ||
+    branchList[0];
+
+  const brandName = currentBranch?.name || user?.branchName || 'SalonOS';
+  const logoUrl = currentBranch?.logoUrl;
+
+  const toggleSubMenu = (itemId: string, defaultOpen: boolean) => {
+    setExpandedMenus((prev) => ({
+      ...prev,
+      [itemId]: prev[itemId] !== undefined ? !prev[itemId] : !defaultOpen,
+    }));
+  };
+
+  if (!user) return null;
+
+  // Filter groups and children that the current user has permission to see
+  const visibleGroups = NAVIGATION_GROUPS.map((group) => {
+    if (!group.allowedRoles.includes(user.role)) return null;
+    const visibleItems = group.items
+      .filter((item) => item.allowedRoles.includes(user.role))
+      .map((item) => ({
+        ...item,
+        children: item.children
+          ? item.children.filter((child) => child.allowedRoles.includes(user.role))
+          : undefined,
+      }))
+      .filter((item) => !item.children || item.children.length > 0);
+    if (visibleItems.length === 0) return null;
+    return { ...group, items: visibleItems };
+  }).filter(Boolean);
+
+  const handleItemClick = (href: string) => {
+    navigate(href);
+    if (onNavigate) {
+      onNavigate();
+    }
+  };
+
+  return (
+    <aside
+      className={`h-full max-h-screen bg-white border-r border-[#F1DEE3] flex flex-col transition-all duration-200 select-none overflow-hidden ${
+        isCollapsed ? 'w-20' : 'w-72'
+      } ${className}`}
+    >
+      {/* Brand Header */}
+      <div className="h-16 flex items-center px-4 border-b border-[#F8EDF0] shrink-0">
+        <div className="flex items-center gap-3 overflow-hidden cursor-pointer" onClick={() => handleItemClick('/dashboard')}>
+          {logoUrl ? (
+            <div className="w-9 h-9 rounded-xl bg-white border border-[#F1DEE3] flex items-center justify-center p-1 shrink-0 shadow-xs overflow-hidden">
+              <img src={logoUrl} alt={brandName} className="w-full h-full object-contain" />
+            </div>
+          ) : (
+            <div className="w-9 h-9 rounded-xl bg-[#9D2558] flex items-center justify-center text-white shrink-0 shadow-xs">
+              <Scissors className="w-5 h-5 -rotate-45" />
+            </div>
+          )}
+          {!isCollapsed && (
+            <div className="overflow-hidden">
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm font-bold text-[#23151D] tracking-tight truncate max-w-[190px]" title={brandName}>
+                  {brandName}
+                </span>
+              </div>
+              <p className="text-[11px] text-[#8C7681] truncate">
+                {currentBranch?.city ? `${currentBranch.city} Branch` : 'Management System'}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+
+      {/* Navigation Scrollable Body */}
+      <div className="flex-1 min-h-0 overflow-y-auto px-3.5 py-3 space-y-5 sidebar-scroller">
+        {visibleGroups.map((group) => {
+          if (!group) return null;
+          return (
+            <div key={group.id} className="space-y-1">
+              {!isCollapsed && (
+                <p className="px-3 text-[11px] font-bold text-[#9E8994] uppercase tracking-wider mb-2">
+                  {group.label}
+                </p>
+              )}
+              {group.items.map((item) => {
+                const hasChildren = Boolean(item.children && item.children.length > 0);
+                const isChildActive = hasChildren && item.children!.some((c) => isRouteMatching(c.href, pathname));
+                const isExpanded = expandedMenus[item.id] !== undefined
+                  ? expandedMenus[item.id]
+                  : isChildActive;
+                const isActive = (!hasChildren && isRouteMatching(item.href, pathname)) || (hasChildren && isChildActive);
+
+                return (
+                  <div key={item.id} className="space-y-0.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (hasChildren && !isCollapsed) {
+                          toggleSubMenu(item.id, isChildActive);
+                        } else {
+                          handleItemClick(item.href);
+                        }
+                      }}
+                      title={isCollapsed ? item.label : undefined}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-150 cursor-pointer group text-left ${
+                        isActive && !hasChildren
+                          ? 'bg-[#FCE8EC] text-[#9D2558] font-bold shadow-2xs'
+                          : 'text-[#5A4650] hover:text-[#23151D] hover:bg-[#FDF2F4]'
+                      }`}
+                    >
+                      <div
+                        className={`p-1.5 rounded-lg shrink-0 transition-colors ${
+                          isActive
+                            ? 'bg-[#9D2558] text-white shadow-xs'
+                            : 'text-[#7D6672] group-hover:text-[#23151D] group-hover:bg-[#F8EDF0]'
+                        }`}
+                      >
+                        <NavIcon name={item.iconName} className="w-4 h-4" />
+                      </div>
+
+                      {!isCollapsed && (
+                        <div className="flex-1 flex items-center justify-between overflow-hidden">
+                          <span className={`truncate text-[13px] ${isActive ? 'font-bold text-[#9D2558]' : 'font-semibold text-[#301F28]'}`}>
+                            {item.label}
+                          </span>
+                          {hasChildren ? (
+                            <ChevronDown
+                              className={`w-4 h-4 text-[#8C7681] group-hover:text-[#23151D] transition-transform duration-200 shrink-0 ${
+                                isExpanded ? 'rotate-180 text-[#9D2558]' : ''
+                              }`}
+                            />
+                          ) : item.badge ? (
+                            <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-[#FCE8EC] text-[#9D2558]">
+                              {item.badge}
+                            </span>
+                          ) : null}
+                        </div>
+                      )}
+                    </button>
+
+                    {/* Submenu Accordion Dropdown */}
+                    {hasChildren && isExpanded && !isCollapsed && (
+                      <div className="ml-6 pl-3.5 border-l-2 border-[#F1DEE3] space-y-1 py-1.5 my-1">
+                        {item.children!.map((child) => {
+                          const isCurrent = isRouteMatching(child.href, pathname);
+                          return (
+                            <button
+                              key={child.id}
+                              type="button"
+                              onClick={() => handleItemClick(child.href)}
+                              className={`w-full text-left py-1.5 px-3 rounded-lg text-[12.5px] transition-colors cursor-pointer block truncate ${
+                                isCurrent
+                                  ? 'text-[#9D2558] font-bold bg-[#FCE8EC] shadow-2xs'
+                                  : 'text-[#5A4650] hover:text-[#23151D] font-medium hover:bg-[#FDF2F4]'
+                              }`}
+                            >
+                              {child.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
+    </aside>
+  );
+};
