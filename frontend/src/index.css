@@ -32,7 +32,7 @@
 
 @layer base {
   :root {
-    --background: #fbf5f7;
+    --background: #f4f6f9;
     --foreground: #23151d;
     --card: #ffffff;
     --card-foreground: #23151d;
@@ -43,14 +43,14 @@
     --primary-hover: #851c47;
     --secondary: #fce8ec;
     --secondary-foreground: #9d2558;
-    --muted: #fbf0f3;
+    --muted: #f1f5f9;
     --muted-foreground: #78616c;
     --accent: #fce8ec;
     --accent-foreground: #9d2558;
     --destructive: #ef4444;
     --destructive-foreground: #ffffff;
-    --border: #f1dee3;
-    --input: #f1dee3;
+    --border: #e2e8f0;
+    --input: #e2e8f0;
     --ring: #9d2558;
     --radius: 0.75rem;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;

@@ -467,7 +467,7 @@ export const SuppliersVendorsPage: React.FC = () => {
           <div>
             <div class="title">Supplier Khata Statement</div>
             <div class="subtitle">${ledgerSupplier.name} (${ledgerSupplier.companyName || 'Vendor'})</div>
-            <div class="subtitle">Campus: ${branchName} | Period: ${ledgerStartDate || 'Beginning'} to ${ledgerEndDate || 'Present'}</div>
+            <div class="subtitle">Branch: ${branchName} | Period: ${ledgerStartDate || 'Beginning'} to ${ledgerEndDate || 'Present'}</div>
           </div>
           <div style="text-align: right; font-size: 12px; color: #64748b;">
             <div>Printed on: ${new Date().toLocaleDateString('en-GB')}</div>

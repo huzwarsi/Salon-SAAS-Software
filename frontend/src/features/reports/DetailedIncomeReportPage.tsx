@@ -154,7 +154,7 @@ export const DetailedIncomeReportPage: React.FC = () => {
   const handleExportCsv = () => {
     if (!reportData || !reportData.rows.length) return;
     const meta: [string, string][] = [
-      ['Campus', selectedBranch === 'ALL' ? 'All Campuses' : reportData.meta.branchName || selectedBranch],
+      ['Branch', selectedBranch === 'ALL' ? 'All Branches' : reportData.meta.branchName || selectedBranch],
       ['From Date', fromDate || reportData.meta.from || '—'],
       ['To Date', toDate || reportData.meta.to || '—'],
       ['Source Filter', sourceType],
@@ -170,7 +170,7 @@ export const DetailedIncomeReportPage: React.FC = () => {
       'Item Name',
       'Client',
       'Staff',
-      'Campus',
+      'Branch',
       'Qty',
       'Unit Price',
       'Gross',
@@ -213,7 +213,7 @@ export const DetailedIncomeReportPage: React.FC = () => {
       return;
     }
     const meta: [string, string][] = [
-      ['Campus', selectedBranch === 'ALL' ? 'All Campuses' : reportData.meta.branchName || selectedBranch],
+      ['Branch', selectedBranch === 'ALL' ? 'All Branches' : reportData.meta.branchName || selectedBranch],
       ['From Date', fromDate || reportData.meta.from || '—'],
       ['To Date', toDate || reportData.meta.to || '—'],
       ['Total Transactions', String(reportData.kpis.totalTransactions)],
@@ -279,16 +279,16 @@ export const DetailedIncomeReportPage: React.FC = () => {
 
         {/* Filters Form */}
         <form onSubmit={handleApplyFilters} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3.5 items-end">
-          {/* Campus */}
+          {/* Branch */}
           <div>
-            <label className={labelClass}>Campus</label>
+            <label className={labelClass}>Branch</label>
             <select
               value={selectedBranch}
               disabled={!isSuperAdmin}
               onChange={(e) => setSelectedBranch(e.target.value)}
               className={selectClass}
             >
-              {isSuperAdmin && <option value="ALL">All Campuses</option>}
+              {isSuperAdmin && <option value="ALL">All Branches</option>}
               {allBranches.map((b) => (
                 <option key={b.id} value={b.id}>
                   {b.name}
@@ -720,7 +720,7 @@ export const DetailedIncomeReportPage: React.FC = () => {
                                   )}
 
                                   <div className="text-[11px] text-slate-400">
-                                    Created & Posted by: <strong className="text-slate-700">{row.createdByName}</strong> • Campus: <strong className="text-slate-700">{row.branchName}</strong>
+                                    Created & Posted by: <strong className="text-slate-700">{row.createdByName}</strong> • Branch: <strong className="text-slate-700">{row.branchName}</strong>
                                   </div>
                                 </div>
                               </td>
@@ -732,7 +732,7 @@ export const DetailedIncomeReportPage: React.FC = () => {
                   ) : (
                     <tr>
                       <td colSpan={15} className="py-16 text-center text-slate-400 font-medium">
-                        No detailed income transactions found for the selected campus and date filters.
+                        No detailed income transactions found for the selected branch and date filters.
                       </td>
                     </tr>
                   )}

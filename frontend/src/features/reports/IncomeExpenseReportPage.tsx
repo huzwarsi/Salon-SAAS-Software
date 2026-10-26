@@ -403,7 +403,7 @@ export const IncomeExpenseReportPage: React.FC = () => {
         </div>
 
         {/* Role Scope Notice */}
-        {isAccountant ? (
+        {isAccountant && (
           <div className="mb-4 p-3 rounded-lg bg-[#FDF2F5] border border-[#F1DEE3] flex items-center justify-between text-xs text-[#23151D]">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[#9D2558] animate-pulse" />
@@ -413,13 +413,6 @@ export const IncomeExpenseReportPage: React.FC = () => {
             <span className="text-[11px] font-medium bg-white px-2 py-0.5 rounded border border-[#F1DEE3] text-[#851C47] shadow-2xs">
               Accountant Scoped
             </span>
-          </div>
-        ) : (
-          <div className="mb-4 p-3 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between text-xs text-slate-700">
-            <div className="flex items-center gap-2">
-              <span className="font-semibold">Administrator Consolidated Statement:</span>
-              <span>Complete salon income and expenses including all cashiers, operational disbursements, and staff payrolls. Filter by accountant below to review specific accounts.</span>
-            </div>
           </div>
         )}
 

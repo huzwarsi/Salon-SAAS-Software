@@ -40,7 +40,7 @@ async function main() {
     await prisma.user.upsert({
       where:  { id: u.id },
       update: {},
-      create: { ...u, plainPassword: password, createdAt: day(createdAt), passwordHash: await bcrypt.hash(password, 12) },
+      create: { ...u, plainPassword: null, createdAt: day(createdAt), passwordHash: await bcrypt.hash(password, 12) },
     });
   }
 

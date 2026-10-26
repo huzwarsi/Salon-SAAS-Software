@@ -1339,7 +1339,11 @@ export const POSBillingPage: React.FC = () => {
       const lineDisc = discountAllocations[index];
       const lineNet = roundCurrency(gross - lineDisc);
 
-      const effectiveTaxRate = loadedBooking ? (ci.bookingTaxRate ?? (ci.item.taxTreatment === 'EXEMPT' ? 0 : ci.item.taxTreatment === 'SPECIFIC_RULE' ? taxRules.find(r => r.id === getCatalogueTaxRuleId(ci.item))?.rate || 0 : branchTaxRate)) : branchTaxRate;
+      const effectiveTaxRate = !applyBranchTax
+        ? 0
+        : loadedBooking
+          ? (ci.bookingTaxRate ?? (ci.item.taxTreatment === 'EXEMPT' ? 0 : ci.item.taxTreatment === 'SPECIFIC_RULE' ? taxRules.find(r => r.id === getCatalogueTaxRuleId(ci.item))?.rate || 0 : branchTaxRate))
+          : branchTaxRate;
       const lineTax = roundCurrency(lineNet * effectiveTaxRate);
       totalTax = roundCurrency(totalTax + lineTax);
 
@@ -1398,7 +1402,6 @@ export const POSBillingPage: React.FC = () => {
     if (isBookingLoading || bookingLoadError) { toast.error(bookingLoadError || 'Booking is still loading.'); return; }
     if (loadedBooking && (isLoading || currentBranch?.id !== loadedBooking.branchId)) { toast.warning('The booking branch is still loading.'); return; }
     if (loadedBooking && calculations.remainingBillTotal < 0) { toast.error('Refund the excess advance before reducing the bill below the amount received.'); return; }
-    if (hasBookingChanges && bookingChangeReason.trim().length < 3) { toast.warning('Enter a reason for the booking changes before checkout.'); return; }
 
     // Check if any service in cart is unassigned and warn cashier
     const unassignedService = cart.find(
@@ -1525,7 +1528,6 @@ export const POSBillingPage: React.FC = () => {
 
     try {
       if (loadedBooking && calculations.remainingBillTotal < 0) throw new Error('Refund excess advance before reducing this bill.');
-      if (hasBookingChanges && bookingChangeReason.trim().length < 3) throw new Error('Enter a reason for the booking changes.');
       const payments: POSPaymentEntry[] = [];
       const billTotal = calculations.remainingBillTotal;
       const tipAmount = calculations.cleanTip;
@@ -1874,36 +1876,6 @@ export const POSBillingPage: React.FC = () => {
 
         {isBookingLoading && <p role="status" className="p-2 text-xs text-[#9D2558]">Loading booking into POS...</p>}
         {bookingLoadError && <div role="alert" className="my-1.5 rounded-xl bg-rose-50 p-2 text-xs text-rose-700">{bookingLoadError}<Button variant="ghost" size="sm" onClick={handleClearCart} className="text-xs ml-2">Clear</Button></div>}
-        {loadedBooking && (
-          <div className="shrink-0 px-2.5 py-1.5 my-1.5 bg-[#FDF2F5] border border-[#F1DEE3] rounded-xl flex items-center justify-between text-xs text-[#23151D] shadow-2xs">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <Sparkles className="w-3.5 h-3.5 text-[#9D2558] shrink-0" />
-              <div className="truncate">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="font-bold text-slate-900 text-xs">{loadedBooking.bookingNumber}</span>
-                  <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-[#FCE8EC] text-[#9D2558]">
-                    {loadedBooking.type}
-                  </span>
-                  <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100/90 px-1.5 py-0.2 rounded-md border border-emerald-300">
-                    Adv: {formatCurrency(loadedBooking.advancePaid)}
-                  </span>
-                </div>
-                <span className="text-[10px] text-slate-500 block truncate">
-                  {loadedBooking.clientName} • {loadedBooking.eventDate} ({loadedBooking.serviceTime || '10:00 AM'})
-                </span>
-              </div>
-            </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={handleClearCart}
-              className="h-5 text-xs text-rose-600 hover:bg-rose-50 px-1.5 shrink-0 cursor-pointer"
-            >
-              Clear
-            </Button>
-          </div>
-        )}
         {/* Linked Appointment Badge */}
         {loadedAppointment && (
           <div className="shrink-0 px-2.5 py-1.5 my-1.5 bg-[#FDF2F5]/80 border border-[#F1DEE3] rounded-xl flex items-center justify-between text-xs text-[#23151D]">
@@ -2034,17 +2006,24 @@ export const POSBillingPage: React.FC = () => {
                         {ci.packageComponents?.map((c) => (
                           <div key={c.serviceId} className="flex items-center justify-between gap-1.5 text-[11px]">
                             <span className="truncate text-slate-600 max-w-[110px]">{c.serviceName}</span>
-                            <select
-                              aria-label={`Staff for ${c.serviceName}`}
-                              className="flex-1 max-w-[190px] h-6 text-[11px] font-medium rounded-md border border-slate-200 bg-white px-1.5 py-0 focus:outline-none focus:border-[#9D2558] truncate"
+                            <Select
                               value={c.staffId || 'house'}
-                              onChange={(e) => handleAssignPackageComponentStaff(ci.cartInstanceId, c.serviceId, e.target.value)}
+                              onValueChange={(val) => handleAssignPackageComponentStaff(ci.cartInstanceId, c.serviceId, val)}
                             >
-                              <option value="house">House / Salon (No Staff)</option>
-                              {staffList.map((st) => (
-                                <option key={st.id} value={st.id}>{st.name} ({st.roleTitle})</option>
-                              ))}
-                            </select>
+                              <SelectTrigger className="flex-1 max-w-[190px] h-6.5 text-[11px] font-medium rounded-lg border border-[#F1DEE3] bg-white px-2 py-0 text-slate-800 focus:border-[#9D2558] shadow-2xs">
+                                <SelectValue placeholder="Select Staff" />
+                              </SelectTrigger>
+                              <SelectContent className="z-[70]">
+                                <SelectItem value="house" className="text-xs font-semibold text-slate-700">
+                                  House / Salon (No Staff)
+                                </SelectItem>
+                                {staffList.map((st) => (
+                                  <SelectItem key={st.id} value={st.id} className="text-xs">
+                                    {st.name} ({st.roleTitle})
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </div>
                         ))}
                       </div>
@@ -2054,17 +2033,24 @@ export const POSBillingPage: React.FC = () => {
                           <User className="w-3 h-3 text-[#9D2558]" />
                           <span>Staff:</span>
                         </span>
-                        <select
-                          aria-label={`Staff for ${ci.item.name}`}
-                          className="flex-1 max-w-[210px] h-6 text-[11px] font-medium rounded-md border border-slate-200 bg-white px-2 py-0 focus:outline-none focus:border-[#9D2558] truncate"
+                        <Select
                           value={ci.staffId || 'house'}
-                          onChange={(e) => handleAssignStaff(ci.cartInstanceId, e.target.value)}
+                          onValueChange={(val) => handleAssignStaff(ci.cartInstanceId, val)}
                         >
-                          <option value="house">House / Salon (No Staff)</option>
-                          {staffList.map((st) => (
-                            <option key={st.id} value={st.id}>{st.name} ({st.roleTitle})</option>
-                          ))}
-                        </select>
+                          <SelectTrigger className="flex-1 max-w-[210px] h-6.5 text-[11px] font-medium rounded-lg border border-[#F1DEE3] bg-white px-2 py-0 text-slate-800 focus:border-[#9D2558] shadow-2xs">
+                            <SelectValue placeholder="Select Staff" />
+                          </SelectTrigger>
+                          <SelectContent className="z-[70]">
+                            <SelectItem value="house" className="text-xs font-semibold text-slate-700">
+                              House / Salon (No Staff)
+                            </SelectItem>
+                            {staffList.map((st) => (
+                              <SelectItem key={st.id} value={st.id} className="text-xs">
+                                {st.name} ({st.roleTitle})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     )}
                   </div>
@@ -2199,67 +2185,72 @@ export const POSBillingPage: React.FC = () => {
       </div>
 
       {/* Bottom Zone: Customer Attribution + Discount & Tip + Breakdown + Action */}
-      <div className="shrink-0 pt-1.5 border-t border-slate-200/90 space-y-1.5 bg-white">
+      {/* Bottom Zone: Customer Attribution + Discount & Tip + Breakdown + Action */}
+      <div className="shrink-0 p-3 pt-2.5 border-t border-slate-200/80 space-y-2.5 bg-white">
           {/* Customer Attribution (Walk-in or Custom Name/Phone) */}
           {!selectedClient ? (
-            <div className="grid grid-cols-2 gap-1.5">
+            <div className="grid grid-cols-2 gap-2">
               <div className="relative">
-                <User className="w-3 h-3 absolute left-2 top-2 text-slate-400" />
+                <User className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-400" />
                 <Input
                   type="text"
                   placeholder="Customer (Walk-in)"
                   value={clientName}
                   onChange={(e) => setClientName(e.target.value)}
-                  className="pl-7 text-[11px] h-7 bg-white border-slate-200 rounded-lg font-medium placeholder:text-slate-400 focus:border-[#9D2558]"
+                  className="pl-8 text-xs h-8 bg-slate-50/70 hover:bg-slate-50 focus:bg-white border-slate-200 rounded-xl font-medium placeholder:text-slate-400 focus:border-[#9D2558] transition-colors"
                 />
               </div>
               <div className="relative">
-                <Phone className="w-3 h-3 absolute left-2 top-2 text-slate-400" />
+                <Phone className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-400" />
                 <Input
                   type="tel"
                   placeholder="Phone (Optional)"
                   value={clientPhone}
                   onChange={(e) => setClientPhone(e.target.value)}
-                  className="pl-7 text-[11px] h-7 bg-white border-slate-200 rounded-lg font-mono placeholder:text-slate-400 focus:border-[#9D2558]"
+                  className="pl-8 text-xs h-8 bg-slate-50/70 hover:bg-slate-50 focus:bg-white border-slate-200 rounded-xl font-mono placeholder:text-slate-400 focus:border-[#9D2558] transition-colors"
                 />
               </div>
             </div>
           ) : (
-            <div className="flex items-center justify-between px-2.5 py-1 bg-[#FDF2F5]/70 border border-[#F1DEE3] rounded-lg text-xs">
-              <div className="flex items-center gap-1.5 truncate">
-                <UserCheck className="w-3.5 h-3.5 text-[#9D2558] shrink-0" />
-                <span className="font-bold text-slate-800 truncate text-[11px]">{selectedClient.name}</span>
-                <span className="text-[10px] text-slate-500 font-mono">{selectedClient.phone}</span>
+            <div className="flex items-center justify-between px-3 py-2 bg-[#FDF2F5] border border-[#F1DEE3] rounded-xl text-xs">
+              <div className="flex items-center gap-2 truncate">
+                <div className="w-6 h-6 rounded-full bg-[#9D2558] text-white flex items-center justify-center font-bold text-[10px] shrink-0">
+                  <UserCheck className="w-3.5 h-3.5" />
+                </div>
+                <div className="truncate">
+                  <span className="font-bold text-slate-900 truncate block text-xs">{selectedClient.name}</span>
+                  <span className="text-[10px] text-slate-500 font-mono block leading-none">{selectedClient.phone}</span>
+                </div>
               </div>
               <button
                 type="button"
                 onClick={handleSetWalkIn}
-                className="text-[10px] text-slate-400 hover:text-rose-600 font-semibold cursor-pointer"
+                className="text-[11px] text-slate-400 hover:text-rose-600 font-semibold cursor-pointer px-2 py-0.5 rounded-lg hover:bg-white transition-colors"
               >
                 Clear
               </button>
             </div>
           )}
 
-          {/* 1. Discount & Tip (Spaced Side-by-Side) */}
-          <div className="grid grid-cols-2 gap-1.5">
+          {/* Discount & Tip Inputs */}
+          <div className="grid grid-cols-2 gap-2">
             {/* Discount Field */}
-            <div className="space-y-0.5">
+            <div className="space-y-1">
               <div className="flex items-center justify-between">
-                <label className="text-[10px] font-bold text-slate-700 flex items-center gap-1">
-                  <Tag className="w-2.5 h-2.5 text-[#9D2558]" />
+                <span className="text-[11px] font-bold text-slate-700 flex items-center gap-1.5">
+                  <Tag className="w-3 h-3 text-[#9D2558]" />
                   <span>Discount</span>
-                </label>
+                </span>
                 <button
                   type="button"
                   onClick={() => setDiscountType(discountType === 'FIXED' ? 'PERCENTAGE' : 'FIXED')}
-                  className="text-[9px] font-bold text-[#9D2558] hover:text-[#6A1237] hover:underline cursor-pointer"
+                  className="text-[10px] font-bold text-[#9D2558] bg-[#FDF2F5] hover:bg-[#F9E2E8] px-1.5 py-0.5 rounded-md border border-[#F1DEE3] cursor-pointer transition-colors"
                 >
                   {discountType === 'FIXED' ? '% Switch' : 'PKR Switch'}
                 </button>
               </div>
-              <div className="flex items-center rounded-lg border border-slate-200 overflow-hidden bg-white shadow-2xs h-7 focus-within:border-[#9D2558]">
-                <span className="px-2 text-[9px] font-bold bg-slate-50 text-slate-600 border-r border-slate-200 h-full flex items-center shrink-0">
+              <div className="flex items-center rounded-xl border border-slate-200 overflow-hidden bg-white shadow-2xs h-8 focus-within:border-[#9D2558] focus-within:ring-2 focus-within:ring-[#9D2558]/10 transition-all">
+                <span className="px-2.5 text-[10px] font-bold bg-slate-50 text-slate-600 border-r border-slate-200 h-full flex items-center shrink-0">
                   {discountType === 'FIXED' ? 'PKR' : '%'}
                 </span>
                 <input
@@ -2268,30 +2259,30 @@ export const POSBillingPage: React.FC = () => {
                   placeholder="0"
                   value={discountValue || ''}
                   onChange={(e) => setDiscountValue(parseFloat(e.target.value) || 0)}
-                  className="w-full h-full text-right px-2 text-xs font-mono font-bold text-slate-900 bg-transparent focus:outline-none"
+                  className="w-full h-full text-right px-2.5 text-xs font-mono font-bold text-slate-900 bg-transparent focus:outline-none"
                 />
               </div>
             </div>
 
             {/* Tip Field */}
-            <div className="space-y-0.5">
+            <div className="space-y-1">
               <div className="flex items-center justify-between">
-                <label className="text-[10px] font-bold text-slate-700 flex items-center gap-1">
-                  <Coins className="w-2.5 h-2.5 text-amber-600" />
+                <span className="text-[11px] font-bold text-slate-700 flex items-center gap-1.5">
+                  <Coins className="w-3 h-3 text-amber-600" />
                   <span>Staff Tip</span>
-                </label>
+                </span>
                 {tipAmount > 0 && (
                   <button
                     type="button"
                     onClick={() => setTipAmount(0)}
-                    className="text-[9px] font-semibold text-slate-400 hover:text-rose-600 cursor-pointer"
+                    className="text-[10px] font-semibold text-slate-400 hover:text-rose-600 cursor-pointer"
                   >
                     Clear
                   </button>
                 )}
               </div>
-              <div className="flex items-center rounded-lg border border-slate-200 overflow-hidden bg-white shadow-2xs h-7 focus-within:border-amber-500">
-                <span className="px-2 text-[9px] font-bold bg-amber-50/70 text-amber-700 border-r border-slate-200 h-full flex items-center shrink-0">
+              <div className="flex items-center rounded-xl border border-slate-200 overflow-hidden bg-white shadow-2xs h-8 focus-within:border-amber-500 focus-within:ring-2 focus-within:ring-amber-500/10 transition-all">
+                <span className="px-2.5 text-[10px] font-bold bg-amber-50/70 text-amber-700 border-r border-slate-200 h-full flex items-center shrink-0">
                   PKR
                 </span>
                 <input
@@ -2300,108 +2291,105 @@ export const POSBillingPage: React.FC = () => {
                   placeholder="0"
                   value={tipAmount || ''}
                   onChange={(e) => setTipAmount(parseFloat(e.target.value) || 0)}
-                  className="w-full h-full text-right px-2 text-xs font-mono font-bold text-slate-900 bg-transparent focus:outline-none"
+                  className="w-full h-full text-right px-2.5 text-xs font-mono font-bold text-slate-900 bg-transparent focus:outline-none"
                 />
               </div>
             </div>
           </div>
 
-          {/* 2. Itemized Breakdown */}
-          <div className="space-y-1 py-1 border-t border-slate-100 text-[11px]">
+          {/* Itemized Financial Breakdown */}
+          <div className="space-y-2 py-2 border-t border-slate-100 text-xs">
             <div className="flex items-center justify-between text-slate-600">
-              <span className="font-medium">Subtotal:</span>
-              <span className="font-mono font-semibold text-slate-800">
+              <span className="font-medium text-slate-500">Subtotal</span>
+              <span className="font-mono font-bold text-slate-900">
                 {formatCurrency(calculations.grossSubtotal)}
               </span>
             </div>
 
             <div className="flex items-center justify-between text-slate-600">
-              <span className="font-medium">Discount:</span>
-              <span className={`font-mono font-semibold ${calculations.calculatedDiscount > 0 ? 'text-emerald-600 font-bold' : 'text-slate-800'}`}>
+              <span className="font-medium text-slate-500">Discount</span>
+              <span className={`font-mono font-bold ${calculations.calculatedDiscount > 0 ? 'text-rose-600' : 'text-slate-900'}`}>
                 {calculations.calculatedDiscount > 0 ? `- ${formatCurrency(calculations.calculatedDiscount)}` : formatCurrency(0)}
               </span>
             </div>
 
             <div className="flex items-center justify-between text-slate-600">
-              <span className="font-medium">Staff Tip:</span>
-              <span className={`font-mono font-semibold ${calculations.cleanTip > 0 ? 'text-amber-700 font-bold' : 'text-slate-800'}`}>
+              <span className="font-medium text-slate-500">Staff Tip</span>
+              <span className={`font-mono font-bold ${calculations.cleanTip > 0 ? 'text-amber-700' : 'text-slate-900'}`}>
                 {calculations.cleanTip > 0 ? `+ ${formatCurrency(calculations.cleanTip)}` : formatCurrency(0)}
               </span>
             </div>
 
-            {/* Integrated Interactive Tax Row */}
+            {/* Tax Row with proper alignment */}
             <div className="flex items-center justify-between text-slate-600">
-              <label htmlFor="pos-tax-toggle" className="flex items-center gap-1.5 cursor-pointer select-none hover:text-[#9D2558]">
+              <label htmlFor="pos-tax-toggle" className="flex items-center gap-2 cursor-pointer select-none group">
                 <input
                   id="pos-tax-toggle"
                   type="checkbox"
-                  disabled={!!loadedBooking}
                   checked={applyBranchTax}
                   onChange={(e) => setApplyBranchTax(e.target.checked)}
-                  className="rounded border-slate-300 text-[#9D2558] focus:ring-[#9D2558] h-3 w-3 cursor-pointer"
+                  className="rounded border-slate-300 text-[#9D2558] focus:ring-[#9D2558] h-3.5 w-3.5 cursor-pointer accent-[#9D2558]"
                 />
-                <span className="font-medium">
-                  {loadedBooking ? 'Tax (saved booking rates):' : `Tax (${applyBranchTax && currentBranch?.taxRate ? `${currentBranch.taxRate}%` : '0%'}):`}
+                <span className="font-medium text-slate-500 group-hover:text-slate-900 transition-colors">
+                  {applyBranchTax
+                    ? (loadedBooking ? 'Tax (Saved Rates)' : `Tax (${currentBranch?.taxRate ? `${currentBranch.taxRate}%` : 'Applied'})`)
+                    : 'Tax (Disabled)'}
                 </span>
               </label>
-              <span className={`font-mono font-semibold ${applyBranchTax && calculations.totalTax > 0 ? 'text-[#9D2558] font-bold' : 'text-slate-800'}`}>
-                {applyBranchTax && calculations.totalTax > 0 ? `+${formatCurrency(calculations.totalTax)}` : formatCurrency(0)}
+              <span className={`font-mono font-bold ${applyBranchTax && calculations.totalTax > 0 ? 'text-[#9D2558]' : 'text-slate-900'}`}>
+                {applyBranchTax && calculations.totalTax > 0 ? `+ ${formatCurrency(calculations.totalTax)}` : formatCurrency(0)}
               </span>
             </div>
           </div>
 
           {loadedBooking && (
-            <div className="flex justify-between items-center px-2 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-[11px] font-bold text-emerald-800">
-              <span className="flex items-center gap-1">
-                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+            <div className="flex justify-between items-center px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-800">
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                 <span>Prior booking advance applied:</span>
               </span>
-              <span className="font-mono text-xs text-emerald-700">
+              <span className="font-mono font-bold text-emerald-700">
                 -{formatCurrency(calculations.advanceAdjusted)}
               </span>
             </div>
           )}
 
-          {/* Net Payable Highlight Box */}
-          <div className="px-3 py-1.5 bg-[#FDF2F5] border border-[#F1DEE3] rounded-xl flex items-center justify-between shadow-2xs">
-            <div>
-              <span className="text-[9px] font-extrabold text-[#23151D] uppercase tracking-wider block">Net Payable</span>
-              <span className="text-[9px] text-[#9D2558] font-medium">Total amount due</span>
+          {/* Net Payable Highlight & Checkout Action */}
+          <div className="pt-2 border-t border-slate-200/90 space-y-2.5">
+            <div className="flex items-baseline justify-between px-1">
+              <div>
+                <span className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider block">Net Payable</span>
+                <span className="text-[10px] text-slate-400 font-medium">Total amount due</span>
+              </div>
+              <div className="text-right">
+                <span className="font-mono font-black text-xl sm:text-2xl text-[#9D2558] tracking-tight">
+                  {formatCurrency(calculations.fullInvoiceTotal)}
+                </span>
+              </div>
             </div>
-            <div className="text-right">
-              <span className="font-mono font-extrabold text-base sm:text-lg text-[#9D2558] tracking-tight">
-                {formatCurrency(calculations.fullInvoiceTotal)}
-              </span>
-            </div>
-          </div>
 
-          {/* Collect Payment & Complete Sale Button */}
-          <Button
-            disabled={cart.length === 0 || isBookingLoading || !!bookingLoadError || (!!loadedBooking && (isLoading || currentBranch?.id !== loadedBooking.branchId))}
-            onClick={() => {
-              if (cart.length === 0) return;
-              if (isMobileSheet) {
-                const unassignedService = cart.find(
-                  (ci) => ci.type === 'SERVICE' && (!ci.staffId || ci.staffId === 'unassigned')
-                );
-                if (unassignedService && !loadedBooking) {
-                  toast.warning(`Please select an assigned staff member for '${unassignedService.item.name}' before checkout.`);
-                  return;
+            <Button
+              disabled={cart.length === 0 || isBookingLoading || !!bookingLoadError || (!!loadedBooking && (isLoading || currentBranch?.id !== loadedBooking.branchId))}
+              onClick={() => {
+                if (cart.length === 0) return;
+                if (isMobileSheet) {
+                  const unassignedService = cart.find(
+                    (ci) => ci.type === 'SERVICE' && (!ci.staffId || ci.staffId === 'unassigned')
+                  );
+                  if (unassignedService && !loadedBooking) {
+                    toast.warning(`Please select an assigned staff member for '${unassignedService.item.name}' before checkout.`);
+                    return;
+                  }
+                  setMobileCartOpen(false);
                 }
-                setMobileCartOpen(false);
-              }
-              handleOpenCheckout();
-            }}
-            className="w-full bg-[#9D2558] hover:bg-[#851C47] disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.99] text-white font-bold h-9 text-xs sm:text-sm rounded-xl shadow-xs flex items-center justify-between px-3 cursor-pointer transition-all shrink-0"
-          >
-            <div className="flex items-center gap-1.5">
-              <CreditCard className="w-3.5 h-3.5" />
+                handleOpenCheckout();
+              }}
+              className="w-full bg-[#9D2558] hover:bg-[#851C47] disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.99] text-white font-bold h-11 text-xs sm:text-sm rounded-xl shadow-md shadow-[#9D2558]/20 flex items-center justify-center gap-2 cursor-pointer transition-all shrink-0"
+            >
+              <CreditCard className="w-4 h-4" />
               <span>Collect Payment & Complete Sale</span>
-            </div>
-            <span className="font-mono text-xs font-black bg-white/20 px-2 py-0.5 rounded-md">
-              {formatCurrency(calculations.fullInvoiceTotal)}
-            </span>
-          </Button>
+            </Button>
+          </div>
         </div>
     </div>
   );
@@ -2420,23 +2408,14 @@ export const POSBillingPage: React.FC = () => {
       {/* 1. Consolidated Executive Top Header Bar */}
       <div className="shrink-0 flex flex-col md:flex-row md:items-center justify-between gap-2.5 bg-white px-3.5 py-2 rounded-2xl border border-slate-200/90 shadow-2xs">
         {/* Left: Branding & Active Branch */}
-        <div className="flex items-center gap-2.5 shrink-0">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#9D2558] to-blue-700 text-white flex items-center justify-center font-bold shadow-xs shrink-0">
-            <Scissors className="w-4 h-4" />
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="w-9 h-9 rounded-xl bg-[#9D2558] text-white flex items-center justify-center shadow-xs shrink-0">
+            <Scissors className="w-4.5 h-4.5" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xs font-extrabold text-slate-900 tracking-tight">Point of Sale</h1>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Live Counter
-              </span>
-              <span className="px-1.5 py-0.5 rounded-md text-[10px] font-mono font-bold bg-slate-100 text-slate-600 border border-slate-200">
-                {currentBranch?.code || 'LHE-01'}
-              </span>
-            </div>
-            <p className="text-[10px] font-medium text-slate-400 leading-tight">
-              {currentBranch?.name}
+            <h1 className="text-sm font-bold text-slate-900 tracking-tight leading-none">Point of Sale</h1>
+            <p className="text-[11px] font-medium text-slate-400 mt-1">
+              {currentBranch?.name || 'Counter Terminal'}
             </p>
           </div>
         </div>
@@ -2912,7 +2891,30 @@ export const POSBillingPage: React.FC = () => {
               </div>
             </div>
 
-            {loadedBooking && <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs space-y-1"><p className="flex justify-between"><span>Prior advance applied</span><strong>{formatCurrency(calculations.advanceAdjusted)}</strong></p><p className="flex justify-between"><span>Collect remaining</span><strong>{formatCurrency(calculations.fullInvoiceTotal)}</strong></p></div>}
+            {loadedBooking && (
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs space-y-1">
+                <p className="flex justify-between"><span>Prior advance applied</span><strong>{formatCurrency(calculations.advanceAdjusted)}</strong></p>
+                <p className="flex justify-between"><span>Collect remaining</span><strong>{formatCurrency(calculations.fullInvoiceTotal)}</strong></p>
+              </div>
+            )}
+
+            {loadedBooking && hasBookingChanges && (
+              <div className="space-y-1 p-2.5 rounded-xl bg-amber-50/70 border border-amber-200 text-xs">
+                <label className="text-[10px] font-bold text-amber-900 flex items-center justify-between">
+                  <span className="flex items-center gap-1">
+                    <Tag className="w-3 h-3 text-amber-700" /> Booking Adjustment Reason (Optional):
+                  </span>
+                  <span className="text-[9px] font-normal text-amber-700">Services or discount modified</span>
+                </label>
+                <Input
+                  type="text"
+                  placeholder="e.g. Additional discount approved at checkout (optional)"
+                  value={bookingChangeReason}
+                  onChange={(e) => setBookingChangeReason(e.target.value)}
+                  className="text-xs h-7.5 bg-white border-amber-200 focus:border-amber-400 placeholder:text-slate-400"
+                />
+              </div>
+            )}
             {/* Tip Quick Selector Row */}
             <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200 text-xs">
               <span className="font-semibold text-slate-700 text-xs">Staff Tip:</span>

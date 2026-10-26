@@ -60,7 +60,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   };
 
   return (
-    <div className={`min-h-screen flex bg-[#FBF5F7] text-[#23151D] max-w-full overflow-x-hidden ${pathname === '/pos' ? 'lg:h-screen lg:overflow-hidden' : ''}`}>
+    <div className={`min-h-screen flex bg-[#F4F6F9] text-[#23151D] max-w-full overflow-x-hidden ${pathname === '/pos' ? 'lg:h-screen lg:overflow-hidden' : ''}`}>
       {/* Desktop Sidebar */}
       <div className={`hidden lg:block shrink-0 ${isSidebarCollapsed ? 'w-20' : 'w-72'} transition-all duration-200`}>
         <div className={`fixed inset-y-0 left-0 z-20 ${isSidebarCollapsed ? 'w-20' : 'w-72'} transition-all duration-200`}>
@@ -83,7 +83,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
           breadcrumbs={generateBreadcrumbs()}
         />
 
-        <main className={`flex-1 w-full min-w-0 max-w-full ${pathname === '/pos' ? 'p-2 sm:p-2.5 min-h-0 flex flex-col overflow-hidden' : 'px-3 sm:px-5 lg:px-6 py-3 sm:py-5 overflow-x-hidden'}`}>
+        <main className={`flex-1 w-full min-w-0 max-w-full bg-[#F4F6F9] ${pathname === '/pos' ? 'p-2 sm:p-2.5 min-h-0 flex flex-col overflow-hidden' : 'px-3 sm:px-5 lg:px-6 py-3 sm:py-5 overflow-x-hidden'}`}>
           {children}
         </main>
       </div>

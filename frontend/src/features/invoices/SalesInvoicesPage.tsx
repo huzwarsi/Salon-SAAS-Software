@@ -25,6 +25,7 @@ import {
   Receipt,
   RotateCcw,
 } from 'lucide-react';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { RefundVoidModal } from './components/RefundVoidModal';
 
 const selectClass =
@@ -208,7 +209,7 @@ export const SalesInvoicesPage: React.FC = () => {
     if (!reportData || !reportData.rows.length) return;
     const meta: [string, string][] = [
       ['Report', 'Sales & Invoices Report'],
-      ['Campus', selectedBranch === 'ALL' ? 'All Campuses' : reportData.meta.branchName || selectedBranch],
+      ['Branch', selectedBranch === 'ALL' ? 'All Branches' : reportData.meta.branchName || selectedBranch],
       ['From Date', fromDate || reportData.meta.from || '—'],
       ['To Date', toDate || reportData.meta.to || '—'],
       ['Generated At', new Date().toLocaleString()],
@@ -219,7 +220,7 @@ export const SalesInvoicesPage: React.FC = () => {
       'Invoice #',
       'Date',
       'Client',
-      'Campus',
+      'Branch',
       'Sold By',
       'Status',
       'Lifecycle',
@@ -259,7 +260,7 @@ export const SalesInvoicesPage: React.FC = () => {
     if (!reportData || !reportData.rows.length) return;
     const meta: [string, string][] = [
       ['Report', 'Sales & Invoices Report'],
-      ['Campus', selectedBranch === 'ALL' ? 'All Campuses' : reportData.meta.branchName || selectedBranch],
+      ['Branch', selectedBranch === 'ALL' ? 'All Branches' : reportData.meta.branchName || selectedBranch],
       ['From Date', fromDate || reportData.meta.from || '—'],
       ['To Date', toDate || reportData.meta.to || '—'],
       ['Generated At', new Date().toLocaleString()],
@@ -270,7 +271,7 @@ export const SalesInvoicesPage: React.FC = () => {
       'Invoice #',
       'Date',
       'Client',
-      'Campus',
+      'Branch',
       'Sold By',
       'Status',
       'Lifecycle',
@@ -312,7 +313,7 @@ export const SalesInvoicesPage: React.FC = () => {
       return;
     }
     const meta: [string, string][] = [
-      ['Campus', selectedBranch === 'ALL' ? 'All Campuses' : reportData.meta.branchName || selectedBranch],
+      ['Branch', selectedBranch === 'ALL' ? 'All Branches' : reportData.meta.branchName || selectedBranch],
       ['From Date', fromDate || reportData.meta.from || '—'],
       ['To Date', toDate || reportData.meta.to || '—'],
       ['Total Gross', formatPKR(reportData.totals.gross || 0)],
@@ -321,7 +322,7 @@ export const SalesInvoicesPage: React.FC = () => {
       ['Total Tips', formatPKR(reportData.totals.tip || 0)],
       ['Total Paid', formatPKR(reportData.totals.paid || 0)],
     ];
-    const headers = ['#', 'Invoice #', 'Date', 'Client', 'Campus', 'Sold By', 'Status', 'Net Sales', 'Tax', 'Tip', 'Total', 'Paid', 'Remaining'];
+    const headers = ['#', 'Invoice #', 'Date', 'Client', 'Branch', 'Sold By', 'Status', 'Net Sales', 'Tax', 'Tip', 'Total', 'Paid', 'Remaining'];
     const rows = reportData.rows.map((r, i) => [
       i + 1,
       r.invoiceNumber,
@@ -360,7 +361,7 @@ export const SalesInvoicesPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9] px-4 py-5 md:px-8 md:py-6 text-slate-800">
+    <div className="w-full text-slate-800">
       {/* Top Header Card with Title & Filters */}
       <div className="bg-white rounded-xl shadow-xs border border-slate-200/90 p-5 md:p-6 mb-6">
         <div className="mb-4">
@@ -371,7 +372,7 @@ export const SalesInvoicesPage: React.FC = () => {
         </div>
 
         {/* Role Scope Notice */}
-        {isAccountant ? (
+        {isAccountant && (
           <div className="mb-4 p-3 rounded-lg bg-[#FDF2F5] border border-[#F1DEE3] flex items-center justify-between text-xs text-[#23151D]">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[#9D2558] animate-pulse" />
@@ -382,98 +383,111 @@ export const SalesInvoicesPage: React.FC = () => {
               Accountant Scoped
             </span>
           </div>
-        ) : (
-          <div className="mb-4 p-3 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between text-xs text-slate-700">
-            <div className="flex items-center gap-2">
-              <span className="font-semibold">Administrator Consolidated View:</span>
-              <span>All cashier and accountant sales are visible. Select a cashier from the dropdown below to audit individual accountant performance.</span>
-            </div>
-          </div>
         )}
 
         {/* Filters Form Row */}
         <form onSubmit={handleApplyFilters} className={`grid grid-cols-1 sm:grid-cols-2 ${!isAccountant ? 'md:grid-cols-4 lg:grid-cols-8' : 'md:grid-cols-7'} gap-3.5 items-end`}>
-          {/* Campus Filter */}
+          {/* Branch Filter */}
           <div>
-            <label className={labelClass}>Campus</label>
-            <select
+            <label className={labelClass}>Branch</label>
+            <Select
               value={selectedBranch}
               disabled={!isSuperAdmin}
-              onChange={(e) => setSelectedBranch(e.target.value)}
-              className={selectClass}
+              onValueChange={(val) => setSelectedBranch(val)}
             >
-              {isSuperAdmin && <option value="ALL">All Campuses</option>}
-              {allBranches.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-full text-xs h-9 border border-slate-300 rounded-md bg-white text-slate-700 font-medium">
+                <SelectValue placeholder="Branch" />
+              </SelectTrigger>
+              <SelectContent className="z-[70]">
+                {isSuperAdmin && <SelectItem value="ALL">All Branches</SelectItem>}
+                {allBranches.map((b) => (
+                  <SelectItem key={b.id} value={b.id}>
+                    {b.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Cashier / Sold By Filter (Admin / Super Admin view) */}
           {!isAccountant && (
             <div>
               <label className={labelClass}>Cashier / Sold By</label>
-              <select
+              <Select
                 value={selectedCashier}
-                onChange={(e) => setSelectedCashier(e.target.value)}
-                className={selectClass}
+                onValueChange={(val) => setSelectedCashier(val)}
               >
-                <option value="ALL">All Cashiers / Admins</option>
-                {cashiersList.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name} ({c.role === 'ACCOUNTANT' ? 'Accountant' : c.role})
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full text-xs h-9 border border-slate-300 rounded-md bg-white text-slate-700 font-medium">
+                  <SelectValue placeholder="Cashier" />
+                </SelectTrigger>
+                <SelectContent className="z-[70]">
+                  <SelectItem value="ALL">All Cashiers / Admins</SelectItem>
+                  {cashiersList.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name} ({c.role === 'ACCOUNTANT' ? 'Accountant' : c.role})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
 
           {/* Pay Status Filter */}
           <div>
             <label className={labelClass}>Pay Status</label>
-            <select
+            <Select
               value={paymentStatus}
-              onChange={(e) => setPaymentStatus(e.target.value)}
-              className={selectClass}
+              onValueChange={(val) => setPaymentStatus(val)}
             >
-              <option value="ALL">All Statuses</option>
-              <option value="PAID">Paid</option>
-              <option value="PARTIAL">Partially Paid</option>
-              <option value="UNPAID">Unpaid</option>
-            </select>
+              <SelectTrigger className="w-full text-xs h-9 border border-slate-300 rounded-md bg-white text-slate-700 font-medium">
+                <SelectValue placeholder="Pay Status" />
+              </SelectTrigger>
+              <SelectContent className="z-[70]">
+                <SelectItem value="ALL">All Statuses</SelectItem>
+                <SelectItem value="PAID">Paid</SelectItem>
+                <SelectItem value="PARTIAL">Partially Paid</SelectItem>
+                <SelectItem value="UNPAID">Unpaid</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Lifecycle Filter */}
           <div>
             <label className={labelClass}>Lifecycle</label>
-            <select
+            <Select
               value={lifecycle}
-              onChange={(e) => setLifecycle(e.target.value)}
-              className={selectClass}
+              onValueChange={(val) => setLifecycle(val)}
             >
-              <option value="ALL">All Lifecycles</option>
-              <option value="ACTIVE">Active</option>
-              <option value="PARTIALLY_REFUNDED">Partial Refund</option>
-              <option value="REFUNDED">Refunded</option>
-              <option value="VOIDED">Voided</option>
-            </select>
+              <SelectTrigger className="w-full text-xs h-9 border border-slate-300 rounded-md bg-white text-slate-700 font-medium">
+                <SelectValue placeholder="Lifecycle" />
+              </SelectTrigger>
+              <SelectContent className="z-[70]">
+                <SelectItem value="ALL">All Lifecycles</SelectItem>
+                <SelectItem value="ACTIVE">Active</SelectItem>
+                <SelectItem value="PARTIALLY_REFUNDED">Partial Refund</SelectItem>
+                <SelectItem value="REFUNDED">Refunded</SelectItem>
+                <SelectItem value="VOIDED">Voided</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Payment Type */}
           <div>
             <label className={labelClass}>Payment Type</label>
-            <select
+            <Select
               value={paymentMethod}
-              onChange={(e) => setPaymentMethod(e.target.value)}
-              className={selectClass}
+              onValueChange={(val) => setPaymentMethod(val)}
             >
-              <option value="ALL">All Types</option>
-              <option value="CASH">Cash</option>
-              <option value="ONLINE_ACCOUNT">Online / Card</option>
-              <option value="SPLIT">Split Payment</option>
-            </select>
+              <SelectTrigger className="w-full text-xs h-9 border border-slate-300 rounded-md bg-white text-slate-700 font-medium">
+                <SelectValue placeholder="Payment Type" />
+              </SelectTrigger>
+              <SelectContent className="z-[70]">
+                <SelectItem value="ALL">All Types</SelectItem>
+                <SelectItem value="CASH">Cash</SelectItem>
+                <SelectItem value="ONLINE_ACCOUNT">Online / Card</SelectItem>
+                <SelectItem value="SPLIT">Split Payment</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* From Date */}
@@ -593,7 +607,7 @@ export const SalesInvoicesPage: React.FC = () => {
                   <th className="py-3.5 px-4 font-medium text-[#475569] whitespace-nowrap">Invoice #</th>
                   <th className="py-3.5 px-4 font-medium text-[#475569] whitespace-nowrap">Date</th>
                   <th className="py-3.5 px-4 font-medium text-[#475569]">Client</th>
-                  <th className="py-3.5 px-4 font-medium text-[#475569]">Campus</th>
+                  <th className="py-3.5 px-4 font-medium text-[#475569]">Branch</th>
                   <th className="py-3.5 px-4 font-medium text-[#475569]">Cashier / Sold By</th>
                   <th className="py-3.5 px-4 font-medium text-[#475569] text-center w-24">Status</th>
                   <th className="py-3.5 px-4 font-medium text-[#475569] text-center w-24">Lifecycle</th>
@@ -640,9 +654,9 @@ export const SalesInvoicesPage: React.FC = () => {
                           {row.clientName || 'Walk-in'}
                         </td>
 
-                        {/* 5. Campus */}
+                        {/* 5. Branch */}
                         <td className="py-3.5 px-4 whitespace-nowrap text-[#475569] font-normal text-[13px]">
-                          {row.branchName || 'Main Campus'}
+                          {row.branchName || 'Main Branch'}
                         </td>
 
                         {/* 6. Sold By */}
@@ -775,7 +789,7 @@ export const SalesInvoicesPage: React.FC = () => {
                 ) : (
                   <tr>
                     <td colSpan={19} className="py-16 text-center text-slate-400 font-medium">
-                      No sales invoices found for the selected campus, dates, and filters.
+                      No sales invoices found for the selected branch, dates, and filters.
                     </td>
                   </tr>
                 )}

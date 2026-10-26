@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import {
   AlertTriangle,
   RotateCcw,
@@ -323,79 +324,48 @@ export const RefundVoidModal: React.FC<RefundVoidModalProps> = ({
           </div>
         </DialogHeader>
 
-        {/* Action Type Selector Cards */}
-        <div className="grid grid-cols-2 gap-3 mt-4">
+        {/* Action Type Selector Cards - Simple & Clean */}
+        <div className="grid grid-cols-2 gap-2.5 mt-3">
           <button
             type="button"
             onClick={() => setActionType('VOID')}
-            className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+            className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between ${
               actionType === 'VOID'
-                ? 'border-rose-500 bg-rose-50/70 shadow-sm ring-1 ring-rose-500'
-                : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
+                ? 'border-rose-500 bg-rose-50/70 shadow-xs ring-1 ring-rose-500 text-rose-900'
+                : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 text-slate-700'
             }`}
           >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-rose-900 flex items-center gap-1.5">
-                <Ban className="w-4 h-4 text-rose-600" /> Full Void
-              </span>
-              {actionType === 'VOID' && <CheckCircle2 className="w-4 h-4 text-rose-600" />}
-            </div>
-            <p className="text-[11px] text-slate-600 mt-1.5 leading-relaxed">
-              Completely voids invoice, reverses all sales, returns all items to stock, and clears commissions.
-            </p>
+            <span className="text-xs font-bold flex items-center gap-2">
+              <Ban className="w-4 h-4 text-rose-600" />
+              <span>Full Void</span>
+            </span>
+            {actionType === 'VOID' && <CheckCircle2 className="w-4 h-4 text-rose-600 shrink-0" />}
           </button>
 
           <button
             type="button"
             onClick={() => setActionType('REFUND')}
-            className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+            className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between ${
               actionType === 'REFUND'
-                ? 'border-amber-500 bg-amber-50/70 shadow-sm ring-1 ring-amber-500'
-                : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
+                ? 'border-amber-500 bg-amber-50/70 shadow-xs ring-1 ring-amber-500 text-amber-900'
+                : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 text-slate-700'
             }`}
           >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-amber-900 flex items-center gap-1.5">
-                <RotateCcw className="w-4 h-4 text-amber-600" /> Line-Item Refund
-              </span>
-              {actionType === 'REFUND' && <CheckCircle2 className="w-4 h-4 text-amber-600" />}
-            </div>
-            <p className="text-[11px] text-slate-600 mt-1.5 leading-relaxed">
-              Select specific items or partial quantities to return and refund to customer.
-            </p>
+            <span className="text-xs font-bold flex items-center gap-2">
+              <RotateCcw className="w-4 h-4 text-amber-600" />
+              <span>Line-Item Refund</span>
+            </span>
+            {actionType === 'REFUND' && <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0" />}
           </button>
         </div>
 
-        {/* Mode explanation alert */}
-        {actionType === 'VOID' ? (
-          <div className="flex items-start gap-2.5 p-3 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-800 mt-3">
-            <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-            <div className="space-y-0.5">
-              <p className="font-semibold">Full Invoice Cancellation</p>
-              <p className="text-[11px] text-rose-700">
-                This will mark the invoice as <strong>VOIDED</strong>. It will be excluded from gross revenue and operational reports. Retail products will be restocked to inventory.
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="flex items-start gap-2.5 p-3 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-800 mt-3">
-            <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-            <div className="space-y-0.5">
-              <p className="font-semibold">Item-Level Partial Refund</p>
-              <p className="text-[11px] text-amber-700">
-                Choose the items and quantities below. Net sales and tax will be credited on the report, and staff commission will be reversed proportionally.
-              </p>
-            </div>
-          </div>
-        )}
-
         {/* Line Items Table */}
-        <div className="mt-4 border border-slate-200 rounded-xl overflow-hidden bg-white shadow-xs">
+        <div className="mt-3.5 border border-slate-200 rounded-xl overflow-hidden bg-white shadow-xs">
           <div className="px-3.5 py-2 bg-slate-50 border-b border-slate-200 flex items-center justify-between text-xs font-semibold text-slate-700">
-            <span>Invoice Items ({lines.length})</span>
-            <span className="text-[11px] text-slate-500 font-normal">Original Total: {formatCurrency(invoice.total)}</span>
+            <span>Items ({lines.length})</span>
+            <span className="text-[11px] text-slate-500 font-medium">Bill Total: {formatCurrency(invoice.total)}</span>
           </div>
-          <div className="divide-y divide-slate-100 max-h-60 overflow-y-auto">
+          <div className="divide-y divide-slate-100 max-h-52 overflow-y-auto">
             {lines.map((line) => {
               const already = alreadyRefundedMap.get(line.id) || 0;
               const remaining = Math.max(0, line.quantity - already);
@@ -405,7 +375,7 @@ export const RefundVoidModal: React.FC<RefundVoidModalProps> = ({
               return (
                 <div
                   key={line.id}
-                  className={`p-3 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                  className={`p-2.5 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 ${
                     isFullyRefunded
                       ? 'bg-slate-50/70 opacity-60'
                       : sel.selected && actionType === 'REFUND'
@@ -413,7 +383,7 @@ export const RefundVoidModal: React.FC<RefundVoidModalProps> = ({
                       : ''
                   }`}
                 >
-                  <div className="flex items-start gap-2.5 flex-1 min-w-0">
+                  <div className="flex items-center gap-2.5 flex-1 min-w-0">
                     {actionType === 'REFUND' && (
                       <input
                         type="checkbox"
@@ -429,32 +399,21 @@ export const RefundVoidModal: React.FC<RefundVoidModalProps> = ({
                             },
                           }));
                         }}
-                        className="mt-1 rounded border-slate-300 text-amber-600 focus:ring-amber-500 cursor-pointer"
+                        className="rounded border-slate-300 text-amber-600 focus:ring-amber-500 cursor-pointer"
                       />
                     )}
-                    <div className="space-y-0.5">
+                    <div className="min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="font-semibold text-slate-800">{line.name}</span>
-                        <span
-                          className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
-                            line.type === 'SERVICE'
-                              ? 'bg-[#FDF2F5] text-[#851C47]'
-                              : line.type === 'PACKAGE'
-                              ? 'bg-purple-50 text-purple-700'
-                              : 'bg-emerald-50 text-emerald-700'
-                          }`}
-                        >
-                          {line.type}
-                        </span>
+                        <span className="font-semibold text-slate-900">{line.name}</span>
                         {already > 0 && (
-                          <span className="text-[10px] text-amber-600 bg-amber-50 px-1 rounded">
-                            {already} already refunded
+                          <span className="text-[10px] text-amber-600 bg-amber-50 px-1.5 py-0.2 rounded font-medium">
+                            {already} refunded
                           </span>
                         )}
                       </div>
-                      <div className="text-[11px] text-slate-500">
-                        Qty: {line.quantity} × {formatCurrency(line.unitPrice || 0)} • Total: {formatCurrency(line.total || 0)}
-                        {line.staffName && ` • Staff: ${line.staffName}`}
+                      <div className="text-[11px] text-slate-500 font-mono mt-0.5">
+                        {line.quantity} × {formatCurrency(line.unitPrice || 0)} = {formatCurrency(line.total || 0)}
+                        {line.staffName && <span className="font-sans text-slate-400"> ({line.staffName})</span>}
                       </div>
                     </div>
                   </div>
@@ -463,7 +422,7 @@ export const RefundVoidModal: React.FC<RefundVoidModalProps> = ({
                   {actionType === 'REFUND' && !isFullyRefunded && (
                     <div className="flex items-center gap-2 shrink-0">
                       <div className="flex items-center gap-1">
-                        <span className="text-[11px] text-slate-500">Return Qty:</span>
+                        <span className="text-[11px] text-slate-500">Qty:</span>
                         <input
                           type="number"
                           min={1}
@@ -477,7 +436,7 @@ export const RefundVoidModal: React.FC<RefundVoidModalProps> = ({
                               [line.id]: { ...prev[line.id], quantity: val },
                             }));
                           }}
-                          className="w-14 text-center text-xs border border-slate-300 rounded px-1.5 py-1 bg-white disabled:bg-slate-100 disabled:text-slate-400"
+                          className="w-12 text-center text-xs border border-slate-300 rounded px-1 py-0.5 bg-white font-mono disabled:bg-slate-100 disabled:text-slate-400"
                         />
                         <span className="text-[11px] text-slate-400">/ {remaining}</span>
                       </div>
@@ -495,21 +454,20 @@ export const RefundVoidModal: React.FC<RefundVoidModalProps> = ({
                               },
                             }));
                           }}
-                          className="text-[11px] border border-slate-300 rounded px-2 py-1 bg-white disabled:bg-slate-100"
-                          title="Stock Restock Condition"
+                          className="text-[11px] border border-slate-300 rounded px-2 py-0.5 bg-white disabled:bg-slate-100"
                         >
-                          <option value="RESALABLE">Resalable Stock</option>
-                          <option value="DAMAGED">Damaged / Scrap</option>
+                          <option value="RESALABLE">Restock</option>
+                          <option value="DAMAGED">Damaged</option>
                           <option value="NONE">No Restock</option>
                         </select>
                       )}
                     </div>
                   )}
 
-                  {/* Void mode display: entire remaining qty */}
+                  {/* Void mode display */}
                   {actionType === 'VOID' && (
-                    <div className="text-right text-[11px] font-medium text-rose-700">
-                      Reversing: {remaining} units
+                    <div className="text-right text-[11px] font-semibold text-rose-600">
+                      Void all {remaining}
                     </div>
                   )}
                 </div>
@@ -520,20 +478,20 @@ export const RefundVoidModal: React.FC<RefundVoidModalProps> = ({
 
         {/* Refund Payment Source Section (If money has been paid) */}
         {calculations.cashOut > 0 && (
-          <div className="mt-4 p-3.5 rounded-xl border border-slate-200 bg-slate-50 space-y-2.5">
+          <div className="mt-3.5 p-3 rounded-xl border border-slate-200 bg-slate-50/80 space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                 <DollarSign className="w-4 h-4 text-emerald-600" />
-                Customer Cash-Out Payout: {formatCurrency(calculations.cashOut)}
+                <span>Return Payout:</span>
+                <span className="font-mono text-emerald-700 text-sm font-bold">{formatCurrency(calculations.cashOut)}</span>
               </span>
-              <span className="text-[11px] text-slate-500">How will money be returned?</span>
             </div>
 
-            <div className="grid grid-cols-2 gap-2.5 pt-1">
+            <div className="grid grid-cols-2 gap-2">
               <label
-                className={`flex items-center gap-2 p-2.5 rounded-lg border text-xs cursor-pointer transition-colors ${
+                className={`flex items-center gap-2 p-2 rounded-lg border text-xs cursor-pointer transition-colors ${
                   refundMethod === 'CASH'
-                    ? 'border-[#9D2558] bg-[#FDF2F5]/70 text-[#9D2558] font-semibold'
+                    ? 'border-[#9D2558] bg-[#FDF2F5] text-[#9D2558] font-semibold'
                     : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                 }`}
               >
@@ -550,9 +508,9 @@ export const RefundVoidModal: React.FC<RefundVoidModalProps> = ({
               </label>
 
               <label
-                className={`flex items-center gap-2 p-2.5 rounded-lg border text-xs cursor-pointer transition-colors ${
+                className={`flex items-center gap-2 p-2 rounded-lg border text-xs cursor-pointer transition-colors ${
                   refundMethod === 'ONLINE_ACCOUNT'
-                    ? 'border-[#9D2558] bg-[#FDF2F5]/70 text-[#9D2558] font-semibold'
+                    ? 'border-[#9D2558] bg-[#FDF2F5] text-[#9D2558] font-semibold'
                     : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                 }`}
               >
@@ -565,32 +523,32 @@ export const RefundVoidModal: React.FC<RefundVoidModalProps> = ({
                   className="text-[#9D2558]"
                 />
                 <Building className="w-4 h-4" />
-                <span>Bank / Online Account</span>
+                <span>Bank / Online</span>
               </label>
             </div>
 
             {refundMethod === 'ONLINE_ACCOUNT' && (
-              <div className="pt-1.5">
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                  Select Payout Bank / Wallet Account:
-                </label>
+              <div className="pt-1">
                 {isLoadingAccounts ? (
                   <div className="text-xs text-slate-500 flex items-center gap-1.5">
                     <Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading accounts...
                   </div>
                 ) : (
-                  <select
+                  <Select
                     value={selectedAccountId}
-                    onChange={(e) => setSelectedAccountId(e.target.value)}
-                    className="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 bg-white text-slate-800"
+                    onValueChange={setSelectedAccountId}
                   >
-                    <option value="">-- Choose Account --</option>
-                    {paymentAccounts.map((acc) => (
-                      <option key={acc.id} value={acc.id}>
-                        {acc.name} ({acc.accountType}) — Bal: {formatCurrency(acc.currentBalance)}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="w-full text-xs h-8.5 bg-white border border-slate-300 rounded-lg">
+                      <SelectValue placeholder="Select Bank / Account" />
+                    </SelectTrigger>
+                    <SelectContent className="z-[70]">
+                      {paymentAccounts.map((acc) => (
+                        <SelectItem key={acc.id} value={acc.id} className="text-xs">
+                          {acc.name} ({acc.accountType}) — Bal: {formatCurrency(acc.currentBalance)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 )}
               </div>
             )}
@@ -598,9 +556,9 @@ export const RefundVoidModal: React.FC<RefundVoidModalProps> = ({
         )}
 
         {/* Reason Section (Required) */}
-        <div className="mt-4 space-y-2">
+        <div className="mt-3.5 space-y-1.5">
           <label className="block text-xs font-bold text-slate-800">
-            Reason for {actionType === 'VOID' ? 'Void' : 'Refund'} <span className="text-rose-500">*</span>
+            Reason <span className="text-rose-500">*</span>
           </label>
           <div className="flex flex-wrap gap-1.5">
             {QUICK_REASONS.map((qr) => (
@@ -608,9 +566,9 @@ export const RefundVoidModal: React.FC<RefundVoidModalProps> = ({
                 key={qr}
                 type="button"
                 onClick={() => setReason(qr)}
-                className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors cursor-pointer ${
+                className={`text-[11px] px-2.5 py-0.5 rounded-full border transition-colors cursor-pointer ${
                   reason === qr
-                    ? 'bg-slate-800 text-white border-slate-800'
+                    ? 'bg-slate-800 text-white border-slate-800 font-semibold'
                     : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                 }`}
               >
@@ -622,40 +580,35 @@ export const RefundVoidModal: React.FC<RefundVoidModalProps> = ({
             rows={2}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            placeholder="Detailed reason for audit log (minimum 3 characters)..."
-            className="w-full text-xs border border-slate-300 rounded-lg p-2.5 bg-white text-slate-800 focus:ring-1 focus:ring-[#9D2558] focus:border-[#9D2558]"
+            placeholder="Reason or notes..."
+            className="w-full text-xs border border-slate-300 rounded-lg p-2 bg-white text-slate-800 focus:ring-1 focus:ring-[#9D2558] focus:border-[#9D2558]"
           />
         </div>
 
-        {/* Live Financial Breakdown Card */}
-        <div className="mt-4 p-3.5 rounded-xl border border-[#F1DEE3] bg-[#FDF2F5] space-y-2 text-xs">
-          <div className="font-bold text-[#23151D] border-b border-[#F1DEE3]/60 pb-1.5 flex items-center justify-between">
-            <span>Financial & Report Impact Summary</span>
-            <span className="text-[11px] font-normal text-[#851C47]">Real-time accounting breakdown</span>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
-            <div className="bg-white/80 p-2 rounded-lg border border-[#F1DEE3]">
-              <span className="block text-[10px] text-slate-500">Net Sales Reversed:</span>
-              <span className="font-bold text-rose-600 text-[13px]">
+        {/* Financial Summary */}
+        <div className="mt-3.5 p-3 rounded-xl border border-slate-200 bg-slate-50 text-xs">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+            <div className="bg-white p-2 rounded-lg border border-slate-200/80">
+              <span className="block text-[10px] text-slate-500 font-medium">Reversed Net</span>
+              <span className="font-bold text-rose-600 text-xs font-mono">
                 -{formatCurrency(calculations.netReversed)}
               </span>
             </div>
-            <div className="bg-white/80 p-2 rounded-lg border border-[#F1DEE3]">
-              <span className="block text-[10px] text-slate-500">Tax Liability Reversed:</span>
-              <span className="font-bold text-rose-600 text-[13px]">
+            <div className="bg-white p-2 rounded-lg border border-slate-200/80">
+              <span className="block text-[10px] text-slate-500 font-medium">Reversed Tax</span>
+              <span className="font-bold text-rose-600 text-xs font-mono">
                 -{formatCurrency(calculations.taxReversed)}
               </span>
             </div>
-            <div className="bg-white/80 p-2 rounded-lg border border-[#F1DEE3]">
-              <span className="block text-[10px] text-slate-500">Customer Payout (Cash-Out):</span>
-              <span className="font-bold text-amber-700 text-[13px]">
+            <div className="bg-white p-2 rounded-lg border border-slate-200/80">
+              <span className="block text-[10px] text-slate-500 font-medium">Customer Payout</span>
+              <span className="font-bold text-emerald-600 text-xs font-mono">
                 {formatCurrency(calculations.cashOut)}
               </span>
             </div>
-            <div className="bg-white/80 p-2 rounded-lg border border-[#F1DEE3]">
-              <span className="block text-[10px] text-slate-500">Receivable Cancelled:</span>
-              <span className="font-bold text-slate-700 text-[13px]">
+            <div className="bg-white p-2 rounded-lg border border-slate-200/80">
+              <span className="block text-[10px] text-slate-500 font-medium">Cancelled Due</span>
+              <span className="font-bold text-slate-700 text-xs font-mono">
                 {formatCurrency(calculations.receivableCancelled)}
               </span>
             </div>

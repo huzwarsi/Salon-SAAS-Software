@@ -88,12 +88,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <aside
-      className={`h-full max-h-screen bg-white border-r border-[#F1DEE3] flex flex-col transition-all duration-200 select-none overflow-hidden ${
+      className={`h-full max-h-screen bg-white border-r border-slate-200 flex flex-col transition-all duration-200 select-none overflow-hidden ${
         isCollapsed ? 'w-20' : 'w-72'
       } ${className}`}
     >
       {/* Brand Header */}
-      <div className="h-16 flex items-center px-4 border-b border-[#F8EDF0] shrink-0">
+      <div className="h-16 flex items-center px-4 border-b border-slate-100 shrink-0">
         <div className="flex items-center gap-3 overflow-hidden cursor-pointer" onClick={() => handleItemClick('/dashboard')}>
           {logoUrl ? (
             <div className="w-9 h-9 rounded-xl bg-white border border-[#F1DEE3] flex items-center justify-center p-1 shrink-0 shadow-xs overflow-hidden">

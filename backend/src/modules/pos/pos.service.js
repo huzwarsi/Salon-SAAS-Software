@@ -185,7 +185,7 @@ export const postInvoice = async (input, actor, idempotencyKey, request) => {
       advanceAdjusted = netPayments(booking.payments);
       const retailItems = input.cartItems.filter(c => c.type === 'PRODUCT');
       input = { ...input, clientId: booking.clientId, clientName: booking.clientName, clientPhone: booking.clientPhone,
-        discountType: booking.discountType, discountValue: Number(booking.discountValue), applyTax: true,
+        discountType: booking.discountType, discountValue: Number(booking.discountValue), applyTax: input.applyTax !== false,
         cartItems: [...booking.items.map(i => ({ type: i.type, item: { id: i.itemId, name: i.name, price: Number(i.unitPrice) }, quantity: i.quantity, staffId: i.staffId || 'house',
           packageComponents: i.components.map(c => ({ serviceId: c.serviceId, staffId: c.staffId || 'house' })), bookingLineId: i.lineInstanceId })), ...retailItems] };
     } else if (input.bookingUpdate) throw badRequest('BOOKING_REQUIRED', 'Booking changes require a booking checkout.');
@@ -235,7 +235,8 @@ export const postInvoice = async (input, actor, idempotencyKey, request) => {
         const catalogue = { id: saved.itemId, code: saved.code, name: saved.name, price: saved.unitPrice, taxTreatment: saved.taxTreatment,
           components: saved.components.map((k, index) => ({ serviceId: k.serviceId, service: { code: k.serviceCode, name: k.serviceName }, quantity: c.quantity, sortOrder: index, allocationPercentage: k.allocationPercentage })) };
         const price = toDec(saved.unitPrice), staff = requireStaff(saved.staffId, saved.name);
-        return { c, catalogue, staff, unitPrice: price, gross: round2(price.times(c.quantity)), taxRate: toDec(saved.taxRate) };
+        const taxRate = input.applyTax === false ? toDec(0) : toDec(saved.taxRate);
+        return { c, catalogue, staff, unitPrice: price, gross: round2(price.times(c.quantity)), taxRate };
       }
       if (!Number.isInteger(c.quantity) || c.quantity <= 0) throw badRequest('INVALID_QUANTITY', `Item '${c.item.name}' must have a positive whole quantity.`);
       let catalogue;

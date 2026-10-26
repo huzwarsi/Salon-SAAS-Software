@@ -127,7 +127,7 @@ export const TipsStatementPage: React.FC = () => {
   };
 
   const branchNameDisplay = useMemo(() => {
-    if (selectedBranchId === 'ALL') return 'All Campuses';
+    if (selectedBranchId === 'ALL') return 'All Branches';
     return branches.find((b) => b.id === selectedBranchId)?.name || selectedBranchId;
   }, [selectedBranchId, branches]);
 
@@ -211,7 +211,7 @@ export const TipsStatementPage: React.FC = () => {
   const handleExportCSV = () => {
     const meta: [string, string][] = [
       ['Report', 'Tips & Gratuity Financial Statement'],
-      ['Campus', branchNameDisplay],
+      ['Branch', branchNameDisplay],
       ['Date Range', `${startDate} to ${endDate}`],
       ['Opening Liability', summary.openingLiability.toFixed(2)],
       ['Net Tips Collected', summary.netTipsCollected.toFixed(2)],
@@ -248,7 +248,7 @@ export const TipsStatementPage: React.FC = () => {
   const handleExportExcel = () => {
     const meta: [string, string][] = [
       ['Report', 'Tips & Gratuity Financial Statement'],
-      ['Campus', branchNameDisplay],
+      ['Branch', branchNameDisplay],
       ['Date Range', `${startDate} to ${endDate}`],
       ['Opening Liability', summary.openingLiability.toFixed(2)],
       ['Net Tips Collected', summary.netTipsCollected.toFixed(2)],
@@ -284,7 +284,7 @@ export const TipsStatementPage: React.FC = () => {
 
   const handlePrint = () => {
     const meta: [string, string][] = [
-      ['Campus', branchNameDisplay],
+      ['Branch', branchNameDisplay],
       ['Date Range', `${startDate} to ${endDate}`],
       ['Opening Liability', formatCurrency(summary.openingLiability)],
       ['Net Tips Collected', formatCurrency(summary.netTipsCollected)],
@@ -342,9 +342,9 @@ export const TipsStatementPage: React.FC = () => {
         {/* Filters Form Row */}
         <form onSubmit={handleApplyFilters} className="space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
-            {/* Campus / Branch */}
+            {/* Branch */}
             <div>
-              <label className={labelClass}>Campus</label>
+              <label className={labelClass}>Branch</label>
               <select
                 className={selectClass}
                 value={selectedBranchId}
@@ -354,7 +354,7 @@ export const TipsStatementPage: React.FC = () => {
                   setSelectedStaffId('ALL');
                 }}
               >
-                {isSuperAdmin && <option value="ALL">All Campuses</option>}
+                {isSuperAdmin && <option value="ALL">All Branches</option>}
                 {branches.map((b) => (
                   <option key={b.id} value={b.id}>
                     {b.name}

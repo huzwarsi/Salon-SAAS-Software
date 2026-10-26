@@ -8,6 +8,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { formatCurrency } from '@/lib/formatters';
 import { printBookingDocument } from './bookingPrint';
 import { toast } from '@/context/ToastContext';
@@ -16,6 +23,7 @@ import {
   Calendar,
   Clock,
   User,
+  UserCheck,
   Phone,
   Scissors,
   Trash2,
@@ -92,7 +100,26 @@ function parseBookingHour(timeStr?: string): number {
 
 
 function StaffSelect({ staff, value, onChange }: { staff: StaffMember[]; value?: string | null; onChange: (v: string | null) => void }) {
-  return <select aria-label="Assigned staff (optional)" className={selectClass} value={value || ''} onChange={e => onChange(e.target.value || null)}><option value="">Unassigned (optional)</option>{staff.filter(s => s.isActive).map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select>;
+  return (
+    <Select
+      value={value || 'unassigned'}
+      onValueChange={(val) => onChange(val === 'unassigned' ? null : val)}
+    >
+      <SelectTrigger className="w-full h-10 rounded-xl border-[#F1DEE3] bg-white">
+        <SelectValue placeholder="Unassigned (optional)" />
+      </SelectTrigger>
+      <SelectContent className="z-[70]">
+        <SelectItem value="unassigned" className="text-slate-500 font-medium">
+          Unassigned (optional)
+        </SelectItem>
+        {staff.filter((s) => s.isActive).map((s) => (
+          <SelectItem key={s.id} value={s.id}>
+            {s.name} ({s.roleTitle || 'Stylist'})
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
 }
 
 function BookingForm({ branchId, initialDate, existing, onSaved, onClose }: { branchId: string; initialDate?: string; existing?: Booking; onSaved: (b: Booking) => void; onClose: () => void }) {
@@ -294,49 +321,79 @@ function BookingForm({ branchId, initialDate, existing, onSaved, onClose }: { br
             <div className="grid gap-3.5 sm:grid-cols-2">
               <div className="sm:col-span-2">
                 <Field label="Booking Branch">
-                  <select className={selectClass} value={selectedBranchId}
+                  <Select
                     disabled={busy || !!existing || user?.role !== 'SUPER_ADMIN'}
-                    onChange={e => changeBranch(e.target.value)}>
-                    <option value="">Select branch</option>
-                    {allBranches.filter(b => b.isActive || b.id === existing?.branchId).map(b => (
-                      <option key={b.id} value={b.id}>{b.name}</option>
-                    ))}
-                  </select>
+                    value={selectedBranchId || ''}
+                    onValueChange={(val) => changeBranch(val)}
+                  >
+                    <SelectTrigger className="w-full h-10 rounded-xl border-[#F1DEE3] bg-white">
+                      <SelectValue placeholder="Select branch" />
+                    </SelectTrigger>
+                    <SelectContent className="z-[70]">
+                      {allBranches.filter(b => b.isActive || b.id === existing?.branchId).map(b => (
+                        <SelectItem key={b.id} value={b.id}>
+                          {b.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </Field>
                 {!existing && user?.role === 'SUPER_ADMIN' && <p className="mt-1 text-xs text-slate-500">Select a branch to load its clients, services, staff and payment accounts.</p>}
               </div>
               <Field label="Reservation Type">
-                <select
-                  className={selectClass}
+                <Select
                   value={form.type}
-                  onChange={e => change('type', e.target.value as BookingInput['type'])}
+                  onValueChange={(val) => change('type', val as BookingInput['type'])}
                 >
-                  <option value="BRIDAL">Bridal Event</option>
-                  <option value="GROOM">Groom Event</option>
-                </select>
+                  <SelectTrigger className="w-full h-10 rounded-xl border-[#F1DEE3] bg-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="z-[70]">
+                    <SelectItem value="BRIDAL">Bridal Event</SelectItem>
+                    <SelectItem value="GROOM">Groom Event</SelectItem>
+                  </SelectContent>
+                </Select>
               </Field>
 
               <Field label="Client Profile">
-                <select
-                  className={selectClass}
+                <Select
                   disabled={!!existing}
-                  value={form.clientId || ''}
-                  onChange={e => {
-                    const c = clients.find(c => c.id === e.target.value);
-                    key.current = newKey();
-                    setForm(f => ({
-                      ...f,
-                      clientId: c?.id,
-                      clientName: c?.name || '',
-                      clientPhone: c?.phone || ''
-                    }));
+                  value={form.clientId || 'new'}
+                  onValueChange={(val) => {
+                    if (val === 'new') {
+                      key.current = newKey();
+                      setForm(f => ({
+                        ...f,
+                        clientId: undefined,
+                        clientName: '',
+                        clientPhone: '',
+                      }));
+                    } else {
+                      const c = clients.find(c => c.id === val);
+                      key.current = newKey();
+                      setForm(f => ({
+                        ...f,
+                        clientId: c?.id,
+                        clientName: c?.name || '',
+                        clientPhone: c?.phone || '',
+                      }));
+                    }
                   }}
                 >
-                  <option value="">+ New Client Profile</option>
-                  {clients.map(c => (
-                    <option key={c.id} value={c.id}>{c.name} · {c.phone}</option>
-                  ))}
-                </select>
+                  <SelectTrigger className="w-full h-10 rounded-xl border-[#F1DEE3] bg-white">
+                    <SelectValue placeholder="+ New Client Profile" />
+                  </SelectTrigger>
+                  <SelectContent className="z-[70]">
+                    <SelectItem value="new" className="font-semibold text-[#9D2558]">
+                      + New Client Profile
+                    </SelectItem>
+                    {clients.map(c => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.name} · {c.phone}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </Field>
 
               <Field label="Client Full Name">
@@ -731,14 +788,18 @@ function BookingForm({ branchId, initialDate, existing, onSaved, onClose }: { br
           <div className="rounded-2xl border border-[#F1DEE3] p-4 bg-white space-y-4">
             <div className="grid gap-3.5 sm:grid-cols-2">
               <Field label="Discount Type">
-                <select
-                  className={selectClass}
+                <Select
                   value={form.discountType}
-                  onChange={e => change('discountType', e.target.value as BookingInput['discountType'])}
+                  onValueChange={(val) => change('discountType', val as BookingInput['discountType'])}
                 >
-                  <option value="FIXED">Fixed Amount (PKR)</option>
-                  <option value="PERCENTAGE">Percentage (%)</option>
-                </select>
+                  <SelectTrigger className="w-full h-10 rounded-xl border-[#F1DEE3] bg-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="z-[70]">
+                    <SelectItem value="FIXED">Fixed Amount (PKR)</SelectItem>
+                    <SelectItem value="PERCENTAGE">Percentage (%)</SelectItem>
+                  </SelectContent>
+                </Select>
               </Field>
               <Field label="Discount Value">
                 <Input
@@ -818,19 +879,34 @@ function BookingForm({ branchId, initialDate, existing, onSaved, onClose }: { br
                         onChange={e => changeAdvance({ date: e.target.value })} />
                     </Field>
                     <Field label="Payment Method">
-                      <select className={selectClass} value={form.advancePayment.method}
-                        onChange={e => changeAdvance({ method: e.target.value as BookingPaymentInput['method'], paymentAccountId: undefined })}>
-                        <option value="CASH">Cash</option>
-                        <option value="ONLINE_ACCOUNT">Online / Bank Account</option>
-                      </select>
+                      <Select
+                        value={form.advancePayment.method}
+                        onValueChange={(val) => changeAdvance({ method: val as BookingPaymentInput['method'], paymentAccountId: undefined })}
+                      >
+                        <SelectTrigger className="w-full h-10 rounded-xl border-[#F1DEE3] bg-white">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="z-[70]">
+                          <SelectItem value="CASH">Cash</SelectItem>
+                          <SelectItem value="ONLINE_ACCOUNT">Online / Bank Account</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </Field>
                     {form.advancePayment.method === 'ONLINE_ACCOUNT' && (
                       <Field label="Payment Account">
-                        <select className={selectClass} value={form.advancePayment.paymentAccountId || ''}
-                          onChange={e => changeAdvance({ paymentAccountId: e.target.value })}>
-                          <option value="">Select branch payment account</option>
-                          {paymentAccounts.filter(a => a.isActive).map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-                        </select>
+                        <Select
+                          value={form.advancePayment.paymentAccountId || ''}
+                          onValueChange={(val) => changeAdvance({ paymentAccountId: val })}
+                        >
+                          <SelectTrigger className="w-full h-10 rounded-xl border-[#F1DEE3] bg-white">
+                            <SelectValue placeholder="Select branch payment account" />
+                          </SelectTrigger>
+                          <SelectContent className="z-[70]">
+                            {paymentAccounts.filter(a => a.isActive).map(a => (
+                              <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </Field>
                     )}
                     <Field label="Payment Reference">
@@ -1001,28 +1077,35 @@ function PaymentDialog({ booking, mode, onSaved, onClose }: { booking: Booking; 
           </Field>
 
           <Field label="Payment Method">
-            <select
-              className={selectClass}
+            <Select
               value={payment.method}
-              onChange={e => change({ method: e.target.value as BookingPaymentInput['method'] })}
+              onValueChange={(val) => change({ method: val as BookingPaymentInput['method'] })}
             >
-              <option value="CASH">Cash (Registers into Open Drawer)</option>
-              <option value="ONLINE_ACCOUNT">Online Bank / Digital Account</option>
-            </select>
+              <SelectTrigger className="w-full h-10 rounded-xl border-[#F1DEE3] bg-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="z-[70]">
+                <SelectItem value="CASH">Cash (Registers into Open Drawer)</SelectItem>
+                <SelectItem value="ONLINE_ACCOUNT">Online Bank / Digital Account</SelectItem>
+              </SelectContent>
+            </Select>
           </Field>
 
           {payment.method === 'ONLINE_ACCOUNT' && (
             <Field label="Online Deposit Account">
-              <select
-                className={selectClass}
+              <Select
                 value={payment.paymentAccountId || ''}
-                onChange={e => change({ paymentAccountId: e.target.value })}
+                onValueChange={(val) => change({ paymentAccountId: val })}
               >
-                <option value="">Select Account</option>
-                {accounts.filter(a => a.isActive).map(a => (
-                  <option key={a.id} value={a.id}>{a.name}</option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full h-10 rounded-xl border-[#F1DEE3] bg-white">
+                  <SelectValue placeholder="Select Account" />
+                </SelectTrigger>
+                <SelectContent className="z-[70]">
+                  {accounts.filter(a => a.isActive).map(a => (
+                    <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </Field>
           )}
 
@@ -1413,34 +1496,57 @@ export function BookingsPage() {
       <div className="bg-white p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-[#F1DEE3] shadow-xs">
         <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
           <Field label="Branch">
-            <select
-              className={selectClass}
-              value={branchId}
+            <Select
+              value={branchId || 'ALL'}
               disabled={user?.role !== 'SUPER_ADMIN'}
-              onChange={e => { setSelected(undefined); setBranchId(e.target.value); }}
+              onValueChange={(val) => {
+                setSelected(undefined);
+                setBranchId(val === 'ALL' ? '' : val);
+              }}
             >
-              <option value="">Select branch</option>
-              {branches.filter(b => b.isActive).map(b => (
-                <option key={b.id} value={b.id}>{b.name}</option>
-              ))}
-            </select>
+              <SelectTrigger className="w-full h-10 rounded-xl border-[#F1DEE3] bg-white">
+                <SelectValue placeholder="All Branches" />
+              </SelectTrigger>
+              <SelectContent className="z-[70]">
+                <SelectItem value="ALL">All Branches</SelectItem>
+                {branches.filter(b => b.isActive).map(b => (
+                  <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </Field>
 
           <Field label="Booking Type">
-            <select className={selectClass} value={type} onChange={e => setType(e.target.value)}>
-              <option value="">All Types</option>
-              <option value="BRIDAL">Bridal Event</option>
-              <option value="GROOM">Groom Event</option>
-            </select>
+            <Select
+              value={type || 'ALL'}
+              onValueChange={(val) => setType(val === 'ALL' ? '' : val)}
+            >
+              <SelectTrigger className="w-full h-10 rounded-xl border-[#F1DEE3] bg-white">
+                <SelectValue placeholder="All Types" />
+              </SelectTrigger>
+              <SelectContent className="z-[70]">
+                <SelectItem value="ALL">All Types</SelectItem>
+                <SelectItem value="BRIDAL">Bridal Event</SelectItem>
+                <SelectItem value="GROOM">Groom Event</SelectItem>
+              </SelectContent>
+            </Select>
           </Field>
 
           <Field label="Status">
-            <select className={selectClass} value={status} onChange={e => setStatus(e.target.value)}>
-              <option value="">All Statuses</option>
-              {['CONFIRMED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'NO_SHOW'].map(s => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
+            <Select
+              value={status || 'ALL'}
+              onValueChange={(val) => setStatus(val === 'ALL' ? '' : val)}
+            >
+              <SelectTrigger className="w-full h-10 rounded-xl border-[#F1DEE3] bg-white">
+                <SelectValue placeholder="All Statuses" />
+              </SelectTrigger>
+              <SelectContent className="z-[70]">
+                <SelectItem value="ALL">All Statuses</SelectItem>
+                {['CONFIRMED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'NO_SHOW'].map(s => (
+                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </Field>
 
           {view !== 'calendar' && (
@@ -1555,32 +1661,34 @@ export function BookingsPage() {
           {/* Week View (CareDoc Reference Time-Grid) */}
           {calendarMode === 'week' && (
             <div className="overflow-x-auto">
-              <div className="min-w-[760px] xl:min-w-0">
+              <div className="min-w-[1550px] w-full">
                 {/* 7 Column Headers starting Monday */}
                 <div className="flex border-b border-[#F1DEE3] bg-[#FDF2F5]">
-                  <div className="w-16 sm:w-20 shrink-0 py-2.5 text-center text-[10px] font-bold uppercase tracking-wider text-slate-400 border-r border-[#F1DEE3]">
+                  <div className="w-16 sm:w-20 shrink-0 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-slate-400 border-r border-[#F1DEE3]">
                     Time
                   </div>
                   <div className="grid grid-cols-7 flex-1 divide-x divide-[#F1DEE3]">
                     {weekDays.map(day => (
                       <div
                         key={day.dateString}
-                        className={`py-2 text-center transition-colors ${
-                          day.isToday ? 'bg-[#FCE8EC]/50' : ''
+                        className={`py-2.5 px-2 text-center transition-colors ${
+                          day.isToday ? 'bg-[#FCE8EC]/60' : ''
                         }`}
                       >
-                        <span className="block text-[11px] font-semibold text-slate-500 uppercase">
-                          {day.dayName}
-                        </span>
-                        <span
-                          className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold mt-0.5 ${
-                            day.isToday
-                              ? 'bg-[#9D2558] text-white shadow-xs'
-                              : 'text-[#23151D]'
-                          }`}
-                        >
-                          {day.dayNumber < 10 ? `0${day.dayNumber}` : day.dayNumber}
-                        </span>
+                        <div className="flex items-center justify-center gap-1.5">
+                          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                            {day.dayName}
+                          </span>
+                          <span
+                            className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-black ${
+                              day.isToday
+                                ? 'bg-[#9D2558] text-white shadow-xs'
+                                : 'text-[#23151D]'
+                            }`}
+                          >
+                            {day.dayNumber < 10 ? `0${day.dayNumber}` : day.dayNumber}
+                          </span>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -1589,9 +1697,9 @@ export function BookingsPage() {
                 {/* Hourly Slots (8 AM to 10 PM) */}
                 <div className="divide-y divide-[#F1DEE3]">
                   {TIME_SLOTS.map(slot => (
-                    <div key={slot.hour} className="flex min-h-[76px]">
+                    <div key={slot.hour} className="flex min-h-[140px]">
                       {/* Left Time label */}
-                      <div className="w-16 sm:w-20 shrink-0 p-2 text-right pr-3 text-xs font-semibold text-slate-400 border-r border-[#F1DEE3] bg-slate-50/20 select-none">
+                      <div className="w-16 sm:w-20 shrink-0 p-3 text-right pr-3.5 text-xs font-bold text-slate-400 border-r border-[#F1DEE3] bg-slate-50/20 select-none">
                         {slot.label}
                       </div>
 
@@ -1607,8 +1715,8 @@ export function BookingsPage() {
                           return (
                             <div
                               key={day.dateString}
-                              className={`p-1.5 relative group flex flex-col gap-1 transition-colors ${
-                                day.isToday ? 'bg-[#FDF2F5]/20' : 'bg-white hover:bg-slate-50/40'
+                              className={`p-2 relative group flex flex-col gap-2 transition-colors ${
+                                day.isToday ? 'bg-[#FDF2F5]/25' : 'bg-white hover:bg-slate-50/40'
                               }`}
                             >
                               {slotBookings.map(b => (
@@ -1618,44 +1726,88 @@ export function BookingsPage() {
                                     e.stopPropagation();
                                     setSelected(b);
                                   }}
-                                  className={`p-2 rounded-xl border text-left cursor-pointer transition-all hover:shadow-md hover:scale-[1.01] ${
+                                  className={`group/card relative overflow-hidden p-3 rounded-2xl border text-left cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 border-l-[4px] shadow-2xs ${
                                     b.type === 'BRIDAL'
-                                      ? 'bg-[#FDF2F5] border-[#F1DEE3] hover:border-[#9D2558]/50'
-                                      : 'bg-slate-50 border-slate-200 hover:border-slate-400'
+                                      ? 'bg-gradient-to-br from-white via-[#FDF2F5] to-[#FCE8EC]/50 border-[#F1DEE3] border-l-[#9D2558] hover:border-[#9D2558]'
+                                      : 'bg-gradient-to-br from-white via-slate-50/90 to-[#23151D]/5 border-slate-200 border-l-[#23151D] hover:border-[#23151D]'
                                   }`}
                                 >
-                                  {/* Avatar + Client Name */}
-                                  <div className="flex items-center gap-1.5 min-w-0">
-                                    <div
-                                      className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0 ${
-                                        b.type === 'BRIDAL' ? 'bg-[#9D2558]' : 'bg-[#23151D]'
+                                  {/* Header: Avatar, Name & Type Badge */}
+                                  <div className="flex items-start justify-between gap-1.5 mb-2">
+                                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                                      <div
+                                        className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black text-white shrink-0 shadow-xs ${
+                                          b.type === 'BRIDAL'
+                                            ? 'bg-gradient-to-br from-[#9D2558] to-[#B82F69]'
+                                            : 'bg-gradient-to-br from-[#23151D] to-[#452738]'
+                                        }`}
+                                      >
+                                        {b.clientName ? b.clientName.charAt(0).toUpperCase() : 'B'}
+                                      </div>
+                                      <div className="min-w-0 flex-1">
+                                        <span className="text-xs font-bold text-[#23151D] group-hover/card:text-[#9D2558] transition-colors truncate block leading-tight">
+                                          {b.clientName}
+                                        </span>
+                                        <span className="text-[10px] text-slate-500 font-mono block truncate mt-0.5">
+                                          {b.clientPhone || b.bookingNumber}
+                                        </span>
+                                      </div>
+                                    </div>
+
+                                    <span
+                                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider shrink-0 border ${
+                                        b.type === 'BRIDAL'
+                                          ? 'bg-[#FCE8EC] text-[#9D2558] border-[#F1DEE3]'
+                                          : 'bg-slate-900 text-white border-slate-800'
                                       }`}
                                     >
-                                      {b.clientName ? b.clientName.charAt(0).toUpperCase() : 'B'}
+                                      {b.type === 'BRIDAL' ? (
+                                        <>
+                                          <Sparkles className="w-2.5 h-2.5 text-[#9D2558]" />
+                                          <span>Bridal</span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <UserCheck className="w-2.5 h-2.5 text-slate-300" />
+                                          <span>Groom</span>
+                                        </>
+                                      )}
+                                    </span>
+                                  </div>
+
+                                  {/* Time & Service Info Row */}
+                                  <div className="flex items-center justify-between text-[10.5px] text-slate-700 font-medium py-1 px-2 rounded-xl bg-white/95 border border-[#F1DEE3]/70 mb-1.5 shadow-2xs">
+                                    <span className="flex items-center gap-1 font-mono font-bold text-slate-800">
+                                      <Clock className="w-3 h-3 text-[#9D2558]" />
+                                      <span>{b.serviceTime || slot.label}</span>
+                                    </span>
+                                    <span className="text-[10px] text-slate-500 font-medium truncate max-w-[100px]" title={b.items?.map(i => i.name).join(', ')}>
+                                      {b.items?.length === 1 ? b.items[0].name : b.items?.length ? `${b.items.length} items` : 'Booking'}
+                                    </span>
+                                  </div>
+
+                                  {/* Assigned Staff (if any) */}
+                                  {b.assignedStaffName && (
+                                    <div className="flex items-center gap-1 text-[10px] text-slate-500 font-medium px-1 mb-1.5 truncate">
+                                      <Scissors className="w-3 h-3 text-[#9D2558] shrink-0" />
+                                      <span className="truncate">{b.assignedStaffName}</span>
                                     </div>
-                                    <span className="text-xs font-bold text-[#23151D] truncate leading-tight">
-                                      {b.clientName}
+                                  )}
+
+                                  {/* Financial Due / Paid Footer */}
+                                  <div className="flex items-center justify-between pt-1.5 border-t border-[#F1DEE3]/70 text-[10px] font-mono">
+                                    <span className="text-slate-400 font-medium text-[9.5px]">
+                                      Total: {formatCurrency(b.totalAmount)}
                                     </span>
-                                  </div>
-
-                                  {/* Time badge */}
-                                  <div className="text-[10px] text-slate-500 font-mono mt-1 flex items-center gap-1">
-                                    <Clock className="w-2.5 h-2.5 text-slate-400 shrink-0" />
-                                    <span className="truncate">{b.serviceTime || slot.label}</span>
-                                  </div>
-
-                                  {/* Payment status badge */}
-                                  <div className="flex items-center justify-between text-[9px] font-mono mt-1">
                                     {b.remainingBalance > 0 ? (
-                                      <span className="font-bold text-[#9D2558]">Due: {formatCurrency(b.remainingBalance)}</span>
+                                      <span className="font-black text-[#9D2558] bg-[#FDF2F5] px-1.5 py-0.5 rounded-md border border-[#F1DEE3]">
+                                        Due: {formatCurrency(b.remainingBalance)}
+                                      </span>
                                     ) : (
-                                      <span className="font-medium text-emerald-700">Paid</span>
+                                      <span className="font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/70 inline-flex items-center gap-1">
+                                        <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Paid
+                                      </span>
                                     )}
-                                    <span className={`px-1 py-0.2 rounded text-[8px] font-bold uppercase ${
-                                      b.type === 'BRIDAL' ? 'bg-[#FCE8EC] text-[#9D2558]' : 'bg-slate-200 text-slate-700'
-                                    }`}>
-                                      {b.type === 'BRIDAL' ? 'Bridal' : 'Groom'}
-                                    </span>
                                   </div>
                                 </div>
                               ))}
@@ -1668,7 +1820,7 @@ export function BookingsPage() {
                                     setBookingInitialDate(day.dateString);
                                     setEditing('new');
                                   }}
-                                  className="opacity-0 group-hover:opacity-100 transition-opacity w-full h-full min-h-[36px] flex items-center justify-center gap-1 text-[11px] font-semibold text-slate-400 hover:text-[#9D2558] hover:bg-[#FCE8EC]/40 rounded-lg border border-dashed border-transparent hover:border-[#9D2558]/30"
+                                  className="opacity-0 group-hover:opacity-100 transition-opacity w-full h-full min-h-[40px] flex items-center justify-center gap-1 text-[11px] font-semibold text-slate-400 hover:text-[#9D2558] hover:bg-[#FCE8EC]/40 rounded-xl border border-dashed border-transparent hover:border-[#9D2558]/30"
                                   title={`Book at ${slot.label} on ${day.dateString}`}
                                 >
                                   <Plus className="w-3.5 h-3.5" />
@@ -1698,48 +1850,75 @@ export function BookingsPage() {
                 });
 
                 return (
-                  <div key={slot.hour} className="flex min-h-[72px]">
-                    <div className="w-20 sm:w-24 shrink-0 p-3 text-right pr-4 text-xs font-semibold text-slate-400 border-r border-[#F1DEE3] bg-slate-50/20 select-none">
+                  <div key={slot.hour} className="flex min-h-[110px]">
+                    <div className="w-20 sm:w-24 shrink-0 p-3 text-right pr-4 text-xs font-bold text-slate-400 border-r border-[#F1DEE3] bg-slate-50/20 select-none">
                       {slot.label}
                     </div>
-                    <div className="flex-1 p-2 sm:p-3 relative group flex flex-wrap gap-2.5 items-center">
+                    <div className="flex-1 p-2.5 sm:p-3 relative group flex flex-wrap gap-3 items-center">
                       {slotBookings.map(b => (
                         <div
                           key={b.id}
                           onClick={() => setSelected(b)}
-                          className={`flex-1 min-w-[260px] p-3 rounded-xl border text-left cursor-pointer transition-all hover:shadow-md ${
+                          className={`flex-1 min-w-[340px] max-w-[480px] p-3.5 rounded-2xl border text-left cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 border-l-[4px] shadow-2xs ${
                             b.type === 'BRIDAL'
-                              ? 'bg-[#FDF2F5] border-[#F1DEE3] hover:border-[#9D2558]/50'
-                              : 'bg-slate-50 border-slate-200 hover:border-slate-400'
+                              ? 'bg-gradient-to-br from-white via-[#FDF2F5] to-[#FCE8EC]/50 border-[#F1DEE3] border-l-[#9D2558] hover:border-[#9D2558]'
+                              : 'bg-gradient-to-br from-white via-slate-50/90 to-[#23151D]/5 border-slate-200 border-l-[#23151D] hover:border-[#23151D]'
                           }`}
                         >
                           <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2.5">
                               <div
-                                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 ${
-                                  b.type === 'BRIDAL' ? 'bg-[#9D2558]' : 'bg-[#23151D]'
+                                className={`w-8.5 h-8.5 rounded-xl flex items-center justify-center text-xs font-black text-white shrink-0 shadow-xs ${
+                                  b.type === 'BRIDAL' ? 'bg-gradient-to-br from-[#9D2558] to-[#B82F69]' : 'bg-gradient-to-br from-[#23151D] to-[#452738]'
                                 }`}
                               >
                                 {b.clientName ? b.clientName.charAt(0).toUpperCase() : 'B'}
                               </div>
                               <div>
-                                <h4 className="text-xs font-bold text-[#23151D]">{b.clientName}</h4>
-                                <p className="text-[10px] text-slate-500 font-mono">{b.clientPhone || b.bookingNumber}</p>
+                                <h4 className="text-xs sm:text-sm font-bold text-[#23151D] leading-tight">{b.clientName}</h4>
+                                <p className="text-[11px] text-slate-500 font-mono mt-0.5">{b.clientPhone || b.bookingNumber}</p>
                               </div>
                             </div>
-                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                              b.type === 'BRIDAL' ? 'bg-[#FCE8EC] text-[#9D2558]' : 'bg-slate-200 text-slate-800'
-                            }`}>
-                              {b.type}
-                            </span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="flex items-center gap-1 text-xs font-mono font-bold text-slate-700 bg-white/95 px-2 py-0.5 rounded-lg border border-[#F1DEE3] shadow-2xs">
+                                <Clock className="w-3 h-3 text-[#9D2558]" />
+                                {b.serviceTime || slot.label}
+                              </span>
+                              <span className={`px-2 py-0.5 rounded-full text-[9.5px] font-black uppercase tracking-wider border inline-flex items-center gap-1 ${
+                                b.type === 'BRIDAL' ? 'bg-[#FCE8EC] text-[#9D2558] border-[#F1DEE3]' : 'bg-slate-900 text-white border-slate-800'
+                              }`}>
+                                {b.type === 'BRIDAL' ? (
+                                  <>
+                                    <Sparkles className="w-2.5 h-2.5 text-[#9D2558]" />
+                                    Bridal
+                                  </>
+                                ) : (
+                                  <>
+                                    <UserCheck className="w-2.5 h-2.5 text-slate-300" />
+                                    Groom
+                                  </>
+                                )}
+                              </span>
+                            </div>
                           </div>
 
-                          <div className="flex items-center justify-between mt-2 pt-2 border-t border-[#F1DEE3] text-xs font-mono">
-                            <span className="text-slate-600">Total: {formatCurrency(b.totalAmount)}</span>
+                          {b.assignedStaffName && (
+                            <div className="flex items-center gap-1.5 text-[11px] text-slate-600 font-medium mt-2 px-1">
+                              <Scissors className="w-3.5 h-3.5 text-[#9D2558] shrink-0" />
+                              <span>Stylist: <strong className="text-slate-800">{b.assignedStaffName}</strong></span>
+                            </div>
+                          )}
+
+                          <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-[#F1DEE3]/70 text-xs font-mono">
+                            <span className="text-slate-500 font-medium">Total: {formatCurrency(b.totalAmount)}</span>
                             {b.remainingBalance > 0 ? (
-                              <span className="font-bold text-[#9D2558]">Due: {formatCurrency(b.remainingBalance)}</span>
+                              <span className="font-black text-[#9D2558] bg-[#FDF2F5] px-2 py-0.5 rounded-md border border-[#F1DEE3]">
+                                Due: {formatCurrency(b.remainingBalance)}
+                              </span>
                             ) : (
-                              <span className="font-bold text-emerald-700">Paid: {formatCurrency(b.advancePaid)}</span>
+                              <span className="font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/80 inline-flex items-center gap-1">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Paid
+                              </span>
                             )}
                           </div>
                         </div>
@@ -1752,7 +1931,7 @@ export function BookingsPage() {
                             setBookingInitialDate(dayStr);
                             setEditing('new');
                           }}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-[#9D2558] p-2 rounded-lg border border-dashed border-slate-200 hover:border-[#9D2558]/30 hover:bg-[#FDF2F5]/50"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-[#9D2558] p-2 rounded-xl border border-dashed border-slate-200 hover:border-[#9D2558]/30 hover:bg-[#FDF2F5]/50"
                         >
                           <Plus className="w-4 h-4" />
                           <span>Book at {slot.label}</span>
@@ -1768,7 +1947,7 @@ export function BookingsPage() {
           {/* Month View (CareDoc 35-Day Grid) */}
           {calendarMode === 'month' && (
             <div className="overflow-x-auto">
-              <div className="min-w-[700px] xl:min-w-0">
+              <div className="min-w-[1150px] w-full">
                 {/* Weekday headers */}
                 <div className="grid grid-cols-7 border-b border-[#F1DEE3] bg-[#FDF2F5]">
                   {WEEKDAY_NAMES.map((w, idx) => (
@@ -1836,38 +2015,59 @@ export function BookingsPage() {
                                 e.stopPropagation();
                                 setSelected(b);
                               }}
-                              className={`p-2 rounded-xl border border-[#F1DEE3] text-left cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-xs bg-white border-l-[3.5px] ${
+                              className={`p-2.5 rounded-xl border border-[#F1DEE3] text-left cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-md bg-gradient-to-br from-white to-[#FDF2F5]/70 border-l-[3.5px] shadow-2xs ${
                                 b.type === 'BRIDAL' ? 'border-l-[#9D2558]' : 'border-l-[#23151D]'
                               }`}
                             >
                               <div className="flex items-center justify-between gap-1 text-[10px] font-semibold">
-                                <span className="flex items-center gap-1 font-mono text-slate-600 text-[9px]">
-                                  <Clock className="w-2.5 h-2.5 text-slate-400" />
+                                <span className="flex items-center gap-1 font-mono font-bold text-slate-700 text-[10px]">
+                                  <Clock className="w-3 h-3 text-[#9D2558]" />
                                   {b.serviceTime || '10:00'}
                                 </span>
                                 <span
-                                  className={`px-1.5 py-0.2 rounded-full text-[9px] font-bold ${
+                                  className={`px-1.5 py-0.2 rounded-full text-[8.5px] font-black uppercase tracking-wider border inline-flex items-center gap-0.5 ${
                                     b.type === 'BRIDAL'
-                                      ? 'bg-[#FCE8EC] text-[#9D2558]'
-                                      : 'bg-slate-100 text-slate-800'
+                                      ? 'bg-[#FCE8EC] text-[#9D2558] border-[#F1DEE3]'
+                                      : 'bg-slate-900 text-white border-slate-800'
                                   }`}
                                 >
-                                  {b.type}
+                                  {b.type === 'BRIDAL' ? (
+                                    <>
+                                      <Sparkles className="w-2 h-2 text-[#9D2558]" />
+                                      Bridal
+                                    </>
+                                  ) : (
+                                    <>
+                                      <UserCheck className="w-2 h-2 text-slate-300" />
+                                      Groom
+                                    </>
+                                  )}
                                 </span>
                               </div>
 
-                              <div className="text-[11px] font-bold text-[#23151D] truncate mt-1">
-                                {b.clientName}
+                              <div className="flex items-center gap-1.5 mt-1.5">
+                                <div
+                                  className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-black text-white shrink-0 ${
+                                    b.type === 'BRIDAL' ? 'bg-[#9D2558]' : 'bg-[#23151D]'
+                                  }`}
+                                >
+                                  {b.clientName ? b.clientName.charAt(0).toUpperCase() : 'B'}
+                                </div>
+                                <div className="text-xs font-bold text-[#23151D] truncate leading-tight flex-1">
+                                  {b.clientName}
+                                </div>
                               </div>
 
-                              <div className="flex items-center justify-between gap-1 mt-1 text-[10px] text-slate-500 font-mono">
-                                <span className="truncate text-emerald-700 font-medium">
+                              <div className="flex items-center justify-between gap-1 mt-2 pt-1.5 border-t border-[#F1DEE3]/70 text-[10px] font-mono">
+                                <span className="text-slate-400 font-medium text-[9px]">
                                   Adv: {formatCurrency(b.advancePaid)}
                                 </span>
-                                {b.remainingBalance > 0 && (
-                                  <span className="text-[#9D2558] font-bold">
+                                {b.remainingBalance > 0 ? (
+                                  <span className="font-bold text-[#9D2558] bg-[#FDF2F5] px-1 rounded">
                                     Due: {formatCurrency(b.remainingBalance)}
                                   </span>
+                                ) : (
+                                  <span className="text-emerald-700 font-extrabold bg-emerald-50 px-1 rounded">Paid</span>
                                 )}
                               </div>
                             </div>
@@ -2053,6 +2253,7 @@ export function BookingsPage() {
         onEdit={b => setEditing(b)}
         onOpenConfirmationMessage={b => setConfirmationBooking(b)}
         onOpenInPOS={b => navigate(`/pos?bookingId=${b.id}`)}
+        onRefund={b => { setSelected(b); setMode('refund'); }}
         onCancel={b => setMode('cancel')}
         onNoShow={b => setMode('no-show')}
         onStartService={b => void action(async () => saved(await salonService.startBooking(b.id, b.revision)))}

@@ -11,7 +11,7 @@ import { toUserDTO } from '../auth/auth.mapper.js';
 const DEFAULT_PASSWORD = 'Salon@2026';
 const include = { branch: { select: { name: true } } };
 
-const strip = ({ passwordHash, ...rest }) => rest;
+const strip = ({ passwordHash, plainPassword, ...rest }) => rest;
 
 const getOrThrow = async (tx, id) => {
   const user = await tx.user.findUnique({ where: { id }, include });
@@ -86,7 +86,7 @@ export const createUser = async (params, actor) => {
         const data = { isActive: true, email: input.email, name: input.name };
         if (input.password) {
           data.passwordHash = await hashPassword(input.password);
-          data.plainPassword = input.password.trim();
+          data.plainPassword = null;
         }
         const user = await tx.user.update({ where: { id: staff.user.id }, data, include });
         await tx.staff.update({ where: { id: staff.id }, data: { hasPortalAccess: true } });
@@ -114,7 +114,7 @@ export const createUser = async (params, actor) => {
         title:        input.title,
         phone:        input.phone || null,
         passwordHash: await hashPassword(input.password || DEFAULT_PASSWORD),
-        plainPassword: (input.password || DEFAULT_PASSWORD).trim(),
+        plainPassword: null,
       },
       include,
     });
@@ -154,7 +154,7 @@ export const updateUser = async (id, params, actor) => {
     if (params.title) data.title = params.title;
     if (params.password) {
       data.passwordHash = await hashPassword(params.password.trim());
-      data.plainPassword = params.password.trim();
+      data.plainPassword = null;
     }
     if (params.isActive !== undefined) {
       data.isActive = Boolean(params.isActive);
@@ -327,7 +327,7 @@ export const resetUserPassword = async (id, password, actor) => {
       where: { id },
       data: {
         passwordHash: await hashPassword(finalPassword),
-        plainPassword: finalPassword,
+        plainPassword: null,
       },
     });
     await tx.refreshToken.updateMany({ where: { userId: id, revokedAt: null }, data: { revokedAt: new Date() } });

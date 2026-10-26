@@ -106,7 +106,7 @@ export const Header: React.FC<HeaderProps> = ({
   const userRole = user ? roleMeta[user.role] : { label: 'User', variant: 'secondary' as const };
 
   return (
-    <header className="sticky top-0 z-30 min-h-16 bg-white border-b border-[#F1DEE3] px-4 sm:px-6 py-3 sm:py-0 flex flex-wrap sm:flex-nowrap items-center justify-between gap-y-2 shadow-2xs font-sans">
+    <header className="sticky top-0 z-30 min-h-16 bg-white border-b border-slate-200 px-4 sm:px-6 py-3 sm:py-0 flex flex-wrap sm:flex-nowrap items-center justify-between gap-y-2 shadow-2xs font-sans">
       {/* LEFT ZONE: Toggle button + Breadcrumbs */}
       <div className="flex items-center gap-3 min-w-0 w-full sm:w-auto sm:flex-1">
         {/* Mobile Hamburger */}

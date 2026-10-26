@@ -432,8 +432,8 @@ export const BranchOperationalSections: React.FC<BranchOperationalSectionsProps>
 
       {/* ── 2. MAIN DASHBOARD CONTENT GRID (MATCHING LUXURY SALON LAYOUT) ── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
-        {/* ── LEFT COLUMN: DAY SCHEDULE TIMELINE MATRIX (lg:col-span-5) ── */}
-        <div className="lg:col-span-5">
+        {/* ── LEFT COLUMN: DAY SCHEDULE TIMELINE MATRIX (xl:col-span-4) ── */}
+        <div className="lg:col-span-12 xl:col-span-4">
           <Card padding="none" className="bg-white border-[#F1DEE3] shadow-xs rounded-2xl overflow-hidden">
             {/* Header */}
             <div className="p-4 border-b border-[#F8EDF0] flex items-center justify-between flex-wrap gap-2">
@@ -545,8 +545,8 @@ export const BranchOperationalSections: React.FC<BranchOperationalSectionsProps>
           </Card>
         </div>
 
-        {/* ── CENTER COLUMN: 2 INTERACTIVE REAL-DATA CHARTS (lg:col-span-4) ── */}
-        <div className="lg:col-span-4 space-y-4">
+        {/* ── CENTER COLUMN: 2 INTERACTIVE REAL-DATA CHARTS (xl:col-span-4) ── */}
+        <div className="lg:col-span-6 xl:col-span-4 space-y-4">
           {/* 1. Statistics (Curved Area Chart) */}
           <Card padding="none" className="bg-white border-[#F1DEE3] shadow-xs rounded-2xl p-4 space-y-3">
             <div className="flex items-center justify-between flex-wrap gap-2">
@@ -833,12 +833,12 @@ export const BranchOperationalSections: React.FC<BranchOperationalSectionsProps>
           </Card>
         </div>
 
-        {/* ── RIGHT COLUMN: UPCOMING SCHEDULE SIDEBAR (lg:col-span-3) ── */}
-        <div className="lg:col-span-3">
+        {/* ── RIGHT COLUMN: UPCOMING SCHEDULE SIDEBAR (xl:col-span-4) ── */}
+        <div className="lg:col-span-6 xl:col-span-4">
           <Card padding="none" className="bg-white border-[#F1DEE3] shadow-xs rounded-2xl overflow-hidden p-4 space-y-3.5">
             {/* Header: Bookings vs Appointments Tabs */}
-            <div className="flex items-center justify-between border-b border-[#F1DEE3] pb-2.5">
-              <div className="flex items-center gap-1.5 p-0.5 rounded-xl bg-[#FDF2F5] border border-[#F1DEE3]">
+            <div className="flex items-center justify-between flex-wrap gap-2 border-b border-[#F1DEE3] pb-2.5">
+              <div className="flex items-center gap-1.5 p-0.5 rounded-xl bg-[#FDF2F5] border border-[#F1DEE3] shrink-0">
                 <button
                   type="button"
                   onClick={() => setScheduleMode('BOOKINGS')}
@@ -865,13 +865,13 @@ export const BranchOperationalSections: React.FC<BranchOperationalSectionsProps>
                 </button>
               </div>
 
-              <div className="text-right">
-                <span className="text-[10px] text-slate-500 font-semibold block">
+              <div className="text-right shrink-0 ml-auto">
+                <span className="text-[10px] text-slate-500 font-semibold block whitespace-nowrap leading-tight">
                   {scheduleMode === 'BOOKINGS'
                     ? `${displayedBookings.length} Booked`
                     : `${displayedAppointments.length} Scheduled`}
                 </span>
-                <span className="text-[9px] text-slate-400">
+                <span className="text-[9px] text-slate-400 block whitespace-nowrap leading-tight">
                   {selectedDay.dayName}, {selectedDay.dayNum}
                 </span>
               </div>

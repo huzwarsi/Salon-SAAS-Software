@@ -110,7 +110,7 @@ export const StaffSalaryReportPage: React.FC = () => {
     if (!reportData || !reportData.rows.length) return;
     const meta: [string, string][] = [
       ['Report', 'Staff Salary Report'],
-      ['Campus', selectedBranch === 'ALL' ? 'All Campuses' : branches.find((b) => b.id === selectedBranch)?.name || selectedBranch],
+      ['Branch', selectedBranch === 'ALL' ? 'All Branches' : branches.find((b) => b.id === selectedBranch)?.name || selectedBranch],
       ['Payroll Period', `${fromMonth} to ${toMonth}`],
       ['Generated At', new Date().toLocaleString()],
     ];
@@ -121,7 +121,7 @@ export const StaffSalaryReportPage: React.FC = () => {
       'Payslip #',
       'Staff',
       'Code',
-      'Campus',
+      'Branch',
       'Basic',
       'Gross',
       'Net Salary',
@@ -152,7 +152,7 @@ export const StaffSalaryReportPage: React.FC = () => {
     if (!reportData || !reportData.rows.length) return;
     const meta: [string, string][] = [
       ['Report', 'Staff Salary Report'],
-      ['Campus', selectedBranch === 'ALL' ? 'All Campuses' : branches.find((b) => b.id === selectedBranch)?.name || selectedBranch],
+      ['Branch', selectedBranch === 'ALL' ? 'All Branches' : branches.find((b) => b.id === selectedBranch)?.name || selectedBranch],
       ['Payroll Period', `${fromMonth} to ${toMonth}`],
       ['Generated At', new Date().toLocaleString()],
     ];
@@ -163,7 +163,7 @@ export const StaffSalaryReportPage: React.FC = () => {
       'Payslip #',
       'Staff',
       'Code',
-      'Campus',
+      'Branch',
       'Basic',
       'Gross',
       'Net Salary',
@@ -196,13 +196,13 @@ export const StaffSalaryReportPage: React.FC = () => {
       return;
     }
     const meta: [string, string][] = [
-      ['Campus', selectedBranch === 'ALL' ? 'All Campuses' : branches.find((b) => b.id === selectedBranch)?.name || selectedBranch],
+      ['Branch', selectedBranch === 'ALL' ? 'All Branches' : branches.find((b) => b.id === selectedBranch)?.name || selectedBranch],
       ['Payroll Period', `${fromMonth} to ${toMonth}`],
       ['Total Gross', formatPKR(reportData.totals.gross)],
       ['Total Net Salary', formatPKR(reportData.totals.net)],
       ['Total Paid', formatPKR(reportData.totals.paid)],
     ];
-    const headers = ['#', 'Period', 'Payslip #', 'Staff', 'Campus', 'Gross', 'Net', 'Paid', 'Outstanding', 'Status'];
+    const headers = ['#', 'Period', 'Payslip #', 'Staff', 'Branch', 'Gross', 'Net', 'Paid', 'Outstanding', 'Status'];
     const rows = reportData.rows.map((r, i) => [
       i + 1,
       r.period,
@@ -250,16 +250,16 @@ export const StaffSalaryReportPage: React.FC = () => {
 
         {/* Filters Form Row */}
         <form onSubmit={handleApplyFilters} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-3.5 items-end">
-          {/* Campus Filter */}
+          {/* Branch Filter */}
           <div>
-            <label className={labelClass}>Campus</label>
+            <label className={labelClass}>Branch</label>
             <select
               value={selectedBranch}
               disabled={!isSuperAdmin}
               onChange={(e) => setSelectedBranch(e.target.value)}
               className={selectClass}
             >
-              {isSuperAdmin && <option value="ALL">All Campuses</option>}
+              {isSuperAdmin && <option value="ALL">All Branches</option>}
               {branches.map((b) => (
                 <option key={b.id} value={b.id}>
                   {b.name}
@@ -423,7 +423,7 @@ export const StaffSalaryReportPage: React.FC = () => {
                   <th className="py-3.5 px-4 whitespace-nowrap">Period</th>
                   <th className="py-3.5 px-4 whitespace-nowrap">Payslip #</th>
                   <th className="py-3.5 px-4">Staff</th>
-                  <th className="py-3.5 px-4">Campus</th>
+                  <th className="py-3.5 px-4">Branch</th>
                   <th className="py-3.5 px-4 text-right">Basic</th>
                   <th className="py-3.5 px-4 text-right">Gross</th>
                   <th className="py-3.5 px-4 text-right">Net Salary</th>
@@ -459,9 +459,9 @@ export const StaffSalaryReportPage: React.FC = () => {
                           {row.staffName} <span className="text-slate-400 font-normal">({row.employeeCode})</span>
                         </td>
 
-                        {/* 5. Campus */}
+                        {/* 5. Branch */}
                         <td className="py-3.5 px-4 whitespace-nowrap text-slate-600">
-                          {row.branchName || 'Main Campus'}
+                          {row.branchName || 'Main Branch'}
                         </td>
 
                         {/* 6. Basic */}
@@ -511,7 +511,7 @@ export const StaffSalaryReportPage: React.FC = () => {
                 ) : (
                   <tr>
                     <td colSpan={11} className="py-12 text-center text-slate-400 font-medium">
-                      No salary records found for the selected campus, dates, and filters.
+                      No salary records found for the selected branch, dates, and filters.
                     </td>
                   </tr>
                 )}

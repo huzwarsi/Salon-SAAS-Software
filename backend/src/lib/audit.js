@@ -14,6 +14,8 @@
  * @param {object}  [opts.before]  Snapshot before the change
  * @param {object}  [opts.after]   Snapshot after the change
  */
+import { redactSecrets } from './redactSecrets.js';
+
 export const auditLog = async (tx, opts) => {
   await tx.auditEvent.create({
     data: {
@@ -23,8 +25,8 @@ export const auditLog = async (tx, opts) => {
       entity:   opts.entity,
       entityId: opts.entityId ?? null,
       branchId: opts.branchId ?? null,
-      before:   opts.before   ?? undefined,
-      after:    opts.after    ?? undefined,
+      before:   redactSecrets(opts.before) ?? undefined,
+      after:    redactSecrets(opts.after) ?? undefined,
     },
   });
 };

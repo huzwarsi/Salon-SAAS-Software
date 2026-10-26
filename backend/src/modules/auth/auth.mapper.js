@@ -8,7 +8,6 @@ import { opt, iso } from '../../lib/dto.js';
  * SUPER_ADMIN users have branchId 'ALL' on the frontend. Never exposes passwordHash.
  */
 export const toUserDTO = (user, actorRole) => {
-  const showPassword = actorRole === 'SUPER_ADMIN';
   const isSuper = user.role === 'SUPER_ADMIN';
   return {
     id:         user.id,
@@ -23,7 +22,6 @@ export const toUserDTO = (user, actorRole) => {
     avatarUrl:  opt(user.avatarUrl),
     isActive:   user.isActive,
     createdAt:  iso(user.createdAt)?.slice(0, 10),
-    password:   showPassword ? (user.plainPassword ?? undefined) : undefined,
   };
 };
 

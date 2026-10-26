@@ -165,46 +165,18 @@ export const changePassword = async (userId, { oldPassword, newPassword }) => {
 
   const passwordHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
   await prisma.$transaction(async (tx) => {
-    await tx.user.update({ where: { id: userId }, data: { passwordHash } });
+    await tx.user.update({ where: { id: userId }, data: { passwordHash, plainPassword: null } });
     await tx.refreshToken.updateMany({ where: { userId, revokedAt: null }, data: { revokedAt: new Date() } });
     await auditLog(tx, { userId, userName: user.name, action: 'PASSWORD_CHANGED', entity: 'User', entityId: userId });
   });
 };
 
-/**
- * Forgot password — creates a reset token. Returns the frontend `PasswordResetResponse` shape.
- * Email delivery is not wired yet, so in development the token is returned as `simulatedToken`.
- */
-export const forgotPassword = async ({ identifier, portal }) => {
-  const user = await prisma.user.findFirst({ where: { email: identifier, ...(portal ? { role: portal } : {}) } });
-
-  if (!user) {
-    return {
-      success:   false,
-      userEmail: identifier,
-      message:   `No active account matching '${identifier}' was found under the selected portal.`,
-    };
-  }
-  if (!user.isActive) {
-    return {
-      success:   false,
-      userEmail: identifier,
-      message:   `Account '${identifier}' is deactivated. Please contact your system administrator.`,
-    };
-  }
-
-  const rawToken = crypto.randomBytes(32).toString('hex');
-  await prisma.passwordResetToken.create({
-    data: { userId: user.id, tokenHash: hashToken(rawToken), expiresAt: new Date(Date.now() + 60 * 60 * 1000) },
-  });
-
-  return {
-    success:        true,
-    userEmail:      user.email,
-    simulatedToken: env.isDev ? rawToken : undefined,
-    message:        `A secure password recovery link has been generated for ${user.email}.`,
-  };
-};
+/** Recovery is administrator-assisted until email delivery is configured. */
+export const forgotPassword = async ({ identifier }) => ({
+  success: false,
+  userEmail: identifier,
+  message: 'Email password recovery is not available. Please contact your salon administrator to reset your password.',
+});
 
 /** Reset password using a valid reset token. */
 export const resetPassword = async ({ token, password }) => {
@@ -216,7 +188,7 @@ export const resetPassword = async ({ token, password }) => {
 
   const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
   await prisma.$transaction(async (tx) => {
-    await tx.user.update({ where: { id: record.userId }, data: { passwordHash } });
+    await tx.user.update({ where: { id: record.userId }, data: { passwordHash, plainPassword: null } });
     await tx.passwordResetToken.update({ where: { id: record.id }, data: { usedAt: new Date() } });
     await tx.refreshToken.updateMany({ where: { userId: record.userId, revokedAt: null }, data: { revokedAt: new Date() } });
     await auditLog(tx, {

@@ -135,7 +135,7 @@ export const DetailedExpensesReportPage: React.FC = () => {
     if (!reportData || !reportData.rows.length) return;
     const meta: [string, string][] = [
       ['Report', 'Detailed Expenses Report'],
-      ['Campus', selectedBranch === 'ALL' ? 'All Campuses' : reportData.meta.branchName || selectedBranch],
+      ['Branch', selectedBranch === 'ALL' ? 'All Branches' : reportData.meta.branchName || selectedBranch],
       ['From Date', fromDate || reportData.meta.from || '—'],
       ['To Date', toDate || reportData.meta.to || '—'],
       ['Generated At', new Date().toLocaleString()],
@@ -145,7 +145,7 @@ export const DetailedExpensesReportPage: React.FC = () => {
       '#',
       'Voucher #',
       'Date',
-      'Campus',
+      'Branch',
       'Category',
       'Title',
       'Payee',
@@ -176,7 +176,7 @@ export const DetailedExpensesReportPage: React.FC = () => {
     if (!reportData || !reportData.rows.length) return;
     const meta: [string, string][] = [
       ['Report', 'Detailed Expenses Report'],
-      ['Campus', selectedBranch === 'ALL' ? 'All Campuses' : reportData.meta.branchName || selectedBranch],
+      ['Branch', selectedBranch === 'ALL' ? 'All Branches' : reportData.meta.branchName || selectedBranch],
       ['From Date', fromDate || reportData.meta.from || '—'],
       ['To Date', toDate || reportData.meta.to || '—'],
       ['Generated At', new Date().toLocaleString()],
@@ -186,7 +186,7 @@ export const DetailedExpensesReportPage: React.FC = () => {
       '#',
       'Voucher #',
       'Date',
-      'Campus',
+      'Branch',
       'Category',
       'Title',
       'Payee',
@@ -219,12 +219,12 @@ export const DetailedExpensesReportPage: React.FC = () => {
       return;
     }
     const meta: [string, string][] = [
-      ['Campus', selectedBranch === 'ALL' ? 'All Campuses' : reportData.meta.branchName || selectedBranch],
+      ['Branch', selectedBranch === 'ALL' ? 'All Branches' : reportData.meta.branchName || selectedBranch],
       ['From Date', fromDate || reportData.meta.from || '—'],
       ['To Date', toDate || reportData.meta.to || '—'],
       ['Total Expenses', formatPKR(reportData.totals.amount)],
     ];
-    const headers = ['#', 'Voucher #', 'Date', 'Campus', 'Category', 'Title', 'Payee', 'Source', 'Status', 'Amount'];
+    const headers = ['#', 'Voucher #', 'Date', 'Branch', 'Category', 'Title', 'Payee', 'Source', 'Status', 'Amount'];
     const rows = reportData.rows.map((r, i) => [
       i + 1,
       r.voucherNumber,
@@ -267,16 +267,16 @@ export const DetailedExpensesReportPage: React.FC = () => {
 
         {/* Filters Form Row */}
         <form onSubmit={handleApplyFilters} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-3.5 items-end">
-          {/* Campus Filter */}
+          {/* Branch Filter */}
           <div>
-            <label className={labelClass}>Campus</label>
+            <label className={labelClass}>Branch</label>
             <select
               value={selectedBranch}
               disabled={!isSuperAdmin}
               onChange={(e) => setSelectedBranch(e.target.value)}
               className={selectClass}
             >
-              {isSuperAdmin && <option value="ALL">All Campuses</option>}
+              {isSuperAdmin && <option value="ALL">All Branches</option>}
               {allBranches.map((b) => (
                 <option key={b.id} value={b.id}>
                   {b.name}
@@ -430,7 +430,7 @@ export const DetailedExpensesReportPage: React.FC = () => {
                   <th className="py-3.5 px-3 text-center w-8">#</th>
                   <th className="py-3.5 px-4 whitespace-nowrap">Voucher #</th>
                   <th className="py-3.5 px-4 whitespace-nowrap">Date</th>
-                  <th className="py-3.5 px-4">Campus</th>
+                  <th className="py-3.5 px-4">Branch</th>
                   <th className="py-3.5 px-4">Category</th>
                   <th className="py-3.5 px-4">Title</th>
                   <th className="py-3.5 px-4">Payee</th>
@@ -464,9 +464,9 @@ export const DetailedExpensesReportPage: React.FC = () => {
                           <div className="text-[11px] text-slate-400">{dateParts.year}</div>
                         </td>
 
-                        {/* 4. Campus */}
+                        {/* 4. Branch */}
                         <td className="py-3.5 px-4 whitespace-nowrap text-slate-600">
-                          {row.branchName || 'Main Campus'}
+                          {row.branchName || 'Main Branch'}
                         </td>
 
                         {/* 5. Category */}
@@ -517,7 +517,7 @@ export const DetailedExpensesReportPage: React.FC = () => {
                 ) : (
                   <tr>
                     <td colSpan={11} className="py-12 text-center text-slate-400 font-medium">
-                      No expense disbursements found for the selected campus, dates, and filters.
+                      No expense disbursements found for the selected branch, dates, and filters.
                     </td>
                   </tr>
                 )}

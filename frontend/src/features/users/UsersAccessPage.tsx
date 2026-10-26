@@ -109,9 +109,7 @@ export const UsersAccessPage: React.FC = () => {
   const [customPassword, setCustomPassword] = useState('');
   const [showCustomPassword, setShowCustomPassword] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
-  const [revealedPasswords, setRevealedPasswords] = useState<Record<string, boolean>>({});
   const [copiedPassId, setCopiedPassId] = useState<string | null>(null);
-  const [viewModalShowPassword, setViewModalShowPassword] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -216,7 +214,7 @@ export const UsersAccessPage: React.FC = () => {
 
   const handleOpenResetPassword = (targetUser: User) => {
     setSelectedUser(targetUser);
-    setCustomPassword(targetUser.password || '');
+    setCustomPassword('');
     setShowCustomPassword(false);
     setPasswordError(null);
     setResetResult(null);
@@ -236,12 +234,6 @@ export const UsersAccessPage: React.FC = () => {
     setPasswordError(null);
   };
 
-  const toggleRevealPassword = (userId: string) => {
-    setRevealedPasswords((prev) => ({
-      ...prev,
-      [userId]: !prev[userId],
-    }));
-  };
 
   const copyTextToClipboard = async (text: string, id?: string) => {
     try {
@@ -634,47 +626,10 @@ export const UsersAccessPage: React.FC = () => {
 
                       {isSuperAdmin && (
                         <TableCell className="whitespace-nowrap">
-                          {targetUser.password ? (
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-mono text-xs bg-slate-100 text-slate-800 px-2 py-1 rounded border border-slate-200">
-                                {revealedPasswords[targetUser.id] ? targetUser.password : '••••••••'}
-                              </span>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-7 w-7 p-0 text-slate-500 hover:text-slate-800 cursor-pointer"
-                                onClick={() => toggleRevealPassword(targetUser.id)}
-                                title={revealedPasswords[targetUser.id] ? 'Hide password' : 'View password'}
-                              >
-                                {revealedPasswords[targetUser.id] ? (
-                                  <EyeOff className="w-3.5 h-3.5" />
-                                ) : (
-                                  <Eye className="w-3.5 h-3.5" />
-                                )}
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-7 w-7 p-0 text-slate-500 hover:text-slate-800 cursor-pointer"
-                                onClick={() => copyTextToClipboard(targetUser.password!, targetUser.id)}
-                                title="Copy password"
-                              >
-                                {copiedPassId === targetUser.id ? (
-                                  <Check className="w-3.5 h-3.5 text-emerald-600" />
-                                ) : (
-                                  <Copy className="w-3.5 h-3.5" />
-                                )}
-                              </Button>
-                            </div>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => handleOpenResetPassword(targetUser)}
-                              className="text-[11px] text-[#9D2558] hover:underline cursor-pointer"
-                            >
-                              Set password
-                            </button>
-                          )}
+                          <button type="button" onClick={() => handleOpenResetPassword(targetUser)}
+                            className="text-[11px] text-[#9D2558] hover:underline cursor-pointer">
+                            Reset password
+                          </button>
                         </TableCell>
                       )}
 
@@ -1117,15 +1072,6 @@ export const UsersAccessPage: React.FC = () => {
             </div>
           ) : (
             <form onSubmit={handleConfirmResetPassword} className="space-y-4 py-2">
-              {isSuperAdmin && selectedUser?.password && (
-                <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs flex items-center justify-between">
-                  <span className="text-slate-500 font-medium">Current Password:</span>
-                  <span className="font-mono font-semibold text-slate-800 bg-white px-2 py-0.5 rounded border border-slate-200">
-                    {selectedUser.password}
-                  </span>
-                </div>
-              )}
-
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-medium text-slate-700">
@@ -1290,42 +1236,6 @@ export const UsersAccessPage: React.FC = () => {
                     {selectedUser.isActive ? 'Active' : 'Deactivated'}
                   </Badge>
                 </div>
-                {isSuperAdmin && (
-                  <div className="flex items-center justify-between py-1.5 border-b border-slate-100 bg-amber-50/60 px-2 rounded">
-                    <span className="text-amber-900 font-semibold">Password:</span>
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-mono font-bold text-slate-900 bg-white px-2 py-0.5 rounded border border-amber-200">
-                        {selectedUser.password
-                          ? (viewModalShowPassword ? selectedUser.password : '••••••••')
-                          : 'Not recorded'}
-                      </span>
-                      {selectedUser.password && (
-                        <>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            type="button"
-                            className="h-6 w-6 p-0 text-slate-500 hover:text-slate-800 cursor-pointer"
-                            onClick={() => setViewModalShowPassword(!viewModalShowPassword)}
-                            title={viewModalShowPassword ? 'Hide password' : 'Show password'}
-                          >
-                            {viewModalShowPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            type="button"
-                            className="h-6 w-6 p-0 text-slate-500 hover:text-slate-800 cursor-pointer"
-                            onClick={() => copyTextToClipboard(selectedUser.password!)}
-                            title="Copy password"
-                          >
-                            <Copy className="w-3.5 h-3.5" />
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                )}
                 <div className="flex justify-between py-1">
                   <span className="text-slate-500">Created Date:</span>
                   <span className="text-slate-700">{selectedUser.createdAt}</span>

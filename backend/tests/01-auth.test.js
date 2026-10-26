@@ -79,10 +79,12 @@ describe('Step 1 · Auth', () => {
   it('forgot-password returns the PasswordResetResponse shape', async () => {
     const ok = await api().post('/api/v1/auth/forgot-password').send({ identifier: ACCOUNTS.admin.identifier, portal: 'ADMIN' });
     expect(ok.status).toBe(200);
-    expect(ok.body.data.success).toBe(true);
-    expect(ok.body.data.simulatedToken).toBeTypeOf('string');
+    expect(ok.body.data.success).toBe(false);
+    expect(ok.body.data).not.toHaveProperty('simulatedToken');
+    expect(ok.body.data.message).toContain('administrator');
 
     const miss = await api().post('/api/v1/auth/forgot-password').send({ identifier: 'nobody@x.com', portal: 'ADMIN' });
     expect(miss.body.data.success).toBe(false);
+    expect(miss.body.data.message).toBe(ok.body.data.message);
   });
 });

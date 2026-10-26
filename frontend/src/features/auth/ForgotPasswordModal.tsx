@@ -52,7 +52,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
       setResult({
         success: false,
         userEmail: identifier,
-        message: err.message || 'Failed to simulate password recovery.',
+        message: err.message || 'Unable to request password recovery.',
       });
     } finally {
       setIsSubmitting(false);
@@ -94,7 +94,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
               <Alert variant="destructive" className="flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
                 <div>
-                  <AlertTitle className="text-rose-800 text-sm">Account Lookup Failed</AlertTitle>
+                  <AlertTitle className="text-rose-800 text-sm">Password Recovery Unavailable</AlertTitle>
                   <AlertDescription className="mt-1">{result.message}</AlertDescription>
                 </div>
               </Alert>
@@ -107,8 +107,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
                   Account Security Notice
                 </AlertTitle>
                 <AlertDescription className="text-slate-600">
-                  Password recovery details have been verified against your role portal directory.
-                  You can now return to the login screen and sign in.
+                  Your password has not changed. Contact your salon administrator for a password reset.
                 </AlertDescription>
               </div>
             </Alert>
@@ -122,8 +121,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <p className="text-xs text-slate-600 leading-relaxed font-sans">
-              Enter your registered email address or employee identifier. An account verification
-              check will be performed against the {portalNames[portal]} directory.
+              Enter your registered email address or employee identifier for password recovery guidance.
             </p>
 
             <Input

@@ -55,7 +55,17 @@ import {
   X,
   Filter,
   Check,
+  RefreshCw,
+  FileText,
+  Receipt,
 } from 'lucide-react';
+import { downloadReportCsv, downloadReportExcel, printReportWindow } from '@/features/reports/reportUtils';
+
+const labelClass = 'block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5';
+const selectClass =
+  'w-full text-xs rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#9D2558]/20 focus:border-[#9D2558] shadow-2xs font-medium cursor-pointer';
+const inputClass =
+  'w-full text-xs rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#9D2558]/20 focus:border-[#9D2558] shadow-2xs font-medium';
 
 const loadExpenseAction = async (branchId: string) => {
   const [categories, accounts, drawers] = await Promise.all([salonService.getExpenseCategories(branchId), salonService.getPaymentAccounts(branchId), salonService.getCashDrawers(branchId)]);
@@ -618,14 +628,23 @@ export const ExpenseManagementPage: React.FC = () => {
     }
   };
 
-  // Export Filtered Table to CSV
+  // Export Filtered Table to CSV (Standard Multi-Section Reporting Style)
   const handleExportCSV = () => {
     if (filteredExpenses.length === 0) {
       toast.warning('No expense records to export matching current filters.');
       return;
     }
 
+    const meta: [string, string][] = [
+      ['Report', 'Operating Expenses Register'],
+      ['Branch', currentBranchName],
+      ['From Date', startDate || '—'],
+      ['To Date', endDate || '—'],
+      ['Generated At', new Date().toLocaleString()],
+    ];
+
     const headers = [
+      '#',
       'Voucher No',
       'Expense Date',
       'Category',
@@ -638,38 +657,108 @@ export const ExpenseManagementPage: React.FC = () => {
       'Status',
       'Entered By',
       'Paid By',
-      'Reversal Voucher',
-      'Reversal Reason',
     ];
 
-    const rows = filteredExpenses.map((exp) => [
+    const rows = filteredExpenses.map((exp, idx) => [
+      idx + 1,
       exp.voucherNumber,
       exp.expenseDate || exp.date,
-      `"${exp.category.replace(/"/g, '""')}"`,
-      `"${(exp.payee || '').replace(/"/g, '""')}"`,
-      `"${exp.title.replace(/"/g, '""')}"`,
-      `"${(exp.description || '').replace(/"/g, '""')}"`,
+      exp.category,
+      exp.payee || '',
+      exp.title,
+      exp.description || '',
       exp.amount.toFixed(2),
-      exp.paymentSource,
-      `"${(exp.paymentAccountName || '').replace(/"/g, '""')}"`,
+      exp.paymentSource === 'CASH_DRAWER' ? 'Cash Drawer' : 'Online Account',
+      exp.paymentAccountName || '',
       exp.status,
-      `"${(exp.createdByName || '').replace(/"/g, '""')}"`,
-      `"${(exp.paidByName || '').replace(/"/g, '""')}"`,
-      exp.reversalVoucherNumber || '',
-      `"${(exp.reversalReason || '').replace(/"/g, '""')}"`,
+      exp.createdByName || '',
+      exp.paidByName || '',
     ]);
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `salon_expenses_${selectedBranchId}_${demoDate || 'report'}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    downloadReportCsv('Expenses_Report', meta, [{ headers, rows }]);
   };
 
-  // Print voucher handler
+  const handleExportPDF = () => {
+    if (filteredExpenses.length === 0) {
+      toast.warning('No expense records to export matching current filters.');
+      return;
+    }
+
+    const meta: [string, string][] = [
+      ['Report', 'Operating Expenses Register'],
+      ['Branch', currentBranchName],
+      ['From Date', startDate || '—'],
+      ['To Date', endDate || '—'],
+      ['Generated At', new Date().toLocaleString()],
+    ];
+
+    const headers = [
+      '#',
+      'Voucher No',
+      'Date',
+      'Category',
+      'Payee',
+      'Title',
+      'Payment Source',
+      'Amount (PKR)',
+      'Status',
+      'Entered / Paid By',
+    ];
+
+    const rows = filteredExpenses.map((exp, idx) => [
+      idx + 1,
+      exp.voucherNumber,
+      exp.expenseDate || exp.date,
+      exp.category,
+      exp.payee || '—',
+      exp.title,
+      exp.paymentSource === 'CASH_DRAWER' ? 'Cash Drawer' : (exp.paymentAccountName || 'Online Account'),
+      exp.amount.toFixed(2),
+      exp.status,
+      exp.paidByName || exp.createdByName || 'Staff',
+    ]);
+
+    downloadReportExcel('Expenses_Report', meta, [{ headers, rows }]);
+  };
+
+  const handlePrintRegister = () => {
+    if (filteredExpenses.length === 0) {
+      window.print();
+      return;
+    }
+
+    const meta: [string, string][] = [
+      ['Report', 'Operating Expenses Register'],
+      ['Branch', currentBranchName],
+      ['From Date', startDate || '—'],
+      ['To Date', endDate || '—'],
+      ['Total Posted', formatCurrency(metrics.postedTotal)],
+      ['Total Reversed', formatCurrency(metrics.reversedTotal)],
+      ['Net Operating Expenses', formatCurrency(metrics.netExpenses)],
+    ];
+
+    const headers = ['#', 'Voucher No', 'Date', 'Category', 'Payee & Title', 'Source', 'Amount (PKR)', 'Status', 'Paid By'];
+    const rows = filteredExpenses.map((exp, idx) => [
+      idx + 1,
+      exp.voucherNumber,
+      exp.expenseDate || exp.date,
+      exp.category,
+      `${exp.payee ? exp.payee + ' - ' : ''}${exp.title}`,
+      exp.paymentSource === 'CASH_DRAWER' ? 'Cash Drawer' : (exp.paymentAccountName || 'Online Account'),
+      formatCurrency(exp.amount),
+      exp.status,
+      exp.paidByName || exp.createdByName || 'Staff',
+    ]);
+
+    printReportWindow({
+      title: 'Operating Expenses Register',
+      meta,
+      headers,
+      rows,
+    });
+  };
+
+  // Print single voucher handler
   const handlePrintVoucher = () => {
     window.print();
   };
@@ -686,167 +775,111 @@ export const ExpenseManagementPage: React.FC = () => {
   }, [allBranches, selectedBranchId]);
 
   return (
-    <div className="space-y-6 font-sans">
-      {/* Top Header & Toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-sm">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">Expense Management</h1>
-            <Badge className="bg-[#9D2558]/10 text-[#9D2558] hover:bg-[#9D2558]/20 font-medium">
-              Phase 3B
-            </Badge>
-          </div>
-          <p className="text-sm text-slate-500 mt-1">
-            Authoritative operating expense vouchers, cash drawer disbursements, and bank payouts.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto flex-wrap sm:flex-nowrap">
-          {/* Super Admin branch selector */}
-          {isSuperAdmin && (
-            <div className="flex items-center gap-2 mr-2">
-              <Building2 className="w-4 h-4 text-slate-500" />
-              <Select value={selectedBranchId} onValueChange={(val) => setSelectedBranchId(val)}>
-                <SelectTrigger className="w-[200px] h-9 text-xs">
-                  <SelectValue placeholder="Select Branch" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">All Branches (Consolidated)</SelectItem>
-                  {allBranches.map((b) => (
-                    <SelectItem key={b.id} value={b.id}>
-                      {b.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          {canManageCategoriesOrFloat && (
-            <>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-9 gap-1.5 text-xs font-medium border-slate-300 hover:bg-slate-50"
-                onClick={() => setIsFloatTransferModalOpen(true)}
-              >
-                <ArrowRightLeft className="w-3.5 h-3.5 text-emerald-600" />
-                Fund Cash Float
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-9 gap-1.5 text-xs font-medium border-slate-300 hover:bg-slate-50"
-                onClick={() => setIsCategoryModalOpen(true)}
-              >
-                <Layers className="w-3.5 h-3.5 text-[#9D2558]" />
-                Categories
-              </Button>
-            </>
-          )}
-
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-9 gap-1.5 text-xs font-medium border-slate-300 hover:bg-slate-50"
-            onClick={handleExportCSV}
-          >
-            <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700" />
-            Export CSV
-          </Button>
-
-          <Button
-            size="sm"
-            className="h-9 gap-1.5 text-xs font-medium bg-[#9D2558] hover:bg-[#1b43b4] text-white shadow-sm"
-            onClick={() => handleOpenAddModal()}
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Add Expense
-          </Button>
-        </div>
-      </div>
-
-      {/* Super Admin Read-Only Notice */}
-      {isSuperAdmin && selectedBranchId === 'ALL' && (
-        <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg text-xs">
-          <AlertCircle className="w-4 h-4 shrink-0 text-amber-600" />
-          <span>
-            You are viewing the <strong>consolidated multi-branch ledger</strong> (read-only). To create an expense, transfer cash float, or reverse vouchers, please select a specific branch from the dropdown above.
-          </span>
-        </div>
-      )}
-
-      {/* Summary KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="p-5 border-slate-200 bg-white shadow-sm hover:shadow transition-shadow">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Posted Expenses</span>
-            <div className="p-2 rounded-lg bg-[#FDF2F5] text-[#9D2558]">
-              <Banknote className="w-5 h-5" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <div className="text-2xl font-bold text-slate-900">{formatCurrency(metrics.postedTotal)}</div>
-            <div className="flex items-center gap-2 mt-1 text-xs text-slate-500">
-              <span className="font-medium text-slate-700">{metrics.postedCount}</span> vouchers posted & paid
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-5 border-slate-200 bg-white shadow-sm hover:shadow transition-shadow">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Reversed Amount</span>
-            <div className="p-2 rounded-lg bg-rose-50 text-rose-600">
-              <RotateCcw className="w-5 h-5" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <div className="text-2xl font-bold text-rose-600">
-              {metrics.reversedTotal > 0 ? `-${formatCurrency(metrics.reversedTotal)}` : 'PKR 0.00'}
-            </div>
-            <div className="flex items-center gap-2 mt-1 text-xs text-slate-500">
-              <span className="font-medium text-slate-700">{metrics.reversedCount}</span> vouchers cancelled / reversed
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-5 border-slate-200 bg-gradient-to-br from-slate-900 to-slate-800 text-white shadow-sm">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-300">Net Operating Expenses</span>
-            <div className="p-2 rounded-lg bg-white/10 text-white">
-              <CreditCard className="w-5 h-5" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <div className="text-2xl font-bold text-white">{formatCurrency(metrics.netExpenses)}</div>
-            <div className="flex items-center gap-2 mt-1 text-xs text-slate-300">
-              Filtered reconciliation matching active parameters
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* Filter Bar */}
-      <Card className="p-4 border-slate-200 bg-white shadow-sm">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-3">
-          {/* Search */}
-          <div className="md:col-span-2 relative">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-            <Input
-              placeholder="Search voucher, payee, title, description..."
-              className="pl-9 h-9 text-xs"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-
-          {/* Status Filter */}
+    <div className="w-full text-slate-800 font-sans">
+      {/* ── 1. TOP HEADER & FILTERS CARD (SALES INVOICES / UNPAID INVOICES STYLE) ── */}
+      <div className="bg-white rounded-xl shadow-xs border border-slate-200/90 p-5 md:p-6 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
           <div>
-            <Select value={statusFilter} onValueChange={(val: any) => setStatusFilter(val)}>
-              <SelectTrigger className="h-9 text-xs">
+            <h1 className="text-xl font-bold text-[#23151D] tracking-tight">Expense Management</h1>
+            <p className="text-xs text-slate-500 mt-1">
+              Authoritative operating expense vouchers, cash drawer disbursements, and bank payouts
+            </p>
+          </div>
+
+          {/* Action Toolbar */}
+          <div className="flex items-center gap-2 flex-wrap self-start sm:self-center">
+            {canManageCategoriesOrFloat && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setIsFloatTransferModalOpen(true)}
+                  className="text-xs font-semibold px-3 py-1.5 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50 flex items-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <ArrowRightLeft className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Fund Cash Float</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsCategoryModalOpen(true)}
+                  className="text-xs font-semibold px-3 py-1.5 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50 flex items-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Layers className="w-3.5 h-3.5 text-[#9D2558]" />
+                  <span>Categories</span>
+                </button>
+              </>
+            )}
+
+            <button
+              type="button"
+              onClick={loadData}
+              disabled={isLoading}
+              className="text-xs font-semibold px-3 py-1.5 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50 flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-[#9D2558]' : ''}`} />
+              <span>Refresh</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleOpenAddModal()}
+              className="text-xs font-semibold px-3.5 py-1.5 rounded-md bg-[#9D2558] hover:bg-[#851C47] text-white flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer active:scale-95"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add Expense</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Filter Controls Row */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-3.5 items-end">
+          {/* Branch */}
+          <div>
+            <label className={labelClass}>Branch</label>
+            <Select
+              value={selectedBranchId}
+              disabled={!isSuperAdmin}
+              onValueChange={(val) => setSelectedBranchId(val)}
+            >
+              <SelectTrigger className="w-full text-xs h-9 border border-slate-300 rounded-md bg-white text-slate-700 font-medium">
+                <SelectValue placeholder="Branch" />
+              </SelectTrigger>
+              <SelectContent className="z-[70]">
+                {isSuperAdmin && <SelectItem value="ALL">All Branches (Consolidated)</SelectItem>}
+                {allBranches.map((b) => (
+                  <SelectItem key={b.id} value={b.id}>
+                    {b.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Search */}
+          <div>
+            <label className={labelClass}>Search</label>
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Voucher, payee, title..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={`${inputClass} pl-8 h-9`}
+              />
+            </div>
+          </div>
+
+          {/* Status */}
+          <div>
+            <label className={labelClass}>Status</label>
+            <Select
+              value={statusFilter}
+              onValueChange={(val: any) => setStatusFilter(val)}
+            >
+              <SelectTrigger className="w-full text-xs h-9 border border-slate-300 rounded-md bg-white text-slate-700 font-medium">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="z-[70]">
                 <SelectItem value="ALL">All Statuses</SelectItem>
                 <SelectItem value="POSTED">Posted / Paid</SelectItem>
                 <SelectItem value="DRAFT">Drafts Only</SelectItem>
@@ -855,13 +888,17 @@ export const ExpenseManagementPage: React.FC = () => {
             </Select>
           </div>
 
-          {/* Category Filter */}
+          {/* Category */}
           <div>
-            <Select value={categoryFilter} onValueChange={(val) => setCategoryFilter(val)}>
-              <SelectTrigger className="h-9 text-xs">
+            <label className={labelClass}>Category</label>
+            <Select
+              value={categoryFilter}
+              onValueChange={(val) => setCategoryFilter(val)}
+            >
+              <SelectTrigger className="w-full text-xs h-9 border border-slate-300 rounded-md bg-white text-slate-700 font-medium">
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="z-[70]">
                 <SelectItem value="ALL">All Categories</SelectItem>
                 {categories.map((c) => (
                   <SelectItem key={c.id} value={c.name}>
@@ -874,11 +911,15 @@ export const ExpenseManagementPage: React.FC = () => {
 
           {/* Payment Method */}
           <div>
-            <Select value={paymentSourceFilter} onValueChange={(val: any) => setPaymentSourceFilter(val)}>
-              <SelectTrigger className="h-9 text-xs">
+            <label className={labelClass}>Payment Source</label>
+            <Select
+              value={paymentSourceFilter}
+              onValueChange={(val: any) => setPaymentSourceFilter(val)}
+            >
+              <SelectTrigger className="w-full text-xs h-9 border border-slate-300 rounded-md bg-white text-slate-700 font-medium">
                 <SelectValue placeholder="Payment Source" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="z-[70]">
                 <SelectItem value="ALL">All Methods</SelectItem>
                 <SelectItem value="CASH_DRAWER">Cash Drawer</SelectItem>
                 <SelectItem value="ONLINE_ACCOUNT">Online Account</SelectItem>
@@ -886,12 +927,34 @@ export const ExpenseManagementPage: React.FC = () => {
             </Select>
           </div>
 
-          {/* Reset Filters */}
+          {/* Date Range & Reset button */}
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-9 text-xs text-slate-600 hover:text-slate-900 w-full"
+            <div className="flex-1">
+              <label className={labelClass}>From Date</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className={inputClass}
+              />
+            </div>
+            <div className="flex-1">
+              <label className={labelClass}>To Date</label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className={inputClass}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Reset Filters Option if any active filter */}
+        {(searchQuery || statusFilter !== 'ALL' || categoryFilter !== 'ALL' || paymentSourceFilter !== 'ALL' || startDate || endDate) && (
+          <div className="mt-3 pt-3 border-t border-slate-100 flex justify-end">
+            <button
+              type="button"
               onClick={() => {
                 setSearchQuery('');
                 setStatusFilter('ALL');
@@ -900,60 +963,98 @@ export const ExpenseManagementPage: React.FC = () => {
                 setStartDate('');
                 setEndDate('');
               }}
+              className="text-xs text-rose-600 hover:text-rose-800 font-semibold cursor-pointer transition-colors"
             >
               Reset Filters
-            </Button>
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Super Admin Read-Only Notice */}
+      {isSuperAdmin && selectedBranchId === 'ALL' && (
+        <div className="flex items-center gap-2.5 p-3.5 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl text-xs mb-6 shadow-2xs">
+          <AlertCircle className="w-4 h-4 shrink-0 text-amber-600" />
+          <span>
+            You are viewing the <strong>consolidated multi-branch ledger</strong> (read-only). To create an expense, transfer cash float, or reverse vouchers, please select a specific branch from the dropdown above.
+          </span>
+        </div>
+      )}
+
+      {/* ── 2. MAIN TABLE REGISTER CARD (ROYAL BERRY BANNER & CRISP REPORT ROWS) ── */}
+      <div className="shadow-sm rounded-xl overflow-hidden border border-slate-200/90 mb-8 bg-white">
+        {/* Royal Berry Banner Header */}
+        <div className="bg-[#9D2558] text-white px-5 py-3 flex flex-wrap items-center justify-between gap-3 rounded-t-xl">
+          <div className="flex items-center gap-2.5 font-bold text-sm tracking-wide text-white">
+            <Receipt className="w-4 h-4 stroke-[2.5]" />
+            <span>Operating Expenses Register</span>
+            <span className="text-[11px] font-bold bg-white/20 text-white px-2 py-0.5 rounded-full ml-1">
+              {filteredExpenses.length} Vouchers
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleExportCSV}
+              className="bg-[#009688] hover:bg-[#00897B] active:bg-[#00796B] text-white text-xs font-semibold px-3.5 py-1.5 rounded-md shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5" />
+              <span>CSV</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleExportPDF}
+              className="bg-[#DC2626] hover:bg-[#B91C1C] active:bg-[#991B1B] text-white text-xs font-semibold px-3.5 py-1.5 rounded-md shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>PDF</span>
+            </button>
+            <button
+              type="button"
+              onClick={handlePrintRegister}
+              className="bg-[#4B5563] hover:bg-[#374151] active:bg-[#1F2937] text-white text-xs font-semibold px-3.5 py-1.5 rounded-md shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <Printer className="w-3.5 h-3.5" />
+              <span>Print</span>
+            </button>
           </div>
         </div>
-      </Card>
 
-      {/* Main Expenses Table */}
-      <Card className="border-slate-200 bg-white shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader className="bg-slate-50/80">
-              <TableRow className="border-b border-slate-200">
-                <TableHead className="w-[140px] text-xs font-semibold text-slate-700">Voucher No</TableHead>
-                <TableHead className="w-[110px] text-xs font-semibold text-slate-700">Expense Date</TableHead>
-                <TableHead className="w-[120px] text-xs font-semibold text-slate-700">Category</TableHead>
-                <TableHead className="text-xs font-semibold text-slate-700">Payee & Title</TableHead>
-                <TableHead className="text-right text-xs font-semibold text-slate-700">Amount</TableHead>
-                <TableHead className="text-xs font-semibold text-slate-700">Payment Source</TableHead>
-                <TableHead className="text-center text-xs font-semibold text-slate-700">Status</TableHead>
-                <TableHead className="text-xs font-semibold text-slate-700">Entered / Paid By</TableHead>
-                <TableHead className="text-right text-xs font-semibold text-slate-700">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+        {/* Table Container */}
+        <div className="bg-white overflow-x-auto rounded-b-xl border-t border-[#F1DEE3]/40">
+          <table className="report-records w-full min-w-[1100px] text-left border-collapse font-['Inter',sans-serif] text-[13px] antialiased">
+            <thead>
+              <tr className="bg-[#FDF2F5] border-b border-[#F1DEE3] text-[#475569] font-medium text-[13px]">
+                <th className="py-3.5 px-4 text-center w-12 font-medium text-[#475569]">#</th>
+                <th className="py-3.5 px-4 font-medium text-[#475569] whitespace-nowrap">Voucher No</th>
+                <th className="py-3.5 px-4 font-medium text-[#475569] whitespace-nowrap">Expense Date</th>
+                <th className="py-3.5 px-4 font-medium text-[#475569]">Category</th>
+                <th className="py-3.5 px-4 font-medium text-[#475569]">Payee & Title</th>
+                <th className="py-3.5 px-4 font-medium text-[#475569]">Payment Source</th>
+                <th className="py-3.5 px-4 font-medium text-[#475569] text-right whitespace-nowrap">Amount</th>
+                <th className="py-3.5 px-4 font-medium text-[#475569] text-center w-24">Status</th>
+                <th className="py-3.5 px-4 font-medium text-[#475569]">Entered / Paid By</th>
+                <th className="py-3.5 px-4 font-medium text-[#475569] text-center w-28">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-dashed divide-slate-200">
               {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={9} className="text-center py-12 text-slate-400 text-sm">
-                    Loading expenses ledger...
-                  </TableCell>
-                </TableRow>
-              ) : filteredExpenses.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={9} className="text-center py-16">
-                    <div className="max-w-sm mx-auto text-center space-y-3">
-                      <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto text-slate-400">
-                        <Banknote className="w-6 h-6" />
-                      </div>
-                      <h3 className="font-semibold text-slate-900 text-base">No expenses found</h3>
-                      <p className="text-xs text-slate-500">
-                        No expense vouchers match the selected branch and filter criteria.
-                      </p>
-                      <Button
-                        size="sm"
-                        className="bg-[#9D2558] hover:bg-[#1b43b4] text-white text-xs h-8 mt-2"
-                        onClick={() => handleOpenAddModal()}
-                      >
-                        <Plus className="w-3.5 h-3.5 mr-1" /> Add First Expense
-                      </Button>
+                <tr>
+                  <td colSpan={10} className="py-16 text-center text-slate-500 font-medium">
+                    <div className="flex flex-col items-center justify-center">
+                      <div className="w-8 h-8 rounded-full border-2 border-[#F1DEE3] border-t-[#9D2558] animate-spin mb-2" />
+                      <span>Loading expenses ledger...</span>
                     </div>
-                  </TableCell>
-                </TableRow>
+                  </td>
+                </tr>
+              ) : filteredExpenses.length === 0 ? (
+                <tr>
+                  <td colSpan={10} className="py-16 text-center text-slate-400 font-medium">
+                    No expense vouchers match the selected branch and filter criteria.
+                  </td>
+                </tr>
               ) : (
-                filteredExpenses.map((exp) => {
+                filteredExpenses.map((exp, idx) => {
                   const isDraft = exp.status === 'DRAFT';
                   const isReversed = exp.status === 'REVERSED';
                   const isPaid = exp.status === 'POSTED' || exp.status === 'PAID';
@@ -961,50 +1062,44 @@ export const ExpenseManagementPage: React.FC = () => {
                   const canReverseThis = isPaid && !exp.reversalOfVoucherNumber && (isSuperAdmin || (isAdmin && exp.branchId === user.branchId));
 
                   return (
-                    <TableRow key={exp.id} className="hover:bg-slate-50/60 transition-colors border-b border-slate-100 text-xs">
-                      {/* Voucher No */}
-                      <TableCell className="font-mono font-medium text-slate-900 whitespace-nowrap">
+                    <tr key={exp.id} className="hover:bg-[#FDF2F5]/20 transition-colors border-b border-dashed border-slate-200">
+                      {/* 1. # */}
+                      <td className="py-3.5 px-4 text-center font-normal text-slate-500 text-[13px]">
+                        {idx + 1}
+                      </td>
+
+                      {/* 2. Voucher No */}
+                      <td className="py-3.5 px-4 font-semibold whitespace-nowrap text-[13px]">
                         <div className="flex items-center gap-1.5">
-                          <span>{exp.voucherNumber}</span>
+                          <span className="text-[#9D2558] font-mono">{exp.voucherNumber}</span>
                           {exp.reversalOfVoucherNumber && (
-                            <Badge variant="outline" className="text-[10px] py-0 px-1 border-rose-300 text-rose-600 bg-rose-50">
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 border border-rose-300 text-rose-600 bg-rose-50 rounded">
                               REV
-                            </Badge>
+                            </span>
                           )}
                         </div>
-                      </TableCell>
+                      </td>
 
-                      {/* Date */}
-                      <TableCell className="text-slate-600 whitespace-nowrap">
+                      {/* 3. Expense Date */}
+                      <td className="py-3.5 px-4 whitespace-nowrap text-[#475569] text-[13px]">
                         {formatDate(exp.expenseDate || exp.date)}
-                      </TableCell>
+                      </td>
 
-                      {/* Category */}
-                      <TableCell>
-                        <Badge variant="secondary" className="bg-slate-100 text-slate-700 text-[11px] font-normal">
+                      {/* 4. Category */}
+                      <td className="py-3.5 px-4 whitespace-nowrap text-[#334155] text-[13px]">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-700">
                           {exp.category}
-                        </Badge>
-                      </TableCell>
+                        </span>
+                      </td>
 
-                      {/* Payee & Title */}
-                      <TableCell>
-                        <div className="font-medium text-slate-900">{exp.payee || 'Supplier / Vendor'}</div>
-                        <div className="text-[11px] text-slate-500 truncate max-w-[240px]">{exp.title}</div>
-                      </TableCell>
+                      {/* 5. Payee & Title */}
+                      <td className="py-3.5 px-4 text-[#334155] text-[13px]">
+                        <div className="font-semibold text-slate-900 leading-tight">{exp.payee || 'Supplier / Vendor'}</div>
+                        <div className="text-[11px] text-slate-500 truncate max-w-[240px] mt-0.5">{exp.title}</div>
+                      </td>
 
-                      {/* Amount */}
-                      <TableCell className="text-right font-semibold text-slate-900 whitespace-nowrap">
-                        {isReversed && !exp.reversalOfVoucherNumber ? (
-                          <span className="line-through text-slate-400">{formatCurrency(exp.amount)}</span>
-                        ) : isReversed && exp.reversalOfVoucherNumber ? (
-                          <span className="text-rose-600">-{formatCurrency(exp.amount)}</span>
-                        ) : (
-                          formatCurrency(exp.amount)
-                        )}
-                      </TableCell>
-
-                      {/* Payment Source */}
-                      <TableCell>
+                      {/* 6. Payment Source */}
+                      <td className="py-3.5 px-4 whitespace-nowrap text-[#475569] text-[13px]">
                         <div className="flex items-center gap-1.5">
                           {exp.paymentSource === 'CASH_DRAWER' ? (
                             <>
@@ -1020,45 +1115,54 @@ export const ExpenseManagementPage: React.FC = () => {
                             </>
                           )}
                         </div>
-                      </TableCell>
+                      </td>
 
-                      {/* Status */}
-                      <TableCell className="text-center">
+                      {/* 7. Amount */}
+                      <td className="py-3.5 px-4 text-right tabular-nums font-bold whitespace-nowrap text-[13px]">
+                        {isReversed && !exp.reversalOfVoucherNumber ? (
+                          <span className="line-through text-slate-400">{formatCurrency(exp.amount)}</span>
+                        ) : isReversed && exp.reversalOfVoucherNumber ? (
+                          <span className="text-rose-600">-{formatCurrency(exp.amount)}</span>
+                        ) : (
+                          <span className="text-slate-900">{formatCurrency(exp.amount)}</span>
+                        )}
+                      </td>
+
+                      {/* 8. Status */}
+                      <td className="py-3.5 px-4 text-center whitespace-nowrap">
                         {isPaid && (
-                          <Badge className="bg-[#FDF2F5] text-[#9D2558] border-[#F1DEE3] hover:bg-[#FCE8EC] text-[10px] font-medium">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FDF2F5] text-[#9D2558] border border-[#F1DEE3]">
                             POSTED
-                          </Badge>
+                          </span>
                         )}
                         {isDraft && (
-                          <Badge className="bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100 text-[10px] font-medium">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
                             DRAFT
-                          </Badge>
+                          </span>
                         )}
                         {isReversed && (
-                          <Badge className="bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100 text-[10px] font-medium">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
                             REVERSED
-                          </Badge>
+                          </span>
                         )}
-                      </TableCell>
+                      </td>
 
-                      {/* Entered / Paid By */}
-                      <TableCell>
-                        <div className="text-slate-900">{exp.paidByName || exp.createdByName || 'Staff'}</div>
+                      {/* 9. Entered / Paid By */}
+                      <td className="py-3.5 px-4 whitespace-nowrap text-[#475569] text-[12px]">
+                        <div className="text-slate-900 font-medium">{exp.paidByName || exp.createdByName || 'Staff'}</div>
                         <div className="text-[10px] text-slate-400">
                           {exp.createdByName && exp.paidByName && exp.createdByName !== exp.paidByName
                             ? `by ${exp.createdByName}`
                             : 'Direct'}
                         </div>
-                      </TableCell>
+                      </td>
 
-                      {/* Actions */}
-                      <TableCell className="text-right whitespace-nowrap">
-                        <div className="flex items-center justify-end gap-1">
-                          {/* View Voucher */}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7 p-0 text-slate-500 hover:text-slate-900"
+                      {/* 10. Actions */}
+                      <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                        <div className="flex items-center justify-center gap-1">
+                          <button
+                            type="button"
+                            className="p-1.5 rounded-md text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
                             title="View Printable Voucher"
                             onClick={() => {
                               setActiveExpenseForVoucher(exp);
@@ -1066,13 +1170,11 @@ export const ExpenseManagementPage: React.FC = () => {
                             }}
                           >
                             <Eye className="w-3.5 h-3.5" />
-                          </Button>
+                          </button>
 
-                          {/* Print Voucher */}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7 p-0 text-slate-500 hover:text-slate-900"
+                          <button
+                            type="button"
+                            className="p-1.5 rounded-md text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
                             title="Print Voucher"
                             onClick={() => {
                               setActiveExpenseForVoucher(exp);
@@ -1080,54 +1182,78 @@ export const ExpenseManagementPage: React.FC = () => {
                             }}
                           >
                             <Printer className="w-3.5 h-3.5" />
-                          </Button>
+                          </button>
 
-                          {/* Draft Operations */}
                           {canEditThisDraft && (
                             <>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-7 w-7 p-0 text-[#9D2558] hover:text-[#6A1237]"
+                              <button
+                                type="button"
+                                className="p-1.5 rounded-md text-[#9D2558] hover:text-[#6A1237] hover:bg-[#FDF2F5] transition-colors cursor-pointer"
                                 title="Edit Draft"
                                 onClick={() => handleOpenAddModal(exp)}
                               >
                                 <Edit className="w-3.5 h-3.5" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-7 w-7 p-0 text-rose-600 hover:text-rose-800"
+                              </button>
+                              <button
+                                type="button"
+                                className="p-1.5 rounded-md text-rose-600 hover:text-rose-800 hover:bg-rose-50 transition-colors cursor-pointer"
                                 title="Delete Draft"
                                 onClick={() => handleDeleteDraft(exp)}
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
-                              </Button>
+                              </button>
                             </>
                           )}
 
-                          {/* Reversal action for Admin/Super Admin on posted items */}
                           {canReverseThis && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 w-7 p-0 text-rose-600 hover:text-rose-800 hover:bg-rose-50"
+                            <button
+                              type="button"
+                              className="p-1.5 rounded-md text-rose-600 hover:text-rose-800 hover:bg-rose-50 transition-colors cursor-pointer"
                               title="Reverse Posted Expense"
                               onClick={() => handleOpenReversalModal(exp)}
                             >
                               <RotateCcw className="w-3.5 h-3.5" />
-                            </Button>
+                            </button>
                           )}
                         </div>
-                      </TableCell>
-                    </TableRow>
+                      </td>
+                    </tr>
                   );
                 })
               )}
-            </TableBody>
-          </Table>
+            </tbody>
+
+            {/* Integrated Table Footer */}
+            <tfoot className="bg-[#F8FAFC] border-t-2 border-slate-200 font-['Inter',sans-serif] text-[13px]">
+              <tr className="border-b border-slate-200/70">
+                <td colSpan={6} className="py-3.5 px-4 text-right font-bold text-slate-800 tracking-wide">
+                  TOTALS (PKR)
+                </td>
+                <td className="py-3.5 px-4 text-right tabular-nums font-bold text-slate-800">
+                  {formatCurrency(metrics.postedTotal)}
+                </td>
+                <td colSpan={3} className="py-3.5 px-4 text-xs text-slate-500">
+                  {metrics.postedCount} posted vouchers {metrics.reversedCount > 0 ? `(${formatCurrency(metrics.reversedTotal)} reversed)` : ''}
+                </td>
+              </tr>
+              <tr>
+                <td colSpan={6} className="py-3 px-4 text-right font-medium text-slate-700">
+                  Net Operating Expenses
+                </td>
+                <td className="py-3 px-4 text-right tabular-nums font-bold text-[#9D2558] text-sm">
+                  {formatCurrency(metrics.netExpenses)}
+                </td>
+                <td colSpan={3} className="py-3 px-4"></td>
+              </tr>
+            </tfoot>
+          </table>
         </div>
-      </Card>
+      </div>
+
+      {/* Footer Branding */}
+      <div className="text-center py-4 text-xs text-slate-400 font-medium tracking-wide">
+        © iSysware Management System
+      </div>
 
       {/* ================================================= */}
       {/* 1. ADD / EDIT EXPENSE MODAL                       */}

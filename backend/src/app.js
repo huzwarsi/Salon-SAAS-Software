@@ -8,6 +8,7 @@ import cors           from 'cors';
 import morgan         from 'morgan';
 import cookieParser   from 'cookie-parser';
 import { env }        from './config/env.js';
+import { isAllowedOrigin } from './config/cors.js';
 import apiRouter      from './routes.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 
@@ -23,14 +24,7 @@ const configuredOrigins = (env.corsOrigin || 'http://localhost:3000')
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin) return callback(null, true);
-    if (
-      configuredOrigins.includes(origin) ||
-      configuredOrigins.includes('*') ||
-      origin.endsWith('.vercel.app') ||
-      origin.includes('localhost') ||
-      origin.includes('127.0.0.1')
-    ) {
+    if (isAllowedOrigin(origin, configuredOrigins, env.nodeEnv === 'development')) {
       return callback(null, true);
     }
     return callback(new Error(`CORS blocked for origin: ${origin}`));

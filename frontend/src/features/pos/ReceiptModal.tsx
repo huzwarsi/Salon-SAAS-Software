@@ -223,7 +223,7 @@ We look forward to serving you again.`;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[480px] w-[95vw] sm:w-full max-h-[92vh] flex flex-col p-0 overflow-hidden font-sans border border-slate-200/90 shadow-2xl rounded-2xl bg-white print:p-0 print:border-none print:shadow-none">
+      <DialogContent className="sm:max-w-[560px] w-[95vw] sm:w-full max-h-[88vh] flex flex-col p-0 overflow-hidden font-sans border border-slate-200/90 shadow-2xl rounded-2xl bg-white print:p-0 print:border-none print:shadow-none">
         {/* Header */}
         <DialogHeader className="px-4 sm:px-5 py-3 sm:py-3.5 border-b border-slate-100 flex flex-row items-center justify-between shrink-0 bg-white print:hidden">
           <DialogTitle className="flex items-center gap-2 text-sm font-bold text-slate-900">
@@ -528,15 +528,46 @@ We look forward to serving you again.`;
         </div>
 
         {/* Footer Actions Toolbar */}
-        <div className="px-3 sm:px-5 py-2.5 sm:py-3 border-t border-slate-100 bg-slate-50/90 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 shrink-0 print:hidden">
-          {/* Primary Action Buttons (Top row on mobile / Right cluster on desktop) */}
-          <div className="flex items-center gap-1.5 order-1 sm:order-2 flex-wrap sm:flex-nowrap">
+        <div className="px-3 sm:px-4 py-2.5 sm:py-3 border-t border-slate-100 bg-slate-50/90 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 shrink-0 print:hidden">
+          {/* Secondary Actions (Close, Refund, Copy) */}
+          <div className="flex items-center gap-1.5 order-2 sm:order-1">
+            <Button variant="outline" size="sm" onClick={onClose} className="text-xs h-8 px-3 text-slate-600 hover:bg-slate-100">
+              Close
+            </Button>
+            {onRefund && invoice.lifecycle !== 'VOIDED' && invoice.lifecycle !== 'REFUNDED' && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  onClose();
+                  onRefund(invoice);
+                }}
+                className="text-xs gap-1 h-8 px-2 text-rose-700 border-rose-300 hover:bg-rose-50 hover:text-rose-800"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-rose-600" />
+                <span>Refund</span>
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCopyMessage}
+              title="Copy receipt text to clipboard"
+              className="text-xs h-8 px-2.5 text-slate-600 hover:bg-slate-100"
+            >
+              {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+              <span className="sm:hidden text-[11px] ml-1">Copy Text</span>
+            </Button>
+          </div>
+
+          {/* Primary Action Buttons (WhatsApp, PDF, Print, New Sale) */}
+          <div className="flex items-center gap-1.5 order-1 sm:order-2 flex-wrap sm:flex-nowrap justify-end">
             {/* Direct WhatsApp PDF Share Button */}
             <Button
               size="sm"
               disabled={isGeneratingPdf}
               onClick={handleWhatsAppClick}
-              className="flex-1 sm:flex-none bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs gap-1.5 h-8 px-2.5 sm:px-3 font-medium cursor-pointer shadow-xs disabled:opacity-60"
+              className="bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs gap-1.5 h-8 px-2.5 sm:px-3 font-medium cursor-pointer shadow-xs disabled:opacity-60 shrink-0"
               title="Send A to Z receipt PDF to customer WhatsApp"
             >
               {isGeneratingPdf ? (
@@ -564,7 +595,7 @@ We look forward to serving you again.`;
               variant="outline"
               size="sm"
               onClick={handlePrint}
-              className="text-xs gap-1 h-8 px-2.5 shrink-0"
+              className="text-xs gap-1 h-8 px-2.5 text-slate-700 hover:text-slate-900 hover:bg-slate-100 shrink-0"
             >
               <Printer className="w-3.5 h-3.5 text-slate-600" />
               <span>Print</span>
@@ -577,43 +608,12 @@ We look forward to serving you again.`;
                   onClose();
                   onNewSale();
                 }}
-                className="bg-[#9D2558] hover:bg-[#851C47] text-white text-xs gap-1 h-8 px-2.5 sm:px-3 font-semibold shrink-0"
+                className="bg-[#9D2558] hover:bg-[#851C47] text-white text-xs gap-1 h-8 px-3 font-semibold shrink-0 cursor-pointer shadow-xs"
               >
                 <PlusCircle className="w-3.5 h-3.5" />
                 <span>New Sale</span>
               </Button>
             )}
-          </div>
-
-          {/* Secondary Actions (Bottom row on mobile / Left cluster on desktop) */}
-          <div className="flex items-center justify-between sm:justify-start gap-1.5 order-2 sm:order-1">
-            <Button variant="outline" size="sm" onClick={onClose} className="text-xs h-8 px-3 text-slate-600">
-              Close
-            </Button>
-            {onRefund && invoice.lifecycle !== 'VOIDED' && invoice.lifecycle !== 'REFUNDED' && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  onClose();
-                  onRefund(invoice);
-                }}
-                className="text-xs gap-1 h-8 px-2 text-rose-700 border-rose-300 hover:bg-rose-50 hover:text-rose-800"
-              >
-                <RotateCcw className="w-3.5 h-3.5 text-rose-600" />
-                <span>Refund</span>
-              </Button>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleCopyMessage}
-              title="Copy receipt text to clipboard"
-              className="text-xs h-8 px-2.5 text-slate-600"
-            >
-              {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-              <span className="sm:hidden text-[11px] ml-1">Copy Text</span>
-            </Button>
           </div>
         </div>
       </DialogContent>

@@ -34,6 +34,8 @@ import {
   CheckCircle2,
   BookOpen,
   Wallet,
+  Sparkles,
+  UserCheck,
 } from 'lucide-react';
 import { CollectDuesModal } from './CollectDuesModal';
 import { buildClientLedger } from '../clientLedger';
@@ -699,13 +701,23 @@ export const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({
                               </span>
                               <Badge
                                 variant="outline"
-                                className={`text-[10px] font-bold ${
+                                className={`text-[10px] font-bold inline-flex items-center gap-1 ${
                                   b.type === 'BRIDAL'
                                     ? 'bg-[#FCE8EC] text-[#9D2558] border-[#F1DEE3]'
                                     : 'bg-slate-100 text-slate-800 border-slate-200'
                                 }`}
                               >
-                                {b.type === 'BRIDAL' ? '👰 Bridal Event' : '🤵 Groom Event'}
+                                {b.type === 'BRIDAL' ? (
+                                  <>
+                                    <Sparkles className="w-2.5 h-2.5 text-[#9D2558]" />
+                                    Bridal Event
+                                  </>
+                                ) : (
+                                  <>
+                                    <UserCheck className="w-2.5 h-2.5 text-slate-600" />
+                                    Groom Event
+                                  </>
+                                )}
                               </Badge>
                               <Badge
                                 variant="outline"

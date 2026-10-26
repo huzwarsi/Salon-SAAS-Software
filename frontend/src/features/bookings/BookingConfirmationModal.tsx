@@ -21,6 +21,7 @@ import {
   CheckCheck,
   Printer,
   Sparkles,
+  UserCheck,
 } from 'lucide-react';
 import { toast } from '@/context/ToastContext';
 import { formatCurrency, normalizePhoneDigits } from '@/lib/formatters';
@@ -143,8 +144,18 @@ We look forward to serving you!`;
           {/* WhatsApp Styled Message Bubble Container */}
           <div className="p-3.5 rounded-2xl bg-[#EFEAE2]/60 border border-slate-200/70 space-y-2">
             <div className="text-center">
-              <span className="text-[9px] font-semibold bg-white/90 text-slate-500 px-2.5 py-0.5 rounded-full shadow-2xs">
-                {booking.type === 'BRIDAL' ? '👰 Bridal Reservation' : '🤵 Groom Reservation'}
+              <span className="text-[9px] font-semibold bg-white/90 text-slate-500 px-2.5 py-0.5 rounded-full shadow-2xs inline-flex items-center gap-1">
+                {booking.type === 'BRIDAL' ? (
+                  <>
+                    <Sparkles className="w-2.5 h-2.5 text-[#9D2558]" />
+                    Bridal Reservation
+                  </>
+                ) : (
+                  <>
+                    <UserCheck className="w-2.5 h-2.5 text-slate-600" />
+                    Groom Reservation
+                  </>
+                )}
               </span>
             </div>
 

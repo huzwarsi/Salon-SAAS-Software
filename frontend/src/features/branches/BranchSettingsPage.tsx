@@ -53,7 +53,6 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Landmark,
@@ -755,23 +754,6 @@ export const BranchSettingsPage: React.FC = () => {
 
   return (
     <div className="space-y-6 font-sans">
-      {/* FEEDBACK ALERTS */}
-      {errorMessage && (
-        <Alert variant="destructive" className="animate-in fade-in duration-200">
-          <AlertCircle className="w-4 h-4" />
-          <AlertTitle>Action Notice</AlertTitle>
-          <AlertDescription className="text-xs">{errorMessage}</AlertDescription>
-        </Alert>
-      )}
-
-      {successMessage && (
-        <Alert className="bg-emerald-50 border-emerald-200 text-emerald-800 animate-in fade-in duration-200">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-          <AlertTitle>Configuration Saved</AlertTitle>
-          <AlertDescription className="text-xs">{successMessage}</AlertDescription>
-        </Alert>
-      )}
-
       {/* UNIFIED PAGE HEADER & ACTIONS */}
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">

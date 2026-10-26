@@ -28,6 +28,8 @@ import {
   XCircle,
   UserX,
   AlertCircle,
+  X,
+  RotateCcw,
 } from 'lucide-react';
 
 interface BookingDetailsModalProps {
@@ -39,6 +41,7 @@ interface BookingDetailsModalProps {
   onOpenConfirmationMessage: (booking: Booking) => void;
   onOpenInPOS: (booking: Booking) => void;
   onCancel?: (booking: Booking) => void;
+  onRefund?: (booking: Booking) => void;
   onNoShow?: (booking: Booking) => void;
   onStartService?: (booking: Booking) => void;
 }
@@ -52,6 +55,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
   onOpenConfirmationMessage,
   onOpenInPOS,
   onCancel,
+  onRefund,
   onNoShow,
   onStartService,
 }) => {
@@ -136,6 +140,15 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
               >
                 {isBilled ? 'BILLED' : 'UNBILLED'}
               </Badge>
+              <button
+                type="button"
+                onClick={onClose}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors ml-1 cursor-pointer"
+                title="Close"
+                aria-label="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
           </div>
         </DialogHeader>
@@ -178,11 +191,15 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
                 </span>
               </div>
               <div className="flex items-center gap-2 text-slate-600">
-                <Sparkles className="w-4 h-4 text-[#9D2558]" />
+                {booking.type === 'BRIDAL' ? (
+                  <Sparkles className="w-4 h-4 text-[#9D2558]" />
+                ) : (
+                  <UserCheck className="w-4 h-4 text-slate-700" />
+                )}
                 <span>
                   Type:{' '}
                   <span className="font-bold text-[#9D2558]">
-                    {booking.type === 'BRIDAL' ? '👰 Bridal Event' : '🤵 Groom Event'}
+                    {booking.type === 'BRIDAL' ? 'Bridal Event' : 'Groom Event'}
                   </span>
                 </span>
               </div>
@@ -337,16 +354,23 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
               Edit
             </Button>
 
-            {isOpenStatus && onCancel && (
+            {isOpenStatus && (onRefund || onCancel) && (
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => onCancel(booking)}
-                className="text-xs gap-1 text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+                onClick={() => {
+                  onClose();
+                  if (onRefund) {
+                    onRefund(booking);
+                  } else if (onCancel) {
+                    onCancel(booking);
+                  }
+                }}
+                className="text-xs gap-1.5 text-rose-600 border-rose-200 hover:text-rose-700 hover:bg-rose-50 font-semibold"
               >
-                <XCircle className="w-3.5 h-3.5" />
-                Cancel
+                <RotateCcw className="w-3.5 h-3.5" />
+                Refund
               </Button>
             )}
 

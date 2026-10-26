@@ -407,9 +407,9 @@ export const DebitCreditStatementPage: React.FC<{ initialTab?: 'PAYMENT_ACCOUNTS
       <div className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-xs">
         <form onSubmit={handleApplyFilters} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Campus / Branch */}
+            {/* Branch */}
             <div>
-              <label className={labelClass}>Campus / Branch</label>
+              <label className={labelClass}>Branch</label>
               <select
                 value={selectedBranch}
                 disabled={!isSuperAdmin}

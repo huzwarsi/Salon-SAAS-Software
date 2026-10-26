@@ -1,5 +1,6 @@
 // src/modules/audit/audit.service.js
 import prisma from '../../config/prisma.js';
+import { redactSecrets } from '../../lib/redactSecrets.js';
 import { resolveReadBranch, assertBranchAccess } from '../../lib/scope.js';
 import { dateOnly } from '../../lib/dates.js';
 
@@ -71,8 +72,8 @@ export const listAuditEvents = async (actor, query) => {
       action: e.action,
       entity: e.entity,
       entityId: e.entityId,
-      before: e.before,
-      after: e.after,
+      before: redactSecrets(e.before),
+      after: redactSecrets(e.after),
       createdAt: e.createdAt.toISOString(),
     };
   });
@@ -92,5 +93,5 @@ export const getAuditEvent = async (actor, id) => {
   if (event.branchId) {
     assertBranchAccess(actor, event.branchId);
   }
-  return event;
+  return { ...event, before: redactSecrets(event.before), after: redactSecrets(event.after) };
 };
