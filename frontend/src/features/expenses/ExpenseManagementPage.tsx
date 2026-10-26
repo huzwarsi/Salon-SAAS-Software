@@ -775,7 +775,7 @@ export const ExpenseManagementPage: React.FC = () => {
   }, [allBranches, selectedBranchId]);
 
   return (
-    <div className="w-full text-slate-800 font-sans">
+    <div className="w-full max-w-full text-slate-800 font-sans">
       {/* ── 1. TOP HEADER & FILTERS CARD (SALES INVOICES / UNPAID INVOICES STYLE) ── */}
       <div className="bg-white rounded-xl shadow-xs border border-slate-200/90 p-5 md:p-6 mb-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
@@ -831,9 +831,9 @@ export const ExpenseManagementPage: React.FC = () => {
         </div>
 
         {/* Filter Controls Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-3.5 items-end">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-7 gap-3.5 items-end">
           {/* Branch */}
-          <div>
+          <div className="min-w-0">
             <label className={labelClass}>Branch</label>
             <Select
               value={selectedBranchId}
@@ -855,7 +855,7 @@ export const ExpenseManagementPage: React.FC = () => {
           </div>
 
           {/* Search */}
-          <div>
+          <div className="min-w-0">
             <label className={labelClass}>Search</label>
             <div className="relative">
               <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
@@ -864,32 +864,13 @@ export const ExpenseManagementPage: React.FC = () => {
                 placeholder="Voucher, payee, title..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className={`${inputClass} pl-8 h-9`}
+                className={`${inputClass} pl-8 h-9 min-w-0 w-full`}
               />
             </div>
           </div>
 
-          {/* Status */}
-          <div>
-            <label className={labelClass}>Status</label>
-            <Select
-              value={statusFilter}
-              onValueChange={(val: any) => setStatusFilter(val)}
-            >
-              <SelectTrigger className="w-full text-xs h-9 border border-slate-300 rounded-md bg-white text-slate-700 font-medium">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent className="z-[70]">
-                <SelectItem value="ALL">All Statuses</SelectItem>
-                <SelectItem value="POSTED">Posted / Paid</SelectItem>
-                <SelectItem value="DRAFT">Drafts Only</SelectItem>
-                <SelectItem value="REVERSED">Reversed Only</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
           {/* Category */}
-          <div>
+          <div className="min-w-0">
             <label className={labelClass}>Category</label>
             <Select
               value={categoryFilter}
@@ -909,8 +890,27 @@ export const ExpenseManagementPage: React.FC = () => {
             </Select>
           </div>
 
+          {/* Status */}
+          <div className="min-w-0">
+            <label className={labelClass}>Status</label>
+            <Select
+              value={statusFilter}
+              onValueChange={(val: any) => setStatusFilter(val)}
+            >
+              <SelectTrigger className="w-full text-xs h-9 border border-slate-300 rounded-md bg-white text-slate-700 font-medium">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent className="z-[70]">
+                <SelectItem value="ALL">All Statuses</SelectItem>
+                <SelectItem value="POSTED">Posted / Paid</SelectItem>
+                <SelectItem value="DRAFT">Drafts Only</SelectItem>
+                <SelectItem value="REVERSED">Reversed Only</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* Payment Method */}
-          <div>
+          <div className="min-w-0">
             <label className={labelClass}>Payment Source</label>
             <Select
               value={paymentSourceFilter}
@@ -927,32 +927,35 @@ export const ExpenseManagementPage: React.FC = () => {
             </Select>
           </div>
 
-          {/* Date Range & Reset button */}
-          <div className="flex items-center gap-2">
-            <div className="flex-1">
-              <label className={labelClass}>From Date</label>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className={inputClass}
-              />
-            </div>
-            <div className="flex-1">
-              <label className={labelClass}>To Date</label>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className={inputClass}
-              />
-            </div>
+          {/* From Date */}
+          <div className="min-w-0">
+            <label className={labelClass}>From Date</label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className={`${inputClass} h-9 min-w-0 w-full`}
+            />
+          </div>
+
+          {/* To Date */}
+          <div className="min-w-0">
+            <label className={labelClass}>To Date</label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className={`${inputClass} h-9 min-w-0 w-full`}
+            />
           </div>
         </div>
 
         {/* Reset Filters Option if any active filter */}
         {(searchQuery || statusFilter !== 'ALL' || categoryFilter !== 'ALL' || paymentSourceFilter !== 'ALL' || startDate || endDate) && (
-          <div className="mt-3 pt-3 border-t border-slate-100 flex justify-end">
+          <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
+            <span className="text-xs text-slate-500 font-medium">
+              Showing {filteredExpenses.length} of {expenses.length} expense vouchers
+            </span>
             <button
               type="button"
               onClick={() => {
@@ -963,9 +966,10 @@ export const ExpenseManagementPage: React.FC = () => {
                 setStartDate('');
                 setEndDate('');
               }}
-              className="text-xs text-rose-600 hover:text-rose-800 font-semibold cursor-pointer transition-colors"
+              className="text-xs text-rose-600 hover:text-rose-800 font-semibold cursor-pointer transition-colors flex items-center gap-1"
             >
-              Reset Filters
+              <RotateCcw className="w-3 h-3" />
+              <span>Reset Filters</span>
             </button>
           </div>
         )}

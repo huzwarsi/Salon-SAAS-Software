@@ -774,32 +774,140 @@ export const StaffDirectoryPage: React.FC = () => {
     formData.combinationPolicy
   );
 
+  const staffKPIs = {
+    totalStaff: staffList.length,
+    activeStaff: staffList.filter((s) => s.isActive).length,
+    portalEnabled: staffList.filter((s) => s.hasPortalAccess).length,
+    totalBranches: branches.length,
+  };
+
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6 font-sans">
       {/* HEADER SECTION */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight truncate">Staff & Compensation Directory</h1>
-          <p className="text-xs text-slate-500 mt-1 line-clamp-1 xl:line-clamp-none">
-            Manage employee profiles, 5 compensation structures, working schedules, and attendance deduction rules.
-          </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 rounded-2xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69] shrink-0">
+            <Users className="w-5 h-5" />
+          </div>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-[#18191B] tracking-tight truncate">
+              Staff & Compensation Directory
+            </h1>
+            <p className="text-xs text-[#78616C] mt-0.5 line-clamp-1 xl:line-clamp-none">
+              Manage employee profiles, 5 compensation structures, working schedules, and attendance deduction rules.
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto flex-wrap sm:flex-nowrap">
-          <Button variant="outline" size="sm" onClick={loadData} isLoading={isLoading} className="shrink-0">
+        <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-auto flex-wrap sm:flex-nowrap">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={loadData}
+            isLoading={isLoading}
+            className="rounded-xl border border-white/80 bg-white/80 backdrop-blur-md shadow-2xs hover:bg-white text-slate-700"
+          >
             <RefreshCw className="w-3.5 h-3.5 mr-1.5 text-slate-500" />
             Refresh
           </Button>
 
-          <Button variant="default" size="sm" onClick={handleOpenAdd} className="shrink-0 whitespace-nowrap">
+          <Button
+            variant="default"
+            size="sm"
+            onClick={handleOpenAdd}
+            className="rounded-xl bg-gradient-to-r from-[#B82E69] to-[#9D2558] hover:from-[#A02359] hover:to-[#8B1A4B] text-white shadow-xs font-semibold shrink-0"
+          >
             <Plus className="w-4 h-4 mr-1.5" />
             Add Employee
           </Button>
         </div>
       </div>
 
+      {/* KPI Cards Row - Pure White Frosted Glass */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total Personnel */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+              <Users className="w-4 h-4" />
+            </div>
+            <span className="bg-[#FDF2F5] text-[#B82E69] shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Staff
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {staffKPIs.totalStaff}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Registered employee roster
+            </span>
+          </div>
+        </div>
+
+        {/* Active on Duty */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+              <CheckCircle2 className="w-4 h-4" />
+            </div>
+            <span className="bg-emerald-50 text-emerald-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Active
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {staffKPIs.activeStaff}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Currently rostered & active
+            </span>
+          </div>
+        </div>
+
+        {/* Portal Access */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+              <KeyRound className="w-4 h-4" />
+            </div>
+            <span className="bg-[#FDF2F5] text-[#B82E69] shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Portal
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {staffKPIs.portalEnabled}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Self-service portal logins
+            </span>
+          </div>
+        </div>
+
+        {/* Operating Branches */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+              <Building2 className="w-4 h-4" />
+            </div>
+            <span className="bg-[#FAF8F9] text-[#78616C] shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Branches
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {staffKPIs.totalBranches}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Active salon locations
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* FILTERS TOOLBAR */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-2xs">
+      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white/75 backdrop-blur-2xl p-3.5 rounded-[22px] border border-white/90 shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
         <div className="relative flex-1 max-w-md">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <Input
@@ -807,7 +915,7 @@ export const StaffDirectoryPage: React.FC = () => {
             placeholder="Search by staff name, code, designation, or phone..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 h-9 text-xs"
+            className="pl-9 h-9 text-xs bg-white/80 border-white/80 rounded-xl"
           />
         </div>
 
@@ -816,7 +924,7 @@ export const StaffDirectoryPage: React.FC = () => {
             <div className="flex items-center gap-1.5">
               <span className="text-xs font-medium text-slate-500">Branch:</span>
               <Select value={branchFilter} onValueChange={setBranchFilter}>
-                <SelectTrigger className="w-[160px] h-9 text-xs">
+                <SelectTrigger className="w-[160px] h-9 text-xs bg-white/80 border-white/80 rounded-xl">
                   <SelectValue placeholder="Branch Scope" />
                 </SelectTrigger>
                 <SelectContent>
@@ -834,7 +942,7 @@ export const StaffDirectoryPage: React.FC = () => {
           <div className="flex items-center gap-1.5">
             <span className="text-xs font-medium text-slate-500">Portal:</span>
             <Select value={portalFilter} onValueChange={(val: any) => setPortalFilter(val)}>
-              <SelectTrigger className="w-[130px] h-9 text-xs">
+              <SelectTrigger className="w-[130px] h-9 text-xs bg-white/80 border-white/80 rounded-xl">
                 <SelectValue placeholder="Portal Status" />
               </SelectTrigger>
               <SelectContent>
@@ -848,7 +956,7 @@ export const StaffDirectoryPage: React.FC = () => {
           <div className="flex items-center gap-1.5">
             <span className="text-xs font-medium text-slate-500">Status:</span>
             <Select value={statusFilter} onValueChange={(val: any) => setStatusFilter(val)}>
-              <SelectTrigger className="w-[120px] h-9 text-xs">
+              <SelectTrigger className="w-[120px] h-9 text-xs bg-white/80 border-white/80 rounded-xl">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -862,26 +970,26 @@ export const StaffDirectoryPage: React.FC = () => {
       </div>
 
       {/* STAFF TABLE */}
-      <Card padding="none" className="overflow-hidden">
+      <Card variant="glass" padding="none" className="overflow-hidden rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
         <div className="overflow-x-auto w-full">
           <Table className="min-w-[1180px] w-full">
-            <TableHeader>
-              <TableRow>
-                <TableHead className="whitespace-nowrap">Employee & Code</TableHead>
-                <TableHead className="whitespace-nowrap">Branch Location</TableHead>
-                <TableHead className="whitespace-nowrap">Designation & Role</TableHead>
-                <TableHead className="whitespace-nowrap">Compensation Model</TableHead>
-                <TableHead className="text-right whitespace-nowrap">Overtime Rate</TableHead>
-                <TableHead className="whitespace-nowrap">Schedule & Grace</TableHead>
-                <TableHead className="whitespace-nowrap">Portal Access</TableHead>
-                <TableHead className="whitespace-nowrap">Status</TableHead>
-                <TableHead className="text-right whitespace-nowrap">Actions</TableHead>
+            <TableHeader className="bg-[#FAF8F9]/80 border-b border-rose-100/40">
+              <TableRow className="border-b border-rose-100/40 hover:bg-transparent">
+                <TableHead className="whitespace-nowrap text-[#78616C] font-semibold text-xs py-3.5 px-4">Employee & Code</TableHead>
+                <TableHead className="whitespace-nowrap text-[#78616C] font-semibold text-xs py-3.5 px-4">Branch Location</TableHead>
+                <TableHead className="whitespace-nowrap text-[#78616C] font-semibold text-xs py-3.5 px-4">Designation & Role</TableHead>
+                <TableHead className="whitespace-nowrap text-[#78616C] font-semibold text-xs py-3.5 px-4">Compensation Model</TableHead>
+                <TableHead className="text-right whitespace-nowrap text-[#78616C] font-semibold text-xs py-3.5 px-4">Overtime Rate</TableHead>
+                <TableHead className="whitespace-nowrap text-[#78616C] font-semibold text-xs py-3.5 px-4">Schedule & Grace</TableHead>
+                <TableHead className="whitespace-nowrap text-[#78616C] font-semibold text-xs py-3.5 px-4">Portal Access</TableHead>
+                <TableHead className="whitespace-nowrap text-[#78616C] font-semibold text-xs py-3.5 px-4">Status</TableHead>
+                <TableHead className="text-right whitespace-nowrap text-[#78616C] font-semibold text-xs py-3.5 px-4">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredStaff.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={9} className="h-32 text-center text-slate-500 text-xs">
+                <TableRow className="hover:bg-transparent">
+                  <TableCell colSpan={9} className="h-32 text-center text-[#78616C] text-xs">
                     {searchQuery
                       ? `No staff members found matching "${searchQuery}".`
                       : 'No employees registered under current filters.'}
@@ -889,11 +997,10 @@ export const StaffDirectoryPage: React.FC = () => {
                 </TableRow>
               ) : (
                 filteredStaff.map((staff) => (
-                  <TableRow key={staff.id}>
-                    <TableCell className="whitespace-nowrap">
+                  <TableRow key={staff.id} className="hover:bg-[#FDF2F5]/40 transition-colors border-b border-rose-100/30">
+                    <TableCell className="whitespace-nowrap py-3.5 px-4">
                       <div className="flex items-center gap-2.5">
-                        {/* Photo removal requirement: render consistent Initials Badge */}
-                        <div className="w-8 h-8 rounded-full bg-[#9D2558]/10 text-[#9D2558] border border-[#9D2558]/20 font-bold text-xs flex items-center justify-center shrink-0">
+                        <div className="w-9 h-9 rounded-2xl bg-white/90 text-[#B82E69] border border-white/80 shadow-2xs font-bold text-xs flex items-center justify-center shrink-0">
                           {staff.name
                             ? staff.name
                                 .split(' ')
@@ -904,85 +1011,85 @@ export const StaffDirectoryPage: React.FC = () => {
                             : 'S'}
                         </div>
                         <div>
-                          <p className="font-semibold text-slate-900 leading-tight whitespace-nowrap">{staff.name}</p>
-                          <p className="text-[11px] text-slate-400 font-mono mt-0.5 whitespace-nowrap">{staff.employeeCode}</p>
+                          <p className="font-semibold text-[#18191B] leading-tight whitespace-nowrap">{staff.name}</p>
+                          <p className="text-[11px] text-[#78616C] font-mono mt-0.5 whitespace-nowrap">{staff.employeeCode}</p>
                         </div>
                       </div>
                     </TableCell>
 
-                    <TableCell className="whitespace-nowrap">
-                      <div className="text-xs text-slate-800 flex items-center gap-1.5 whitespace-nowrap">
-                        <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <TableCell className="whitespace-nowrap py-3.5 px-4">
+                      <div className="text-xs text-[#18191B] flex items-center gap-1.5 whitespace-nowrap">
+                        <Building2 className="w-3.5 h-3.5 text-[#B82E69] shrink-0" />
                         <span>{staff.branchName || staff.branchId}</span>
                       </div>
                     </TableCell>
 
-                    <TableCell className="whitespace-nowrap">
-                      <div className="text-xs font-medium text-slate-900 whitespace-nowrap">{staff.designation}</div>
-                      <div className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5 whitespace-nowrap">
+                    <TableCell className="whitespace-nowrap py-3.5 px-4">
+                      <div className="text-xs font-medium text-[#18191B] whitespace-nowrap">{staff.designation}</div>
+                      <div className="text-[11px] text-[#78616C] flex items-center gap-1 mt-0.5 whitespace-nowrap">
                         <Calendar className="w-3 h-3" />
                         <span>Joined: {staff.joiningDate}</span>
                       </div>
                     </TableCell>
 
-                    <TableCell className="whitespace-nowrap min-w-[200px]">
-                      <div className="text-xs font-semibold text-slate-900 whitespace-nowrap">
+                    <TableCell className="whitespace-nowrap py-3.5 px-4 min-w-[200px]">
+                      <div className="text-xs font-semibold text-[#18191B] whitespace-nowrap">
                         {COMPENSATION_TYPE_LABELS[staff.compensationType || 'MONTHLY_SALARY']}
                       </div>
-                      <div className="text-[11px] text-slate-500 font-medium mt-0.5 whitespace-nowrap">
+                      <div className="text-[11px] text-[#78616C] font-medium mt-0.5 whitespace-nowrap">
                         {formatCompensationSummary(staff)}
                       </div>
                       {staff.requiresCompensationReview && (
-                        <Badge variant="warning" size="sm" className="mt-1">
+                        <Badge variant="warning" size="sm" className="mt-1 shadow-2xs border border-white/60">
                           Review Needed
                         </Badge>
                       )}
                     </TableCell>
 
-                    <TableCell className="text-right font-medium text-slate-700 tabular-nums whitespace-nowrap">
+                    <TableCell className="text-right font-medium text-slate-800 tabular-nums whitespace-nowrap py-3.5 px-4">
                       {formatCurrency(staff.overtimeHourlyRate || 0)}/hr
                     </TableCell>
 
-                    <TableCell className="whitespace-nowrap">
-                      <div className="text-xs text-slate-700 font-mono whitespace-nowrap">
+                    <TableCell className="whitespace-nowrap py-3.5 px-4">
+                      <div className="text-xs text-[#18191B] font-mono whitespace-nowrap">
                         {staff.startTime || '09:00'} - {staff.endTime || '18:00'}
                       </div>
-                      <div className="text-[10px] text-slate-400 mt-0.5 whitespace-nowrap">
+                      <div className="text-[10px] text-[#78616C] mt-0.5 whitespace-nowrap">
                         Grace: +{staff.lateGraceMinutes ?? 15}m late / -{staff.earlyGraceMinutes ?? 15}m early
                       </div>
                     </TableCell>
 
-                    <TableCell className="whitespace-nowrap">
+                    <TableCell className="whitespace-nowrap py-3.5 px-4">
                       {staff.hasPortalAccess ? (
                         <div>
-                          <Badge variant="primary" dot className="whitespace-nowrap">
+                          <Badge variant="primary" dot className="whitespace-nowrap shadow-2xs">
                             Portal Active
                           </Badge>
-                          <span className="text-[10px] text-slate-400 block font-mono mt-0.5 truncate max-w-[130px]">
+                          <span className="text-[10px] text-[#78616C] block font-mono mt-0.5 truncate max-w-[130px]">
                             {staff.linkedUserEmail || staff.email}
                           </span>
                         </div>
                       ) : (
-                        <Badge variant="secondary" className="whitespace-nowrap">
+                        <Badge variant="secondary" className="whitespace-nowrap shadow-2xs">
                           No Login
                         </Badge>
                       )}
                     </TableCell>
 
-                    <TableCell className="whitespace-nowrap">
-                      <Badge variant={staff.isActive ? 'success' : 'secondary'} dot className="whitespace-nowrap">
+                    <TableCell className="whitespace-nowrap py-3.5 px-4">
+                      <Badge variant={staff.isActive ? 'success' : 'secondary'} dot className="whitespace-nowrap shadow-2xs">
                         {staff.isActive ? 'Active' : 'Inactive'}
                       </Badge>
                     </TableCell>
 
-                    <TableCell className="text-right whitespace-nowrap">
-                      <DropdownMenu>
+                    <TableCell className="text-right whitespace-nowrap py-3.5 px-4">
+                      <DropdownMenu modal={false}>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-xl hover:bg-white/90 text-slate-600">
                             <MoreVertical className="w-4 h-4 text-slate-600" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
+                        <DropdownMenuContent align="end" className="w-48 bg-white/95 backdrop-blur-xl border border-white/90 rounded-2xl shadow-xl" onCloseAutoFocus={(e) => e.preventDefault()}>
                           <DropdownMenuItem
                             onClick={() => {
                               setSelectedStaff(staff);

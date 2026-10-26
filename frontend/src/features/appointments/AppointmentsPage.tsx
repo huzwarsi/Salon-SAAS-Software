@@ -35,6 +35,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { LuxurySelect } from '@/components/ui/LuxurySelect';
 import {
   Dialog,
   DialogContent,
@@ -387,20 +388,29 @@ export const AppointmentsPage: React.FC = () => {
     return branches[0]?.id || '';
   }, [selectedBranchId, user, branches]);
 
+  // Summary KPIs for Appointments
+  const appointmentKPIs = useMemo(() => {
+    const totalCount = appointments.length;
+    const activeCount = appointments.filter((a) => a.status === 'CONFIRMED' || a.status === 'IN_SERVICE' || a.status === 'CHECKED_IN').length;
+    const completedCount = appointments.filter((a) => a.status === 'COMPLETED').length;
+    const estValue = appointments.reduce((sum, a) => sum + ((a as any).estimatedPrice || a.price || 0), 0);
+    return { totalCount, activeCount, completedCount, estValue };
+  }, [appointments]);
+
   return (
     <div className="space-y-6">
       {/* Top Banner / Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-4 sm:p-5 rounded-xl border border-slate-200/80 shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-5 sm:p-6 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-lg bg-[#FDF2F5] border border-[#F1DEE3] flex items-center justify-center text-[#9D2558] shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#FDF2F5] to-white border border-white/80 shadow-2xs flex items-center justify-center text-[#B82E69] shrink-0">
               <CalendarIcon className="w-5 h-5" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight truncate">
+              <h1 className="text-xl sm:text-2xl font-bold text-[#18191B] tracking-tight truncate">
                 Appointment Calendar & Booking
               </h1>
-              <p className="text-xs text-slate-500 font-medium line-clamp-1 xl:line-clamp-none">
+              <p className="text-xs text-[#78616C] font-medium line-clamp-1 xl:line-clamp-none mt-0.5">
                 Salon chair scheduling, multi-staff service assignments, live conflict detection & billing handoff.
               </p>
             </div>
@@ -409,14 +419,14 @@ export const AppointmentsPage: React.FC = () => {
 
         <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto flex-wrap sm:flex-nowrap">
           {/* Calendar / List View Toggle */}
-          <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 shrink-0">
+          <div className="flex items-center bg-[#FDF2F5] p-1 rounded-2xl border border-white/60 shadow-inner shrink-0">
             <button
               type="button"
               onClick={() => setViewMode('calendar')}
-              className={`px-2.5 sm:px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all whitespace-nowrap ${
+              className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all whitespace-nowrap ${
                 viewMode === 'calendar'
-                  ? 'bg-white text-[#9D2558] shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white text-[#B82E69] shadow-xs'
+                  : 'text-[#78616C] hover:text-[#B82E69]'
               }`}
             >
               <Grid className="w-3.5 h-3.5" />
@@ -425,10 +435,10 @@ export const AppointmentsPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setViewMode('list')}
-              className={`px-2.5 sm:px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all whitespace-nowrap ${
+              className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all whitespace-nowrap ${
                 viewMode === 'list'
-                  ? 'bg-white text-[#9D2558] shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white text-[#B82E69] shadow-xs'
+                  : 'text-[#78616C] hover:text-[#B82E69]'
               }`}
             >
               <List className="w-3.5 h-3.5" />
@@ -438,11 +448,11 @@ export const AppointmentsPage: React.FC = () => {
 
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             size="sm"
             onClick={fetchAppointments}
             disabled={isLoading}
-            className="text-xs gap-1.5 h-9 px-3 shrink-0"
+            className="text-xs gap-1.5 h-9 px-3.5 shrink-0 rounded-xl border border-white/80 bg-white/70 hover:bg-white text-slate-700 shadow-2xs"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
             Refresh
@@ -452,7 +462,7 @@ export const AppointmentsPage: React.FC = () => {
             type="button"
             size="sm"
             onClick={() => handleOpenBooking()}
-            className="bg-[#9D2558] hover:bg-[#851C47] text-white text-xs font-semibold gap-1.5 h-9 px-3.5 shadow-xs shrink-0 whitespace-nowrap"
+            className="bg-[#B82E69] hover:bg-[#A02358] text-white text-xs font-semibold gap-1.5 h-9 px-4 rounded-xl shadow-xs shrink-0 whitespace-nowrap transition-all"
           >
             <Plus className="w-4 h-4" />
             New Appointment
@@ -460,18 +470,101 @@ export const AppointmentsPage: React.FC = () => {
         </div>
       </div>
 
+      {/* KPI Cards Row - Pure White Frosted Glass */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total Appointments */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+              <CalendarIcon className="w-4 h-4" />
+            </div>
+            <span className="bg-[#FDF2F5] text-[#B82E69] shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Month
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {appointmentKPIs.totalCount}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Total appointments scheduled
+            </span>
+          </div>
+        </div>
+
+        {/* Confirmed / Active */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+              <Scissors className="w-4 h-4" />
+            </div>
+            <span className="bg-purple-50 text-purple-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              In Service
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {appointmentKPIs.activeCount}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Active, confirmed & chair duty
+            </span>
+          </div>
+        </div>
+
+        {/* Completed Treatments */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+              <CheckCircle2 className="w-4 h-4" />
+            </div>
+            <span className="bg-emerald-50 text-emerald-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Completed
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {appointmentKPIs.completedCount}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Finished & billed sessions
+            </span>
+          </div>
+        </div>
+
+        {/* Estimated Volume Value */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+              <Receipt className="w-4 h-4" />
+            </div>
+            <span className="bg-[#FAF8F9] text-[#78616C] shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Estimated
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {formatCurrency(appointmentKPIs.estValue)}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Estimated treatment value
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* Month Navigator & Calendar Filters Bar */}
-      <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200/80 shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pb-3 border-b border-slate-100">
+      <div className="p-4 sm:p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] space-y-4">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pb-3 border-b border-white/60">
           {/* Month / Year Navigator */}
           <div className="flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto">
-            <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden bg-slate-50">
+            <div className="flex items-center border border-white/80 rounded-xl overflow-hidden bg-white/80 shadow-2xs">
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
                 onClick={handlePrevMonth}
-                className="h-8 px-2.5 hover:bg-slate-200 text-slate-700 rounded-none"
+                className="h-8 px-2.5 hover:bg-[#FDF2F5] text-slate-700 rounded-none"
                 title="Previous Month"
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -481,7 +574,7 @@ export const AppointmentsPage: React.FC = () => {
                 variant="ghost"
                 size="sm"
                 onClick={handleToday}
-                className="h-8 px-3 text-xs font-semibold hover:bg-slate-200 text-slate-700 rounded-none border-x border-slate-200"
+                className="h-8 px-3 text-xs font-bold hover:bg-[#FDF2F5] text-[#B82E69] rounded-none border-x border-white/80"
               >
                 Today
               </Button>
@@ -490,14 +583,14 @@ export const AppointmentsPage: React.FC = () => {
                 variant="ghost"
                 size="sm"
                 onClick={handleNextMonth}
-                className="h-8 px-2.5 hover:bg-slate-200 text-slate-700 rounded-none"
+                className="h-8 px-2.5 hover:bg-[#FDF2F5] text-slate-700 rounded-none"
                 title="Next Month"
               >
                 <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
 
-            <h2 className="text-base sm:text-lg font-bold text-slate-900 ml-2 whitespace-nowrap">
+            <h2 className="text-base sm:text-lg font-bold text-[#18191B] ml-2 whitespace-nowrap tracking-tight">
               {MONTH_NAMES[currentMonth]} {currentYear}
             </h2>
           </div>
@@ -510,7 +603,7 @@ export const AppointmentsPage: React.FC = () => {
               placeholder="Search client, phone, ref..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 h-9 text-xs bg-slate-50 border-slate-200 focus:bg-white"
+              className="pl-9 h-9 text-xs rounded-xl border border-white/80 bg-white/80 backdrop-blur-md shadow-2xs focus:bg-white"
             />
           </div>
         </div>
@@ -518,97 +611,80 @@ export const AppointmentsPage: React.FC = () => {
         {/* Filter Controls Row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
           {/* Branch Filter */}
-          <div>
-            <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-1">
-              Branch
-            </label>
-            <select
-              value={selectedBranchId}
-              onChange={(e) => setSelectedBranchId(e.target.value)}
-              disabled={user?.role !== 'SUPER_ADMIN'}
-              className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-medium focus:outline-hidden focus:ring-1 focus:ring-[#9D2558]/20 disabled:opacity-60"
-            >
-              {user?.role === 'SUPER_ADMIN' && <option value="ALL">All Branches</option>}
-              {branches.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <LuxurySelect
+            label="Branch"
+            value={selectedBranchId}
+            onValueChange={setSelectedBranchId}
+            disabled={user?.role !== 'SUPER_ADMIN'}
+            options={[
+              ...(user?.role === 'SUPER_ADMIN' ? [{ value: 'ALL', label: 'All Branches' }] : []),
+              ...branches.map((b) => ({ value: b.id, label: b.name })),
+            ]}
+            placeholder="All Branches"
+          />
 
           {/* Staff Filter */}
-          <div>
-            <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-1">
-              Staff Member
-            </label>
-            <select
-              value={selectedStaffId}
-              onChange={(e) => setSelectedStaffId(e.target.value)}
-              className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-medium focus:outline-hidden focus:ring-1 focus:ring-[#9D2558]/20"
-            >
-              <option value="ALL">All Stylists & Staff</option>
-              {staffList
+          <LuxurySelect
+            label="Staff Member"
+            value={selectedStaffId}
+            onValueChange={setSelectedStaffId}
+            options={[
+              { value: 'ALL', label: 'All Stylists & Staff' },
+              ...staffList
                 .filter((s) => selectedBranchId === 'ALL' || s.branchId === selectedBranchId)
-                .map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name} ({s.roleTitle || s.designation || 'Staff'})
-                  </option>
-                ))}
-            </select>
-          </div>
+                .map((s) => ({
+                  value: s.id,
+                  label: `${s.name} (${s.roleTitle || s.designation || 'Staff'})`,
+                })),
+            ]}
+            placeholder="All Stylists & Staff"
+          />
 
           {/* Appointment Status Filter */}
-          <div>
-            <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-1">
-              Appointment Status
-            </label>
-            <select
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-medium focus:outline-hidden focus:ring-1 focus:ring-[#9D2558]/20"
-            >
-              <option value="ALL">All Statuses</option>
-              <option value="PENDING">Pending</option>
-              <option value="CONFIRMED">Confirmed</option>
-              <option value="CHECKED_IN">Checked In</option>
-              <option value="IN_SERVICE">In Service</option>
-              <option value="COMPLETED">Completed</option>
-              <option value="CANCELLED">Cancelled</option>
-              <option value="NO_SHOW">No-Show</option>
-            </select>
-          </div>
+          <LuxurySelect
+            label="Appointment Status"
+            value={selectedStatus}
+            onValueChange={setSelectedStatus}
+            options={[
+              { value: 'ALL', label: 'All Statuses' },
+              { value: 'PENDING', label: 'Pending' },
+              { value: 'CONFIRMED', label: 'Confirmed' },
+              { value: 'CHECKED_IN', label: 'Checked In' },
+              { value: 'IN_SERVICE', label: 'In Service' },
+              { value: 'COMPLETED', label: 'Completed' },
+              { value: 'CANCELLED', label: 'Cancelled' },
+              { value: 'NO_SHOW', label: 'No-Show' },
+            ]}
+            placeholder="All Statuses"
+          />
 
           {/* Billing Status Filter */}
-          <div>
-            <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-1">
-              Billing Status
-            </label>
-            <select
-              value={selectedBillingStatus}
-              onChange={(e) => setSelectedBillingStatus(e.target.value)}
-              className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-medium focus:outline-hidden focus:ring-1 focus:ring-[#9D2558]/20"
-            >
-              <option value="ALL">All Billing States</option>
-              <option value="UNBILLED">Unbilled</option>
-              <option value="BILLED">Billed (Invoice Created)</option>
-            </select>
-          </div>
+          <LuxurySelect
+            label="Billing Status"
+            value={selectedBillingStatus}
+            onValueChange={setSelectedBillingStatus}
+            options={[
+              { value: 'ALL', label: 'All Billing States' },
+              { value: 'UNBILLED', label: 'Unbilled' },
+              { value: 'BILLED', label: 'Billed (Invoice Created)' },
+            ]}
+            placeholder="All Billing States"
+          />
         </div>
       </div>
 
       {/* Main View Area: Calendar or List */}
       {viewMode === 'calendar' ? (
-        <div className="bg-white rounded-xl sm:rounded-2xl border border-[#F1DEE3] shadow-xs overflow-hidden">
+        <div className="rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] overflow-hidden">
           <div className="overflow-x-auto">
             <div className="min-w-[700px] xl:min-w-0">
               {/* Weekday headers */}
-              <div className="grid grid-cols-7 border-b border-[#F1DEE3] bg-[#FDF2F5]">
+              <div className="grid grid-cols-7 border-b border-white/60 bg-[#FAF8F9]/80 backdrop-blur-md">
                 {WEEKDAY_NAMES.map((w, idx) => (
                   <div
                     key={w}
-                    className={`py-2.5 sm:py-3 text-center text-[11px] sm:text-xs font-bold uppercase tracking-wider ${
-                      idx === 0 || idx === 6 ? 'text-[#9D2558]' : 'text-[#23151D]'
+                    className={`py-3 text-center text-[11px] sm:text-xs font-bold uppercase tracking-wider ${
+                      idx === 0 || idx === 6 ? 'text-[#B82E69]' : 'text-[#18191B]'
                     }`}
                   >
                     {w}
@@ -617,7 +693,7 @@ export const AppointmentsPage: React.FC = () => {
               </div>
 
               {/* Days Grid */}
-              <div className="grid grid-cols-7 auto-rows-fr divide-x divide-y divide-[#F1DEE3] min-h-[580px] sm:min-h-[660px]">
+              <div className="grid grid-cols-7 auto-rows-fr divide-x divide-y divide-white/50 min-h-[580px] sm:min-h-[660px]">
             {calendarDays.map((cell) => {
               const dayAppts = appointmentsByDate.get(cell.dateString) || [];
               const hasOverflow = dayAppts.length > 3;
@@ -734,12 +810,12 @@ export const AppointmentsPage: React.FC = () => {
     </div>
   ) : (
         /* List View */
-        <div className="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
-          <div className="p-4 border-b border-slate-200 flex items-center justify-between">
-            <h3 className="text-sm font-bold text-slate-800">
+        <div className="rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] overflow-hidden">
+          <div className="p-4 sm:p-5 border-b border-white/60 flex items-center justify-between">
+            <h3 className="text-sm font-bold text-[#18191B]">
               Appointments List ({appointments.length} Total)
             </h3>
-            <span className="text-xs text-slate-500">
+            <span className="text-xs text-[#78616C] font-medium">
               Showing filtered results for {MONTH_NAMES[currentMonth]} {currentYear}
             </span>
           </div>
@@ -747,14 +823,14 @@ export const AppointmentsPage: React.FC = () => {
           {appointments.length === 0 ? (
             <div className="p-12 text-center text-slate-500">
               <CalendarIcon className="w-10 h-10 mx-auto text-slate-300 mb-2" />
-              <p className="text-sm font-semibold">No appointments found matching your criteria</p>
-              <p className="text-xs text-slate-400 mt-1">Try adjusting your filters or date range.</p>
+              <p className="text-sm font-semibold text-[#18191B]">No appointments found matching your criteria</p>
+              <p className="text-xs text-[#78616C] mt-1">Try adjusting your filters or date range.</p>
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={() => handleOpenBooking()}
-                className="mt-4 text-xs font-semibold gap-1.5"
+                className="mt-4 text-xs font-semibold gap-1.5 rounded-xl border border-white/80 bg-white/80 hover:bg-white text-[#B82E69]"
               >
                 <Plus className="w-3.5 h-3.5" />
                 Book New Appointment
@@ -764,18 +840,18 @@ export const AppointmentsPage: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="report-records w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="border-b border-slate-200 bg-slate-50/75 text-slate-600 font-semibold uppercase tracking-wider text-[11px]">
-                    <th className="py-3 px-4">Date</th>
-                    <th className="py-3 px-4">Client</th>
-                    <th className="py-3 px-4">Branch</th>
-                    <th className="py-3 px-4">Services & Staff</th>
-                    <th className="py-3 px-4 text-right">Est. Price</th>
-                    <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4">Billing</th>
-                    <th className="py-3 px-4 text-right">Actions</th>
+                  <tr className="border-b border-white/60 bg-[#FAF8F9]/80 backdrop-blur-md text-[#78616C] font-semibold uppercase tracking-wider text-[11px]">
+                    <th className="py-3.5 px-4">Date</th>
+                    <th className="py-3.5 px-4">Client</th>
+                    <th className="py-3.5 px-4">Branch</th>
+                    <th className="py-3.5 px-4">Services & Staff</th>
+                    <th className="py-3.5 px-4 text-right">Est. Price</th>
+                    <th className="py-3.5 px-4">Status</th>
+                    <th className="py-3.5 px-4">Billing</th>
+                    <th className="py-3.5 px-4 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-white/50">
                   {appointments.map((appt) => {
                     const cfg = STATUS_CONFIG[appt.status] || STATUS_CONFIG.PENDING;
                     const isBilled = appt.billingStatus === 'BILLED';

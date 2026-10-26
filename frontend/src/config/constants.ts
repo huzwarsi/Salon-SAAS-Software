@@ -4,10 +4,10 @@ export const BRAND_COLORS = {
   primary: '#9D2558',
   primaryHover: '#851C47',
   darkText: '#23151D',
-  pageBg: '#F4F6F9',
+  pageBg: '#FAF8F9',
   white: '#FFFFFF',
   border: '#E2E8F0',
-  borderMuted: '#F1F5F9',
+  borderMuted: '#FDF2F5',
 };
 
 export const DEMO_CREDENTIALS: DemoCredential[] = [

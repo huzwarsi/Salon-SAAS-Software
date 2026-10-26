@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { db } = vi.hoisted(() => {
   const db = {};
-  for (const name of ['branch', 'staff', 'user', 'invoice', 'invoiceRefund', 'stockMovement', 'expense', 'payrollRun', 'commissionEvent', 'drawerMovement', 'accountMovement']) {
+  for (const name of ['branch', 'staff', 'user', 'invoice', 'invoiceRefund', 'stockMovement', 'expense', 'payrollRun', 'commissionEvent', 'drawerMovement', 'accountMovement', 'bookingHistory']) {
     db[name] = { findMany: vi.fn(), findUnique: vi.fn() };
   }
   db.payrollPayment = { findMany: vi.fn(() => { throw new Error('Payouts must not be recognized again'); }) };

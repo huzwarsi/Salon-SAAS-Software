@@ -14,14 +14,14 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      'flex h-10 w-full items-center justify-between rounded-xl border border-[#F1DEE3] bg-white px-3 py-2 text-sm text-[#23151D] font-sans ring-offset-white placeholder:text-slate-400 focus:outline-none focus:border-[#9D2558] focus:ring-2 focus:ring-[#9D2558]/20 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 cursor-pointer transition-colors',
+      'flex h-10 w-full items-center justify-between rounded-2xl border border-white/90 bg-white/80 backdrop-blur-xl px-3.5 py-2 text-xs sm:text-sm font-semibold text-[#18191B] shadow-2xs hover:bg-white hover:border-white focus:outline-hidden focus:ring-4 focus:ring-[#B82E69]/10 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 cursor-pointer transition-all active:scale-[0.99]',
       className
     )}
     {...props}
   >
     {children}
     <SelectPrimitive.Icon asChild>
-      <ChevronDown className="h-4 w-4 text-[#9D2558] shrink-0" />
+      <ChevronDown className="h-4 w-4 text-[#B82E69] shrink-0 ml-2 transition-transform duration-200" />
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
 ));
@@ -33,10 +33,10 @@ const SelectScrollUpButton = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.ScrollUpButton
     ref={ref}
-    className={cn('flex cursor-default items-center justify-center py-1', className)}
+    className={cn('flex cursor-default items-center justify-center py-1 text-slate-400', className)}
     {...props}
   >
-    <ChevronUp className="h-4 w-4" />
+    <ChevronUp className="h-3.5 w-3.5" />
   </SelectPrimitive.ScrollUpButton>
 ));
 SelectScrollUpButton.displayName = SelectPrimitive.ScrollUpButton.displayName;
@@ -47,10 +47,10 @@ const SelectScrollDownButton = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.ScrollDownButton
     ref={ref}
-    className={cn('flex cursor-default items-center justify-center py-1', className)}
+    className={cn('flex cursor-default items-center justify-center py-1 text-slate-400', className)}
     {...props}
   >
-    <ChevronDown className="h-4 w-4" />
+    <ChevronDown className="h-3.5 w-3.5" />
   </SelectPrimitive.ScrollDownButton>
 ));
 SelectScrollDownButton.displayName = SelectPrimitive.ScrollDownButton.displayName;
@@ -63,9 +63,9 @@ const SelectContent = React.forwardRef<
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
-        'relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-xl border border-[#F1DEE3] bg-white text-[#23151D] shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 font-sans',
+        'relative z-50 max-h-96 min-w-[9rem] overflow-hidden rounded-2xl border border-rose-100/90 bg-white/95 backdrop-blur-2xl p-1.5 text-[#18191B] shadow-[0_12px_36px_rgba(35,21,29,0.08)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 font-sans',
         position === 'popper' &&
-          'data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1',
+          'data-[side=bottom]:translate-y-1.5 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1.5',
         className
       )}
       position={position}
@@ -74,7 +74,7 @@ const SelectContent = React.forwardRef<
       <SelectScrollUpButton />
       <SelectPrimitive.Viewport
         className={cn(
-          'p-1',
+          'p-0.5 space-y-0.5',
           position === 'popper' &&
             'h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]'
         )}
@@ -93,7 +93,7 @@ const SelectLabel = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.Label
     ref={ref}
-    className={cn('py-1.5 pl-8 pr-2 text-xs font-semibold text-slate-500 font-sans', className)}
+    className={cn('py-1.5 pl-8 pr-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans', className)}
     {...props}
   />
 ));
@@ -106,14 +106,14 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      'relative flex w-full cursor-pointer select-none items-center rounded-lg py-2 pl-8 pr-2 text-sm outline-none focus:bg-[#FDF2F5] focus:text-[#9D2558] data-[disabled]:pointer-events-none data-[disabled]:opacity-50 font-sans',
+      'relative flex w-full cursor-pointer select-none items-center rounded-xl py-2 pl-8 pr-3 text-xs sm:text-sm font-medium outline-hidden transition-colors hover:bg-[#FDF2F5]/80 hover:text-[#9D2558] focus:bg-[#FDF2F5] focus:text-[#9D2558] data-[state=checked]:bg-[#FDF2F5] data-[state=checked]:text-[#9D2558] data-[state=checked]:font-bold data-[disabled]:pointer-events-none data-[disabled]:opacity-40 font-sans',
       className
     )}
     {...props}
   >
-    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+    <span className="absolute left-2.5 flex h-3.5 w-3.5 items-center justify-center">
       <SelectPrimitive.ItemIndicator>
-        <Check className="h-4 w-4 text-[#9D2558]" />
+        <Check className="h-4 w-4 text-[#B82E69] stroke-[2.5]" />
       </SelectPrimitive.ItemIndicator>
     </span>
 
@@ -128,7 +128,7 @@ const SelectSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.Separator
     ref={ref}
-    className={cn('-mx-1 my-1 h-px bg-slate-100', className)}
+    className={cn('-mx-1 my-1 h-px bg-slate-100/80', className)}
     {...props}
   />
 ));
@@ -146,3 +146,4 @@ export {
   SelectScrollUpButton,
   SelectScrollDownButton,
 };
+

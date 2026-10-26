@@ -1417,27 +1417,48 @@ export function BookingsPage() {
 
   const active = rows.filter(isOpen);
 
+  // Summary KPIs for Bridal/Groom Bookings
+  const bookingSummaryKPIs = useMemo(() => {
+    const totalCount = rows.length;
+    const confirmedCount = rows.filter(b => b.status === 'CONFIRMED' || b.status === 'IN_PROGRESS').length;
+    const totalAdvance = rows.reduce((sum, b) => sum + (b.receivedAmount || 0), 0);
+    const totalDue = rows.reduce((sum, b) => sum + (b.remainingBalance || 0), 0);
+    return { totalCount, confirmedCount, totalAdvance, totalDue };
+  }, [rows]);
+
   return (
-    <div className="space-y-4 sm:space-y-6 p-3 sm:p-6 md:p-8">
+    <div className="space-y-6">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-5 sm:p-6 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
         <div className="min-w-0 flex-1">
-          <h1 className="text-xl sm:text-2xl font-bold text-[#23151D] flex items-center gap-2 tracking-tight">
-            <span>Bridal & Groom Bookings</span>
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-0.5 line-clamp-1 xl:line-clamp-none">
-            Event schedule calendar, reservation management, installment collections & final settlement
-          </p>
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#FDF2F5] to-white border border-white/80 shadow-2xs flex items-center justify-center text-[#B82E69] shrink-0">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold text-[#18191B] flex items-center gap-2 tracking-tight">
+                <span>Bridal & Groom Bookings</span>
+              </h1>
+              <p className="text-xs text-[#78616C] font-medium mt-0.5 line-clamp-1 xl:line-clamp-none">
+                Event schedule calendar, reservation management, installment collections & final settlement
+              </p>
+            </div>
+          </div>
         </div>
 
         <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto flex-wrap sm:flex-nowrap">
-          <Button variant="outline" size="sm" onClick={exportCsv} className="h-9 px-3 text-xs sm:text-sm">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={exportCsv}
+            className="h-9 px-3.5 text-xs font-semibold rounded-xl border border-white/80 bg-white/70 hover:bg-white text-slate-700 shadow-2xs transition-all"
+          >
             Export CSV
           </Button>
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
-            className="h-9 px-3 text-xs sm:text-sm"
+            className="h-9 px-3.5 text-xs font-semibold rounded-xl border border-white/80 bg-white/70 hover:bg-white text-slate-700 shadow-2xs transition-all"
             onClick={() => printBookingDocument(
               'Bridal / Groom bookings',
               branches.find(b => b.id === branchId)?.name || '',
@@ -1451,7 +1472,7 @@ export function BookingsPage() {
             <Button
               disabled={!branchId && user?.role !== 'SUPER_ADMIN'}
               onClick={() => { setBookingInitialDate(undefined); setEditing('new'); }}
-              className="h-9 font-semibold gap-1.5 shadow-xs text-xs sm:text-sm bg-[#9D2558] hover:bg-[#851C47] text-white"
+              className="h-9 font-semibold gap-1.5 shadow-xs text-xs sm:text-sm bg-[#B82E69] hover:bg-[#A02358] text-white rounded-xl transition-all"
             >
               <Plus className="w-4 h-4" />
               New Booking
@@ -1460,18 +1481,101 @@ export function BookingsPage() {
         </div>
       </div>
 
-      {error && <p role="alert" className="rounded-xl bg-rose-50 p-4 text-rose-700 text-sm font-medium border border-rose-200">{error}</p>}
+      {error && <p role="alert" className="rounded-2xl bg-rose-50/90 p-4 text-rose-700 text-sm font-medium border border-rose-200 shadow-2xs backdrop-blur-md">{error}</p>}
+
+      {/* KPI Cards Row - Pure White Frosted Glass */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total Bookings */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+              <Calendar className="w-4 h-4" />
+            </div>
+            <span className="bg-[#FDF2F5] text-[#B82E69] shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Events
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {bookingSummaryKPIs.totalCount}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Total scheduled reservations
+            </span>
+          </div>
+        </div>
+
+        {/* Confirmed / Active */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+              <CheckCircle2 className="w-4 h-4" />
+            </div>
+            <span className="bg-emerald-50 text-emerald-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Active
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {bookingSummaryKPIs.confirmedCount}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Confirmed & in progress
+            </span>
+          </div>
+        </div>
+
+        {/* Received Collections */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+              <Receipt className="w-4 h-4" />
+            </div>
+            <span className="bg-[#FAF8F9] text-[#78616C] shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Advances
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {formatCurrency(bookingSummaryKPIs.totalAdvance)}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Total received installments
+            </span>
+          </div>
+        </div>
+
+        {/* Outstanding Receivables */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+              <AlertCircle className="w-4 h-4" />
+            </div>
+            <span className="bg-[#FDF2F5] text-[#B82E69] shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Pending
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {formatCurrency(bookingSummaryKPIs.totalDue)}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Unsettled event balance
+            </span>
+          </div>
+        </div>
+      </div>
 
       {/* View Switcher Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div className="inline-flex rounded-xl border border-[#F1DEE3] bg-white p-1 shadow-xs overflow-x-auto max-w-full">
+        <div className="inline-flex rounded-2xl border border-white/60 bg-[#FDF2F5] p-1 shadow-inner overflow-x-auto max-w-full">
           <button
             type="button"
             onClick={() => setView('calendar')}
-            className={`flex items-center gap-1.5 sm:gap-2 rounded-lg px-2.5 sm:px-3.5 py-1.5 text-xs font-bold transition-all whitespace-nowrap ${
+            className={`flex items-center gap-1.5 sm:gap-2 rounded-xl px-3 sm:px-4 py-2 text-xs font-bold transition-all whitespace-nowrap ${
               view === 'calendar'
-                ? 'bg-[#9D2558] text-white shadow-xs'
-                : 'text-slate-600 hover:text-[#9D2558] hover:bg-[#FDF2F5]'
+                ? 'bg-white text-[#B82E69] shadow-xs'
+                : 'text-[#78616C] hover:text-[#B82E69]'
             }`}
           >
             <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -1480,10 +1584,10 @@ export function BookingsPage() {
           <button
             type="button"
             onClick={() => setView('bookings')}
-            className={`flex items-center gap-1.5 sm:gap-2 rounded-lg px-2.5 sm:px-3.5 py-1.5 text-xs font-bold transition-all whitespace-nowrap ${
+            className={`flex items-center gap-1.5 sm:gap-2 rounded-xl px-3 sm:px-4 py-2 text-xs font-bold transition-all whitespace-nowrap ${
               view === 'bookings'
-                ? 'bg-[#9D2558] text-white shadow-xs'
-                : 'text-slate-600 hover:text-[#9D2558] hover:bg-[#FDF2F5]'
+                ? 'bg-white text-[#B82E69] shadow-xs'
+                : 'text-[#78616C] hover:text-[#B82E69]'
             }`}
           >
             <List className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -1493,7 +1597,7 @@ export function BookingsPage() {
       </div>
 
       {/* Search & Filter Bar */}
-      <div className="bg-white p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-[#F1DEE3] shadow-xs">
+      <div className="p-4 sm:p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
         <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
           <Field label="Branch">
             <Select
@@ -1504,7 +1608,7 @@ export function BookingsPage() {
                 setBranchId(val === 'ALL' ? '' : val);
               }}
             >
-              <SelectTrigger className="w-full h-10 rounded-xl border-[#F1DEE3] bg-white">
+              <SelectTrigger className="w-full h-10 rounded-xl border border-white/80 bg-white/80 backdrop-blur-md shadow-2xs">
                 <SelectValue placeholder="All Branches" />
               </SelectTrigger>
               <SelectContent className="z-[70]">
@@ -1521,7 +1625,7 @@ export function BookingsPage() {
               value={type || 'ALL'}
               onValueChange={(val) => setType(val === 'ALL' ? '' : val)}
             >
-              <SelectTrigger className="w-full h-10 rounded-xl border-[#F1DEE3] bg-white">
+              <SelectTrigger className="w-full h-10 rounded-xl border border-white/80 bg-white/80 backdrop-blur-md shadow-2xs">
                 <SelectValue placeholder="All Types" />
               </SelectTrigger>
               <SelectContent className="z-[70]">
@@ -1537,7 +1641,7 @@ export function BookingsPage() {
               value={status || 'ALL'}
               onValueChange={(val) => setStatus(val === 'ALL' ? '' : val)}
             >
-              <SelectTrigger className="w-full h-10 rounded-xl border-[#F1DEE3] bg-white">
+              <SelectTrigger className="w-full h-10 rounded-xl border border-white/80 bg-white/80 backdrop-blur-md shadow-2xs">
                 <SelectValue placeholder="All Statuses" />
               </SelectTrigger>
               <SelectContent className="z-[70]">
@@ -1552,10 +1656,10 @@ export function BookingsPage() {
           {view !== 'calendar' && (
             <>
               <Field label="From Event Date">
-                <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
+                <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="rounded-xl border border-white/80 bg-white/80 backdrop-blur-md shadow-2xs h-10" />
               </Field>
               <Field label="To Event Date">
-                <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
+                <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="rounded-xl border border-white/80 bg-white/80 backdrop-blur-md shadow-2xs h-10" />
               </Field>
             </>
           )}
@@ -1565,7 +1669,7 @@ export function BookingsPage() {
               <div className="relative">
                 <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <Input
-                  className="pl-9"
+                  className="pl-9 h-10 rounded-xl border border-white/80 bg-white/80 backdrop-blur-md shadow-2xs"
                   placeholder="Client name / mobile / booking #"
                   value={search}
                   onChange={e => setSearch(e.target.value)}
@@ -1578,9 +1682,9 @@ export function BookingsPage() {
 
       {/* Main View Area: Calendar View (CareDoc UI) */}
       {view === 'calendar' && (
-        <div className="bg-white rounded-xl sm:rounded-2xl border border-[#F1DEE3] shadow-xs overflow-hidden">
+        <div className="rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] overflow-hidden">
           {/* CareDoc Calendar Control Bar */}
-          <div className="p-3.5 sm:p-4 border-b border-[#F1DEE3] flex flex-col md:flex-row md:items-center md:justify-between gap-3 bg-white">
+          <div className="p-4 sm:p-5 border-b border-white/60 flex flex-col md:flex-row md:items-center md:justify-between gap-3 bg-white/50 backdrop-blur-md">
             {/* Title & Legend Dots */}
             <div className="flex flex-wrap items-center gap-3 sm:gap-6">
               <div>
@@ -2095,49 +2199,58 @@ export function BookingsPage() {
 
       {/* Bookings Table View */}
       {view === 'bookings' && (
-        <div className="overflow-x-auto rounded-2xl border border-[#F1DEE3] bg-white shadow-xs">
+        <div className="overflow-x-auto rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
           <table className="w-full text-sm">
-            <thead className="bg-[#FDF2F5] text-[#23151D] font-semibold text-left border-b border-[#F1DEE3]">
+            <thead className="bg-[#FAF8F9]/80 backdrop-blur-md text-[#78616C] font-semibold text-left border-b border-white/60 text-xs uppercase tracking-wider">
               <tr>
                 {['Booking / Type', 'Client', 'Event Schedule', 'Assigned Staff', 'Total', 'Received', 'Remaining', 'Status', 'Actions'].map((v, n) => (
-                  <th key={n} className="p-3">{v}</th>
+                  <th key={n} className="py-3.5 px-4">{v}</th>
                 ))}
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-white/50">
               {rows.map(b => (
-                <tr key={b.id} className="border-t border-[#F1DEE3] hover:bg-[#FDF2F5]/50 transition-colors">
-                  <td className="p-3 font-medium">
-                    {b.bookingNumber}
-                    <p className="text-xs text-[#9D2558] font-semibold">{b.type}</p>
+                <tr key={b.id} className="hover:bg-white/80 transition-colors group">
+                  <td className="py-3.5 px-4 font-medium">
+                    <span className="font-bold text-[#18191B]">{b.bookingNumber}</span>
+                    <p className="text-xs text-[#B82E69] font-semibold mt-0.5">{b.type}</p>
                   </td>
-                  <td className="p-3 font-semibold text-[#23151D]">
+                  <td className="py-3.5 px-4 font-semibold text-[#18191B]">
                     {b.clientName}
-                    <p className="text-xs text-slate-500 font-normal">{b.clientPhone}</p>
+                    <p className="text-xs text-[#78616C] font-normal font-mono">{b.clientPhone}</p>
                   </td>
-                  <td className="p-3">
-                    {b.eventDate}
-                    <p className="text-xs text-slate-500">{b.serviceTime}</p>
+                  <td className="py-3.5 px-4">
+                    <span className="text-[#18191B] font-medium">{b.eventDate}</span>
+                    <p className="text-xs text-[#78616C]">{b.serviceTime}</p>
                   </td>
-                  <td className="p-3">{b.assignedStaffName || 'Unassigned'}</td>
-                  <td className="p-3 font-mono">{formatCurrency(b.totalAmount)}</td>
-                  <td className="p-3 font-mono text-emerald-700">{formatCurrency(b.receivedAmount)}</td>
-                  <td className="p-3 font-mono font-bold text-[#9D2558]">{formatCurrency(b.remainingBalance)}</td>
-                  <td className="p-3 text-xs">
-                    <span className="px-2 py-0.5 rounded-full bg-[#FCE8EC] text-[#9D2558] font-bold">{b.status}</span>
-                    <p className="mt-1 text-slate-500">{b.paymentStatus}</p>
+                  <td className="py-3.5 px-4">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-white/80 text-slate-700 border border-white/80 shadow-2xs">
+                      {b.assignedStaffName || 'Unassigned'}
+                    </span>
                   </td>
-                  <td className="p-3">
+                  <td className="py-3.5 px-4 font-mono tabular-nums text-slate-900">{formatCurrency(b.totalAmount)}</td>
+                  <td className="py-3.5 px-4 font-mono tabular-nums text-emerald-700 font-medium">{formatCurrency(b.receivedAmount)}</td>
+                  <td className="py-3.5 px-4 font-mono tabular-nums font-bold text-[#B82E69]">{formatCurrency(b.remainingBalance)}</td>
+                  <td className="py-3.5 px-4 text-xs">
+                    <span className="px-2.5 py-0.5 rounded-full bg-[#FDF2F5] text-[#B82E69] font-bold text-[10px] border border-white/60 shadow-2xs inline-block">{b.status}</span>
+                    <p className="mt-1 text-[#78616C] text-[11px] font-medium">{b.paymentStatus}</p>
+                  </td>
+                  <td className="py-3.5 px-4">
                     <div className="flex items-center gap-1.5">
-                      <Button variant="outline" size="sm" onClick={() => void action(async () => setSelected(await salonService.getBooking(b.id)))}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => void action(async () => setSelected(await salonService.getBooking(b.id)))}
+                        className="h-8 px-3 rounded-xl border border-white/80 bg-white/80 hover:bg-white text-slate-700 shadow-2xs text-xs"
+                      >
                         View
                       </Button>
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
                         title="Send WhatsApp Confirmation"
                         onClick={() => setConfirmationBooking(b)}
-                        className="h-8 px-2 border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100"
+                        className="h-8 px-2.5 rounded-xl border border-emerald-200/80 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 shadow-2xs"
                       >
                         <MessageSquare className="w-3.5 h-3.5" />
                       </Button>
@@ -2148,7 +2261,7 @@ export function BookingsPage() {
             </tbody>
           </table>
           {rows.length === 0 && (
-            <p className="p-8 text-center text-slate-500">{loading ? 'Loading bookings from database…' : 'No bookings found matching criteria.'}</p>
+            <p className="p-12 text-center text-[#78616C] font-medium">{loading ? 'Loading bookings from database…' : 'No bookings found matching criteria.'}</p>
           )}
         </div>
       )}

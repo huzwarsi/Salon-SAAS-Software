@@ -13,6 +13,7 @@ import {
 } from '@/types/salon';
 import { AccessDeniedView } from '@/features/scaffold/AccessDeniedView';
 import { InventoryNavHeader } from './InventoryNavHeader';
+import { LuxurySelect } from '@/components/ui';
 import { toast } from '@/context/ToastContext';
 import {
   Truck,
@@ -555,7 +556,7 @@ export const SuppliersVendorsPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9] px-4 py-6 md:px-8 max-w-7xl mx-auto font-['Inter',sans-serif]">
+    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6 font-sans">
       {/* Header */}
       <InventoryNavHeader
         title={activeTab === 'LEDGER' ? 'Supplier Khata Ledger Statements' : 'Suppliers & Vendors Management'}
@@ -564,31 +565,32 @@ export const SuppliersVendorsPage: React.FC = () => {
             ? 'Audit chronological bills, payments, returns and running debt balance per supplier.'
             : 'Maintain vendor directory, outstanding khata balances, purchase histories and disbursement payment vouchers.'
         }
+        icon={<Truck className="w-6 h-6 text-[#B82E69]" />}
         activePath={activeTab === 'LEDGER' ? '/operations/supplier-ledger' : '/operations/suppliers'}
         selectedBranchId={selectedBranchId}
         onBranchChange={setSelectedBranchId}
         primaryAction={{
           label: activeTab === 'LEDGER' ? 'Record Payment' : 'Add New Supplier',
-          icon: activeTab === 'LEDGER' ? <Banknote className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />,
+          icon: activeTab === 'LEDGER' ? <Banknote className="w-4 h-4" /> : <Plus className="w-4 h-4" />,
           onClick: activeTab === 'LEDGER' && ledgerSupplier ? () => handleOpenPayModal(ledgerSupplier) : handleOpenAddModal,
         }}
       />
 
       {/* View Switcher Tabs: Directory vs Khata Ledger */}
-      <div className="flex items-center gap-2 mb-6 border-b border-slate-200 pb-3">
+      <div className="flex items-center gap-2 p-1.5 rounded-2xl border border-white/90 bg-white/70 backdrop-blur-xl shadow-2xs w-fit">
         <button
           type="button"
           onClick={() => {
             setActiveTab('DIRECTORY');
             navigate('/operations/suppliers');
           }}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
             activeTab === 'DIRECTORY'
-              ? 'bg-[#9D2558] text-white shadow-xs'
-              : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+              ? 'bg-gradient-to-r from-[#B82E69] to-[#9D2558] text-white shadow-[0_4px_14px_rgba(184,46,105,0.25)]'
+              : 'text-slate-600 hover:text-[#18191B] hover:bg-white/80'
           }`}
         >
-          <Truck className="w-3.5 h-3.5" />
+          <Truck className="w-4 h-4" />
           <span>Vendors Directory ({suppliers.length})</span>
         </button>
 
@@ -604,13 +606,13 @@ export const SuppliersVendorsPage: React.FC = () => {
               fetchSupplierLedger(defaultSupp.id, selectedBranchId);
             }
           }}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
             activeTab === 'LEDGER'
-              ? 'bg-[#9D2558] text-white shadow-xs'
-              : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+              ? 'bg-gradient-to-r from-[#B82E69] to-[#9D2558] text-white shadow-[0_4px_14px_rgba(184,46,105,0.25)]'
+              : 'text-slate-600 hover:text-[#18191B] hover:bg-white/80'
           }`}
         >
-          <BookOpen className="w-3.5 h-3.5" />
+          <BookOpen className="w-4 h-4" />
           <span>Supplier Khata Ledger Statements</span>
         </button>
       </div>
@@ -618,115 +620,141 @@ export const SuppliersVendorsPage: React.FC = () => {
       {/* --- TAB 1: VENDORS DIRECTORY --- */}
       {activeTab === 'DIRECTORY' && (
         <>
-          {/* KPI Cards (Compact & Refined) */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 mb-4 sm:mb-5">
-            <div className="bg-white rounded-xl border border-[#F1DEE3] p-3 sm:p-3.5 shadow-2xs hover:shadow-xs transition-all">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+          {/* KPI Cards: Pure White Frosted Glass (Zero Wavy Lines, Zero Watermarks) */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+            {/* Total Suppliers */}
+            <div className="group relative overflow-hidden rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl p-4 sm:p-5 shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:bg-white/85 transition-all">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                   Total Suppliers
                 </span>
-                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-[#FDF2F5] text-[#9D2558] flex items-center justify-center shrink-0">
-                  <Truck className="w-3.5 h-3.5" />
+                <div className="w-8 h-8 rounded-2xl bg-white/90 border border-white/80 shadow-2xs flex items-center justify-center text-[#B82E69] shrink-0">
+                  <Truck className="w-4 h-4" />
                 </div>
               </div>
-              <div className="text-lg sm:text-xl font-bold text-[#23151D] font-mono">{kpis.totalSuppliers}</div>
-              <div className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 truncate">Active vendor partners</div>
+              <div className="text-2xl sm:text-3xl font-extrabold text-[#18191B] tracking-tight">
+                {kpis.totalSuppliers}
+              </div>
+              <div className="text-[11px] font-medium text-slate-400 mt-1 truncate">
+                Active vendor partners
+              </div>
             </div>
 
-            <div className="bg-white rounded-xl border border-rose-200/80 p-3 sm:p-3.5 shadow-2xs hover:shadow-xs transition-all bg-gradient-to-br from-white to-rose-50/20">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] sm:text-[11px] font-bold text-rose-700 uppercase tracking-wider">
+            {/* Total Payables (Khata) */}
+            <div className="group relative overflow-hidden rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl p-4 sm:p-5 shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:bg-white/85 transition-all">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[11px] font-bold text-rose-700/80 uppercase tracking-wider">
                   Total Payables (Khata)
                 </span>
-                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
-                  <Banknote className="w-3.5 h-3.5" />
+                <div className="w-8 h-8 rounded-2xl bg-rose-50/80 border border-rose-200/50 shadow-2xs flex items-center justify-center text-rose-600 shrink-0">
+                  <Banknote className="w-4 h-4" />
                 </div>
               </div>
-              <div className="text-lg sm:text-xl font-bold text-rose-900 font-mono truncate">PKR {formatPKR(kpis.totalPayables)}</div>
-              <div className="text-[10px] sm:text-[11px] text-rose-700 mt-0.5 truncate">Cumulative unpaid balance</div>
+              <div className="text-xl sm:text-2xl font-extrabold text-rose-950 tracking-tight truncate">
+                PKR {formatPKR(kpis.totalPayables)}
+              </div>
+              <div className="text-[11px] font-semibold text-rose-700 mt-1 truncate">
+                Cumulative unpaid balance
+              </div>
             </div>
 
-            <div className="bg-white rounded-xl border border-amber-200/80 p-3 sm:p-3.5 shadow-2xs hover:shadow-xs transition-all bg-gradient-to-br from-white to-amber-50/20">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] sm:text-[11px] font-bold text-amber-700 uppercase tracking-wider">
+            {/* Unsettled Vendors */}
+            <div className="group relative overflow-hidden rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl p-4 sm:p-5 shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:bg-white/85 transition-all">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[11px] font-bold text-amber-700/80 uppercase tracking-wider">
                   Unsettled Vendors
                 </span>
-                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-                  <CreditCard className="w-3.5 h-3.5" />
+                <div className="w-8 h-8 rounded-2xl bg-amber-50/80 border border-amber-200/50 shadow-2xs flex items-center justify-center text-amber-600 shrink-0">
+                  <CreditCard className="w-4 h-4" />
                 </div>
               </div>
-              <div className="text-lg sm:text-xl font-bold text-amber-900 font-mono">{kpis.suppliersWithDebt}</div>
-              <div className="text-[10px] sm:text-[11px] text-amber-700 mt-0.5 truncate">Vendors awaiting payments</div>
+              <div className="text-2xl sm:text-3xl font-extrabold text-amber-950 tracking-tight">
+                {kpis.suppliersWithDebt}
+              </div>
+              <div className="text-[11px] font-semibold text-amber-700 mt-1 truncate">
+                Vendors awaiting payments
+              </div>
             </div>
           </div>
 
-          {/* Search & Actions Bar */}
-          <div className="bg-white rounded-xl border border-slate-200/90 shadow-xs p-4 mb-6 flex flex-wrap items-center justify-between gap-3">
-            <div className="relative w-full sm:w-80">
-              <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+          {/* Search & Actions Bar: Frosted Card */}
+          <div className="rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-4 sm:p-5 flex flex-wrap items-center justify-between gap-3 sm:gap-4">
+            <div className="relative w-full sm:w-96">
+              <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
               <input
                 type="text"
                 placeholder="Search by vendor name, company, phone..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full text-xs pl-9 pr-3 py-2 border border-slate-300 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-[#9D2558]"
+                className="w-full text-xs pl-10 pr-4 py-2.5 rounded-2xl border border-white/90 bg-white/70 backdrop-blur-xl focus:bg-white focus:outline-hidden focus:ring-4 focus:ring-[#B82E69]/10 text-[#18191B] font-medium shadow-2xs transition-all placeholder:text-slate-400"
               />
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               <button
                 type="button"
                 onClick={() => {
                   setActiveTab('LEDGER');
                   navigate('/operations/supplier-ledger');
                 }}
-                className="text-xs font-semibold px-3.5 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                className="h-10 px-4 text-xs font-bold text-[#18191B] rounded-2xl border border-white/90 bg-white/80 backdrop-blur-xl hover:bg-white hover:text-[#B82E69] shadow-2xs cursor-pointer transition-all flex items-center gap-2"
               >
-                <BookOpen className="w-3.5 h-3.5 text-[#9D2558]" />
+                <BookOpen className="w-4 h-4 text-[#B82E69]" />
                 <span>View Full Ledger</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleOpenAddModal}
-                className="text-xs font-semibold px-4 py-2 bg-[#9D2558] hover:bg-[#851C47] text-white rounded-lg flex items-center gap-1.5 shadow-xs cursor-pointer"
+                className="h-10 px-4.5 text-xs font-bold text-white bg-gradient-to-r from-[#B82E69] to-[#9D2558] hover:from-[#A02359] hover:to-[#851C47] rounded-2xl shadow-[0_8px_20px_rgba(184,46,105,0.25)] hover:shadow-[0_10px_26px_rgba(184,46,105,0.35)] transition-all flex items-center gap-2 cursor-pointer active:scale-[0.98]"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-4 h-4" />
                 <span>Add Supplier</span>
               </button>
             </div>
           </div>
 
-          {/* Main Table */}
-          <div className="bg-white rounded-xl border border-slate-200/90 shadow-xs overflow-hidden mb-8">
-            <div className="bg-[#9D2558] text-white px-5 py-3 flex items-center justify-between rounded-t-xl">
-              <div className="flex items-center gap-2 font-bold text-sm tracking-wide">
-                <Truck className="w-4 h-4 stroke-[2.5]" />
-                <span>Suppliers & Vendors Directory ({filteredSuppliers.length})</span>
+          {/* Main Table: Luxury Frosted Container */}
+          <div className="rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between flex-wrap gap-3 bg-white/50 backdrop-blur-md">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-white/90 border border-white/80 shadow-2xs flex items-center justify-center text-[#B82E69]">
+                  <Truck className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-[#18191B] tracking-tight">
+                    Suppliers & Vendors Directory
+                  </h3>
+                  <p className="text-[11px] text-slate-400 font-medium">
+                    {filteredSuppliers.length} active suppliers registered
+                  </p>
+                </div>
               </div>
             </div>
 
             {isLoading ? (
               <div className="p-16 flex flex-col items-center justify-center text-center">
-                <div className="w-10 h-10 rounded-full border-3 border-[#F1DEE3] border-t-[#9D2558] animate-spin mb-3" />
+                <div className="w-10 h-10 rounded-full border-3 border-[#F1DEE3] border-t-[#B82E69] animate-spin mb-3" />
                 <p className="text-slate-600 text-sm font-medium">Loading suppliers directory...</p>
               </div>
             ) : filteredSuppliers.length === 0 ? (
               <div className="p-16 flex flex-col items-center justify-center text-center">
-                <Truck className="w-12 h-12 stroke-[1.25] text-slate-400 mb-3" />
-                <p className="text-slate-600 text-sm font-semibold mb-1">No suppliers registered yet</p>
+                <div className="w-14 h-14 rounded-2xl bg-white/90 border border-white/80 shadow-2xs flex items-center justify-center text-slate-400 mb-3">
+                  <Truck className="w-7 h-7 stroke-[1.5]" />
+                </div>
+                <p className="text-[#18191B] text-sm font-bold mb-1">No suppliers registered yet</p>
                 <p className="text-slate-400 text-xs mb-4">Add your product suppliers and distributor contacts.</p>
                 <button
                   onClick={handleOpenAddModal}
-                  className="text-xs font-semibold px-4 py-2 bg-[#9D2558] text-white rounded-md hover:bg-[#851C47] transition-colors"
+                  className="text-xs font-bold px-4 py-2 bg-gradient-to-r from-[#B82E69] to-[#9D2558] text-white rounded-xl shadow-[0_4px_14px_rgba(184,46,105,0.2)] hover:shadow-[0_6px_20px_rgba(184,46,105,0.3)] transition-all cursor-pointer"
                 >
                   Add First Supplier
                 </button>
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="report-records w-full min-w-[950px] text-left border-collapse text-[13px]">
+                <table className="w-full min-w-[950px] text-left border-collapse text-[13px]">
                   <thead>
-                    <tr className="bg-[#FDF2F5] border-b border-[#F1DEE3] text-[#475569] font-medium text-[13px]">
+                    <tr className="bg-slate-50/70 border-b border-slate-100 text-slate-400 font-bold text-[11px] uppercase tracking-wider">
                       <th className="py-3.5 px-4 text-center w-12">#</th>
                       <th className="py-3.5 px-4 min-w-[180px]">Supplier / Vendor</th>
                       <th className="py-3.5 px-4 whitespace-nowrap">Company / Brand</th>
@@ -736,7 +764,7 @@ export const SuppliersVendorsPage: React.FC = () => {
                       <th className="py-3.5 px-4 text-center whitespace-nowrap">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-dashed divide-slate-200">
+                  <tbody className="divide-y divide-slate-100/80">
                     {filteredSuppliers.map((s, idx) => {
                       const bal = s.currentPayable ?? s.currentBalance ?? 0;
                       const hasDebt = bal > 0;
@@ -853,14 +881,14 @@ export const SuppliersVendorsPage: React.FC = () => {
       {/* --- TAB 2: SUPPLIER KHATA LEDGER STATEMENTS --- */}
       {activeTab === 'LEDGER' && (
         <div className="space-y-6 mb-8">
-          {/* Supplier Selector & Date Filters Bar */}
-          <div className="bg-white rounded-xl border border-slate-200/90 shadow-xs p-5">
+          {/* Supplier Selector & Date Filters Bar: Frosted Card */}
+          <div className="rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-5">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-end">
               {/* Supplier Picker */}
               <div className="lg:col-span-5">
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center justify-between">
+                <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center justify-between">
                   <span className="flex items-center gap-1.5">
-                    <Truck className="w-3.5 h-3.5 text-[#9D2558]" />
+                    <Truck className="w-3.5 h-3.5 text-[#B82E69]" />
                     <span>Select Vendor / Supplier *</span>
                   </span>
                   {ledgerSupplier && (
@@ -869,25 +897,24 @@ export const SuppliersVendorsPage: React.FC = () => {
                     </span>
                   )}
                 </label>
-                <select
+                <LuxurySelect
                   value={ledgerSupplier?.id || ''}
-                  onChange={(e) => handleSelectLedgerSupplier(e.target.value)}
-                  className="w-full text-xs px-3.5 py-2.5 border border-slate-300 rounded-lg bg-white font-medium text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-[#9D2558]"
-                >
-                  {suppliers.map((s) => {
+                  onValueChange={handleSelectLedgerSupplier}
+                  placeholder="Select supplier..."
+                  options={suppliers.map((s) => {
                     const bal = s.currentPayable ?? s.currentBalance ?? 0;
-                    return (
-                      <option key={s.id} value={s.id}>
-                        {s.name} ({s.companyName || 'Vendor'}) — PKR {formatPKR(bal)} {bal > 0 ? 'DUE' : 'SETTLED'}
-                      </option>
-                    );
+                    return {
+                      value: s.id,
+                      label: `${s.name} (${s.companyName || 'Vendor'}) — PKR ${formatPKR(bal)} ${bal > 0 ? 'DUE' : 'SETTLED'}`,
+                    };
                   })}
-                </select>
+                  triggerClassName="w-full text-xs px-3.5 py-2.5 rounded-2xl border-white/90 bg-white/70 backdrop-blur-xl font-bold text-[#18191B]"
+                />
               </div>
 
               {/* Date Filters */}
               <div className="lg:col-span-2">
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1">
+                <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1">
                   <Calendar className="w-3.5 h-3.5 text-slate-400" />
                   <span>From Date</span>
                 </label>
@@ -895,12 +922,12 @@ export const SuppliersVendorsPage: React.FC = () => {
                   type="date"
                   value={ledgerStartDate}
                   onChange={(e) => setLedgerStartDate(e.target.value)}
-                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg text-slate-700 focus:outline-hidden"
+                  className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-white/90 bg-white/70 backdrop-blur-xl font-medium text-slate-700 focus:bg-white focus:outline-hidden focus:ring-4 focus:ring-[#B82E69]/10 shadow-2xs"
                 />
               </div>
 
               <div className="lg:col-span-2">
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1">
+                <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1">
                   <Calendar className="w-3.5 h-3.5 text-slate-400" />
                   <span>To Date</span>
                 </label>
@@ -909,7 +936,7 @@ export const SuppliersVendorsPage: React.FC = () => {
                   value={ledgerEndDate}
                   min={ledgerStartDate || undefined}
                   onChange={(e) => setLedgerEndDate(e.target.value)}
-                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg text-slate-700 focus:outline-hidden"
+                  className="w-full text-xs px-3.5 py-2.5 rounded-2xl border border-white/90 bg-white/70 backdrop-blur-xl font-medium text-slate-700 focus:bg-white focus:outline-hidden focus:ring-4 focus:ring-[#B82E69]/10 shadow-2xs"
                 />
               </div>
 
@@ -923,12 +950,12 @@ export const SuppliersVendorsPage: React.FC = () => {
                     }
                   }}
                   disabled={isLedgerLoading || !ledgerSupplier}
-                  className="flex-1 h-[38px] bg-[#9D2558] hover:bg-[#851C47] text-white text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-50"
+                  className="flex-1 h-10 bg-gradient-to-r from-[#B82E69] to-[#9D2558] hover:from-[#A02359] hover:to-[#851C47] text-white text-xs font-bold rounded-2xl flex items-center justify-center gap-2 shadow-[0_4px_14px_rgba(184,46,105,0.25)] cursor-pointer disabled:opacity-50 transition-all active:scale-[0.98]"
                 >
                   {isLedgerLoading ? (
                     <span className="w-3.5 h-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin inline-block" />
                   ) : (
-                    <Filter className="w-3.5 h-3.5" />
+                    <Filter className="w-4 h-4" />
                   )}
                   <span>Filter Statement</span>
                 </button>
@@ -942,7 +969,7 @@ export const SuppliersVendorsPage: React.FC = () => {
                       fetchSupplierLedger(ledgerSupplier.id, selectedBranchId);
                     }
                   }}
-                  className="h-[38px] px-3 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold rounded-lg cursor-pointer"
+                  className="h-10 px-4 rounded-2xl border border-white/90 bg-white/80 hover:bg-white text-slate-600 text-xs font-bold shadow-2xs cursor-pointer transition-all"
                   title="Clear Date Filters"
                 >
                   Reset
@@ -951,63 +978,67 @@ export const SuppliersVendorsPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Supplier Info & Quick Summary Cards */}
+          {/* Supplier Info & Quick Summary Cards: Pure White Frosted Glass */}
           {ledgerSupplier && (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
-              <div className="bg-white rounded-xl border border-[#F1DEE3] p-3 sm:p-3.5 shadow-2xs hover:shadow-xs transition-all">
-                <div className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              <div className="group relative overflow-hidden rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl p-4 sm:p-5 shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:bg-white/85 transition-all">
+                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
                   Opening Balance
                 </div>
-                <div className="text-base sm:text-lg font-bold text-slate-900 font-mono truncate">
+                <div className="text-xl sm:text-2xl font-extrabold text-[#18191B] tracking-tight truncate">
                   PKR {formatPKR(ledgerSummary.openingPayable)}
                 </div>
-                <div className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 truncate">Before period</div>
+                <div className="text-[11px] font-medium text-slate-400 mt-0.5 truncate">Prior balance</div>
               </div>
 
-              <div className="bg-white rounded-xl border border-[#F1DEE3] p-3 sm:p-3.5 shadow-2xs hover:shadow-xs transition-all bg-gradient-to-br from-white to-[#FDF2F5]/40">
-                <div className="text-[10px] sm:text-[11px] font-bold text-[#9D2558] uppercase tracking-wider mb-1">
-                  Total Purchases / Bills
+              <div className="group relative overflow-hidden rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl p-4 sm:p-5 shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:bg-white/85 transition-all">
+                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                  Purchases / Bills
                 </div>
-                <div className="text-base sm:text-lg font-bold text-[#23151D] font-mono truncate">
+                <div className="text-xl sm:text-2xl font-extrabold text-[#18191B] tracking-tight truncate">
                   PKR {formatPKR(ledgerSummary.totalPurchases)}
                 </div>
-                <div className="text-[10px] sm:text-[11px] text-[#851C47] mt-0.5 truncate">Credit inventory</div>
+                <div className="text-[11px] font-semibold text-[#B82E69] mt-0.5 truncate">Credit intake</div>
               </div>
 
-              <div className="bg-white rounded-xl border border-emerald-200/90 p-3 sm:p-3.5 shadow-2xs hover:shadow-xs transition-all bg-gradient-to-br from-white to-emerald-50/20">
-                <div className="text-[10px] sm:text-[11px] font-bold text-emerald-700 uppercase tracking-wider mb-1">
-                  Total Payments Disbursed
+              <div className="group relative overflow-hidden rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl p-4 sm:p-5 shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:bg-white/85 transition-all">
+                <div className="text-[11px] font-bold text-emerald-700/80 uppercase tracking-wider mb-1">
+                  Payments Disbursed
                 </div>
-                <div className="text-base sm:text-lg font-bold text-emerald-800 font-mono truncate">
+                <div className="text-xl sm:text-2xl font-extrabold text-emerald-800 tracking-tight truncate">
                   PKR {formatPKR(ledgerSummary.totalPayments)}
                 </div>
-                <div className="text-[10px] sm:text-[11px] text-emerald-600 mt-0.5 truncate">Vouchers cleared</div>
+                <div className="text-[11px] font-semibold text-emerald-600 mt-0.5 truncate">Vouchers cleared</div>
               </div>
 
-              <div className="bg-white rounded-xl border border-rose-200/90 p-3 sm:p-3.5 shadow-2xs hover:shadow-xs transition-all bg-gradient-to-br from-white to-rose-50/20">
-                <div className="text-[10px] sm:text-[11px] font-bold text-rose-700 uppercase tracking-wider mb-1">
+              <div className="group relative overflow-hidden rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl p-4 sm:p-5 shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:bg-white/85 transition-all">
+                <div className="text-[11px] font-bold text-rose-700/80 uppercase tracking-wider mb-1">
                   Current Khata Balance
                 </div>
-                <div className="text-base sm:text-lg font-bold text-rose-700 font-mono truncate">
+                <div className="text-xl sm:text-2xl font-extrabold text-rose-950 tracking-tight truncate">
                   PKR {formatPKR(ledgerSummary.closingPayable || (ledgerSupplier.currentPayable ?? ledgerSupplier.currentBalance ?? 0))}
                 </div>
-                <div className="text-[10px] sm:text-[11px] text-rose-600 mt-0.5 truncate">Net payable</div>
+                <div className="text-[11px] font-semibold text-rose-700 mt-0.5 truncate">Net payable balance</div>
               </div>
             </div>
           )}
 
-          {/* Statement Table Card */}
-          <div className="bg-white rounded-xl border border-slate-200/90 shadow-xs overflow-hidden">
+          {/* Statement Table Card: Luxury Frosted Container */}
+          <div className="rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] overflow-hidden">
             {/* Header with Title and Print/Export Actions */}
-            <div className="bg-[#9D2558] text-white px-5 py-3.5 flex flex-wrap items-center justify-between gap-3 rounded-t-xl">
+            <div className="px-5 py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-white/50 backdrop-blur-md">
               <div className="flex items-center gap-2.5">
-                <BookOpen className="w-4 h-4 stroke-[2.5]" />
-                <span className="font-bold text-sm tracking-wide">
-                  Khata Ledger Statement: {ledgerSupplier?.name || 'Selected Supplier'}
-                </span>
-                <span className="text-rose-200 text-xs">
-                  ({ledgerEntries.length} Records)
-                </span>
+                <div className="w-8 h-8 rounded-xl bg-white/90 border border-white/80 shadow-2xs flex items-center justify-center text-[#B82E69]">
+                  <BookOpen className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-[#18191B] tracking-tight">
+                    Khata Ledger Statement: {ledgerSupplier?.name || 'Selected Supplier'}
+                  </h3>
+                  <p className="text-[11px] text-slate-400 font-medium">
+                    {ledgerEntries.length} chronological journal entries
+                  </p>
+                </div>
               </div>
 
               <div className="flex items-center gap-2">
@@ -1015,7 +1046,7 @@ export const SuppliersVendorsPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handleOpenPayModal(ledgerSupplier)}
-                    className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-md shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors"
+                    className="h-9 px-3.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-2xs flex items-center gap-1.5 cursor-pointer transition-all active:scale-[0.98]"
                   >
                     <Banknote className="w-3.5 h-3.5" />
                     <span>Pay Supplier</span>
@@ -1026,7 +1057,7 @@ export const SuppliersVendorsPage: React.FC = () => {
                   type="button"
                   onClick={handlePrintLedger}
                   disabled={ledgerEntries.length === 0}
-                  className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-md shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors disabled:opacity-50"
+                  className="h-9 px-3 rounded-xl border border-white/90 bg-white/80 hover:bg-white text-slate-700 text-xs font-bold shadow-2xs flex items-center gap-1.5 cursor-pointer transition-all disabled:opacity-50"
                   title="Print Khata Statement"
                 >
                   <Printer className="w-3.5 h-3.5" />
@@ -1037,7 +1068,7 @@ export const SuppliersVendorsPage: React.FC = () => {
                   type="button"
                   onClick={handleExportLedgerCsv}
                   disabled={ledgerEntries.length === 0}
-                  className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-md shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors disabled:opacity-50"
+                  className="h-9 px-3 rounded-xl border border-white/90 bg-white/80 hover:bg-white text-slate-700 text-xs font-bold shadow-2xs flex items-center gap-1.5 cursor-pointer transition-all disabled:opacity-50"
                   title="Export Statement CSV"
                 >
                   <Download className="w-3.5 h-3.5" />

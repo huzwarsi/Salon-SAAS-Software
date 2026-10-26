@@ -27,6 +27,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { LuxurySelect } from '@/components/ui/LuxurySelect';
 import { ClientFormModal } from './components/ClientFormModal';
 import { toast } from '@/context/ToastContext';
 import { ClientDetailsModal } from './components/ClientDetailsModal';
@@ -176,17 +177,17 @@ export const ClientsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Top Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-4 sm:p-5 rounded-xl border border-slate-200/80 shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-5 sm:p-6 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-lg bg-[#FDF2F5] border border-[#F1DEE3] flex items-center justify-center text-[#9D2558] shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#FDF2F5] to-white border border-white/80 shadow-2xs flex items-center justify-center text-[#B82E69] shrink-0">
               <Users className="w-5 h-5" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight truncate">
+              <h1 className="text-xl sm:text-2xl font-bold text-[#18191B] tracking-tight truncate">
                 Customer Directory & History (CRM)
               </h1>
-              <p className="text-xs text-slate-500 font-medium line-clamp-1 xl:line-clamp-none">
+              <p className="text-xs text-[#78616C] font-medium line-clamp-1 xl:line-clamp-none mt-0.5">
                 Client registry, lifetime visit frequency, service preferences & outstanding dues.
               </p>
             </div>
@@ -196,11 +197,11 @@ export const ClientsPage: React.FC = () => {
         <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto flex-wrap sm:flex-nowrap">
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             size="sm"
             onClick={fetchClients}
             disabled={isLoading}
-            className="text-xs gap-1.5 h-9 px-3 shrink-0"
+            className="text-xs gap-1.5 h-9 px-3 shrink-0 rounded-xl border border-white/80 bg-white/70 hover:bg-white text-slate-700 shadow-2xs"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
             Refresh
@@ -213,7 +214,7 @@ export const ClientsPage: React.FC = () => {
               setClientToEdit(null);
               setIsFormModalOpen(true);
             }}
-            className="bg-[#9D2558] hover:bg-[#851C47] text-white text-xs font-semibold gap-1.5 h-9 px-3.5 shadow-xs shrink-0 whitespace-nowrap"
+            className="bg-[#B82E69] hover:bg-[#A02358] text-white text-xs font-semibold gap-1.5 h-9 px-4 rounded-xl shadow-xs shrink-0 whitespace-nowrap transition-all"
           >
             <Plus className="w-4 h-4" />
             Add Customer
@@ -221,59 +222,91 @@ export const ClientsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* KPI Cards Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
-          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">
-            Total Customers
-          </span>
-          <span className="text-xl font-bold text-slate-900 mt-1 block">
-            {summaryKPIs.totalCount}
-          </span>
-          <span className="text-[11px] text-slate-400 mt-0.5 block">
-            {summaryKPIs.activeCount} active in system
-          </span>
+      {/* KPI Cards Row - Pure White Frosted Glass */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total Customers */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+              <Users className="w-4 h-4" />
+            </div>
+            <span className="bg-[#FDF2F5] text-[#B82E69] shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Clients
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {summaryKPIs.totalCount}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              {summaryKPIs.activeCount} active in directory
+            </span>
+          </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
-          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">
-            Completed Visits
-          </span>
-          <span className="text-xl font-bold text-slate-900 mt-1 block">
-            {summaryKPIs.totalVisits}
-          </span>
-          <span className="text-[11px] text-slate-400 mt-0.5 block">
-            Cumulative salon visits
-          </span>
+        {/* Completed Visits */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+              <Calendar className="w-4 h-4" />
+            </div>
+            <span className="bg-[#FAF8F9] text-[#78616C] shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Visits
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {summaryKPIs.totalVisits}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Cumulative salon visits
+            </span>
+          </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
-          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">
-            Outstanding Receivables
-          </span>
-          <span className="text-xl font-bold text-rose-600 mt-1 block">
-            {formatCurrency(summaryKPIs.totalDues)}
-          </span>
-          <span className="text-[11px] text-slate-400 mt-0.5 block">
-            Uncollected client invoices
-          </span>
+        {/* Outstanding Receivables */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+              <Receipt className="w-4 h-4" />
+            </div>
+            <span className="bg-[#FDF2F5] text-[#B82E69] shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Pending
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {formatCurrency(summaryKPIs.totalDues)}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Uncollected client dues
+            </span>
+          </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
-          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">
-            Scope / Branch
-          </span>
-          <span className="text-base font-bold text-slate-800 mt-1 truncate block">
-            {activeBranchName}
-          </span>
-          <span className="text-[11px] text-emerald-600 font-medium mt-0.5 block">
-            Role: {user?.role}
-          </span>
+        {/* Scope / Branch */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+              <Building2 className="w-4 h-4" />
+            </div>
+            <span className="bg-emerald-50 text-emerald-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              {user?.role}
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-xl sm:text-2xl font-bold text-[#18191B] tracking-tight truncate block">
+              {activeBranchName}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Operational branch context
+            </span>
+          </div>
         </div>
       </div>
 
       {/* Filters Bar */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs space-y-3">
+      <div className="p-4 sm:p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
           {/* Live Search */}
           <div className="relative">
@@ -283,70 +316,63 @@ export const ClientsPage: React.FC = () => {
               placeholder="Search name, phone, email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 h-8 text-xs bg-slate-50 border-slate-200 focus:bg-white"
+              className="pl-9 h-9 text-xs rounded-xl border border-white/80 bg-white/80 backdrop-blur-md shadow-2xs focus:bg-white"
             />
           </div>
 
           {/* Branch Filter */}
-          <div>
-            <select
-              value={selectedBranchId}
-              onChange={(e) => setSelectedBranchId(e.target.value)}
-              disabled={user?.role !== 'SUPER_ADMIN'}
-              className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-medium focus:outline-hidden focus:ring-1 focus:ring-[#9D2558]/20 disabled:opacity-60"
-            >
-              {user?.role === 'SUPER_ADMIN' && <option value="ALL">All Branches</option>}
-              {branches.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <LuxurySelect
+            value={selectedBranchId}
+            onValueChange={setSelectedBranchId}
+            disabled={user?.role !== 'SUPER_ADMIN'}
+            options={[
+              ...(user?.role === 'SUPER_ADMIN' ? [{ value: 'ALL', label: 'All Branches' }] : []),
+              ...branches.map((b) => ({ value: b.id, label: b.name })),
+            ]}
+            placeholder="All Branches"
+          />
 
           {/* Source Filter */}
-          <div>
-            <select
-              value={selectedSource}
-              onChange={(e) => setSelectedSource(e.target.value)}
-              className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-medium focus:outline-hidden focus:ring-1 focus:ring-[#9D2558]/20"
-            >
-              <option value="ALL">All Acquisition Sources</option>
-              <option value="WALK_IN">Walk-In</option>
-              <option value="INSTAGRAM">Instagram</option>
-              <option value="FACEBOOK">Facebook</option>
-              <option value="TIKTOK">TikTok</option>
-              <option value="GOOGLE">Google Search / Maps</option>
-              <option value="WORD_OF_MOUTH">Word of Mouth</option>
-              <option value="REFERRAL">Client Referral</option>
-              <option value="INFLUENCER">Influencer Campaign</option>
-              <option value="RETURNING">Returning Regular</option>
-              <option value="OTHER">Other Channel</option>
-            </select>
-          </div>
+          <LuxurySelect
+            value={selectedSource}
+            onValueChange={setSelectedSource}
+            options={[
+              { value: 'ALL', label: 'All Acquisition Sources' },
+              { value: 'WALK_IN', label: 'Walk-In' },
+              { value: 'INSTAGRAM', label: 'Instagram' },
+              { value: 'FACEBOOK', label: 'Facebook' },
+              { value: 'TIKTOK', label: 'TikTok' },
+              { value: 'GOOGLE', label: 'Google Search / Maps' },
+              { value: 'WORD_OF_MOUTH', label: 'Word of Mouth' },
+              { value: 'REFERRAL', label: 'Client Referral' },
+              { value: 'INFLUENCER', label: 'Influencer Campaign' },
+              { value: 'RETURNING', label: 'Returning Regular' },
+              { value: 'OTHER', label: 'Other Channel' },
+            ]}
+            placeholder="All Acquisition Sources"
+          />
 
           {/* Status Filter */}
-          <div>
-            <select
-              value={archiveFilter}
-              onChange={(e) => setArchiveFilter(e.target.value as any)}
-              className="w-full h-8 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-medium focus:outline-hidden focus:ring-1 focus:ring-[#9D2558]/20"
-            >
-              <option value="ACTIVE">Active Customers Only</option>
-              <option value="ARCHIVED">Archived Customers</option>
-              <option value="ALL">All (Active & Archived)</option>
-            </select>
-          </div>
+          <LuxurySelect
+            value={archiveFilter}
+            onValueChange={(val) => setArchiveFilter(val as any)}
+            options={[
+              { value: 'ACTIVE', label: 'Active Customers Only' },
+              { value: 'ARCHIVED', label: 'Archived Customers' },
+              { value: 'ALL', label: 'All (Active & Archived)' },
+            ]}
+            placeholder="Active Customers Only"
+          />
         </div>
       </div>
 
       {/* Main Customers Table */}
-      <div className="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
-        <div className="p-4 border-b border-slate-200 flex items-center justify-between">
-          <h3 className="text-sm font-bold text-slate-800">
+      <div className="rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] overflow-hidden">
+        <div className="p-4 sm:p-5 border-b border-white/60 flex items-center justify-between">
+          <h3 className="text-sm font-bold text-[#18191B]">
             Customers ({filteredClients.length} Matches)
           </h3>
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-[#78616C] font-medium">
             Showing records for {activeBranchName}
           </span>
         </div>
@@ -354,8 +380,8 @@ export const ClientsPage: React.FC = () => {
         {filteredClients.length === 0 ? (
           <div className="p-12 text-center text-slate-500">
             <Users className="w-10 h-10 mx-auto text-slate-300 mb-2" />
-            <p className="text-sm font-semibold">No customers found</p>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-sm font-semibold text-[#18191B]">No customers found</p>
+            <p className="text-xs text-[#78616C] mt-1">
               Try adjusting your search criteria or register a new customer.
             </p>
             <Button
@@ -366,7 +392,7 @@ export const ClientsPage: React.FC = () => {
                 setClientToEdit(null);
                 setIsFormModalOpen(true);
               }}
-              className="mt-4 text-xs font-semibold gap-1.5"
+              className="mt-4 text-xs font-semibold gap-1.5 rounded-xl border border-white/80 bg-white/80 hover:bg-white text-[#B82E69]"
             >
               <Plus className="w-3.5 h-3.5" />
               Add First Customer
@@ -376,37 +402,37 @@ export const ClientsPage: React.FC = () => {
           <div className="overflow-x-auto w-full">
             <table className="report-records min-w-[1000px] w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50/75 text-slate-600 font-semibold uppercase tracking-wider text-[11px]">
-                  <th className="py-3 px-4 whitespace-nowrap">Customer</th>
-                  <th className="py-3 px-4 whitespace-nowrap">Contact</th>
-                  <th className="py-3 px-4 whitespace-nowrap">Branch</th>
-                  <th className="py-3 px-4 whitespace-nowrap">Acquisition Source</th>
-                  <th className="py-3 px-4 text-center whitespace-nowrap">Visits</th>
-                  <th className="py-3 px-4 text-right whitespace-nowrap">Outstanding Dues</th>
-                  <th className="py-3 px-4 whitespace-nowrap">Status</th>
-                  <th className="py-3 px-4 text-right whitespace-nowrap">Actions</th>
+                <tr className="border-b border-white/60 bg-[#FAF8F9]/80 backdrop-blur-md text-[#78616C] font-semibold uppercase tracking-wider text-[11px]">
+                  <th className="py-3.5 px-4 whitespace-nowrap">Customer</th>
+                  <th className="py-3.5 px-4 whitespace-nowrap">Contact</th>
+                  <th className="py-3.5 px-4 whitespace-nowrap">Branch</th>
+                  <th className="py-3.5 px-4 whitespace-nowrap">Acquisition Source</th>
+                  <th className="py-3.5 px-4 text-center whitespace-nowrap">Visits</th>
+                  <th className="py-3.5 px-4 text-right whitespace-nowrap">Outstanding Dues</th>
+                  <th className="py-3.5 px-4 whitespace-nowrap">Status</th>
+                  <th className="py-3.5 px-4 text-right whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-white/50">
                 {filteredClients.map((client) => {
                   const hasDues = (client.outstandingBalance || 0) > 0;
 
                   return (
                     <tr
                       key={client.id}
-                      className="hover:bg-slate-50/75 transition-colors cursor-pointer"
+                      className="hover:bg-white/80 transition-colors cursor-pointer group"
                       onClick={() => setSelectedClientIdForDetails(client.id)}
                     >
                       {/* Name & Initials */}
-                      <td className="py-3 px-4 whitespace-nowrap">
+                      <td className="py-3.5 px-4 whitespace-nowrap">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-lg bg-[#FCE8EC] text-[#851C47] flex items-center justify-center font-bold text-xs shrink-0">
+                          <div className="w-8 h-8 rounded-xl bg-[#FDF2F5] text-[#B82E69] flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs border border-white/80">
                             {client.name.charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <div className="font-bold text-slate-900">{client.name}</div>
+                            <div className="font-bold text-[#18191B]">{client.name}</div>
                             {client.loyaltyPoints ? (
-                              <div className="text-[10px] text-purple-600 font-semibold">
+                              <div className="text-[10px] text-[#B82E69] font-semibold">
                                 {client.loyaltyPoints} loyalty pts
                               </div>
                             ) : null}
@@ -415,13 +441,13 @@ export const ClientsPage: React.FC = () => {
                       </td>
 
                       {/* Contact */}
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        <div className="font-medium text-slate-800 flex items-center gap-1">
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        <div className="font-medium text-slate-800 flex items-center gap-1 font-mono">
                           <Phone className="w-3 h-3 text-slate-400" />
                           {formatPhoneNumber(client.phone)}
                         </div>
                         {client.email && (
-                          <div className="text-slate-400 text-[11px] flex items-center gap-1 mt-0.5">
+                          <div className="text-[#78616C] text-[11px] flex items-center gap-1 mt-0.5">
                             <Mail className="w-3 h-3" />
                             {client.email}
                           </div>
@@ -429,54 +455,54 @@ export const ClientsPage: React.FC = () => {
                       </td>
 
                       {/* Branch */}
-                      <td className="py-3 px-4 whitespace-nowrap text-slate-700 font-medium">
-                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200/70">
+                      <td className="py-3.5 px-4 whitespace-nowrap text-slate-700 font-medium">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-white/80 text-slate-700 border border-white/80 shadow-2xs">
                           <Building2 className="w-3 h-3 text-slate-400 shrink-0" />
                           {getBranchDisplayName(client.branchId)}
                         </span>
                       </td>
 
                       {/* Acquisition Source */}
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        <Badge variant="outline" className="text-[10px] font-semibold bg-slate-50">
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        <Badge variant="outline" className="text-[10px] font-semibold bg-white/70 border-white/80 shadow-2xs">
                           {client.source || 'WALK_IN'}
                         </Badge>
                         {client.sourceDetails && (
-                          <div className="text-[10px] text-slate-400 mt-0.5 max-w-[140px] truncate">
+                          <div className="text-[10px] text-[#78616C] mt-0.5 max-w-[140px] truncate">
                             {client.sourceDetails}
                           </div>
                         )}
                       </td>
 
                       {/* Visits */}
-                      <td className="py-3 px-4 text-center whitespace-nowrap">
-                        <span className="font-bold text-slate-900">{client.totalVisits || 0}</span>
+                      <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                        <span className="font-bold text-[#18191B] font-mono tabular-nums">{client.totalVisits || 0}</span>
                         {client.lastVisitDate && (
-                          <span className="block text-[10px] text-slate-400">
+                          <span className="block text-[10px] text-[#78616C]">
                             Last: {client.lastVisitDate}
                           </span>
                         )}
                       </td>
 
                       {/* Outstanding Dues */}
-                      <td className="py-3 px-4 text-right whitespace-nowrap">
+                      <td className="py-3.5 px-4 text-right whitespace-nowrap">
                         {hasDues ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#FDF2F5] text-[#B82E69] border border-white/60 shadow-2xs font-mono tabular-nums">
                             {formatCurrency(client.outstandingBalance)}
                           </span>
                         ) : (
-                          <span className="text-slate-400 font-medium">PKR 0</span>
+                          <span className="text-slate-400 font-medium font-mono">PKR 0</span>
                         )}
                       </td>
 
                       {/* Status */}
-                      <td className="py-3 px-4 whitespace-nowrap">
+                      <td className="py-3.5 px-4 whitespace-nowrap">
                         {client.isArchived ? (
-                          <Badge variant="outline" className="bg-slate-100 text-slate-500 border-slate-300 text-[10px]">
+                          <Badge variant="outline" className="bg-slate-100 text-slate-500 border-white/60 text-[10px]">
                             Archived
                           </Badge>
                         ) : (
-                          <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 text-[10px]">
+                          <Badge className="bg-emerald-50 text-emerald-700 border-white/60 text-[10px]">
                             Active
                           </Badge>
                         )}
@@ -484,7 +510,7 @@ export const ClientsPage: React.FC = () => {
 
                       {/* Actions */}
                       <td
-                        className="py-3 px-4 text-right whitespace-nowrap"
+                        className="py-3.5 px-4 text-right whitespace-nowrap"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <div className="flex items-center justify-end gap-1">
@@ -493,7 +519,7 @@ export const ClientsPage: React.FC = () => {
                             variant="ghost"
                             size="sm"
                             onClick={() => setSelectedClientIdForDetails(client.id)}
-                            className="h-7 px-2 text-slate-600 hover:text-[#9D2558] text-xs gap-1"
+                            className="h-8 px-2.5 text-slate-600 hover:text-[#B82E69] hover:bg-[#FDF2F5] text-xs gap-1 rounded-xl transition-colors"
                             title="View History & Invoices"
                           >
                             <Eye className="w-3.5 h-3.5" />
@@ -507,7 +533,7 @@ export const ClientsPage: React.FC = () => {
                               setClientToEdit(client);
                               setIsFormModalOpen(true);
                             }}
-                            className="h-7 px-2 text-slate-600 hover:text-[#9D2558] text-xs gap-1"
+                            className="h-8 px-2.5 text-slate-600 hover:text-[#B82E69] hover:bg-[#FDF2F5] text-xs gap-1 rounded-xl transition-colors"
                             title="Edit Profile"
                           >
                             <Edit className="w-3.5 h-3.5" />
@@ -520,7 +546,7 @@ export const ClientsPage: React.FC = () => {
                             onClick={() => {
                               setBookingClient(client);
                             }}
-                            className="h-7 px-2 text-slate-600 hover:text-[#9D2558] text-xs gap-1"
+                            className="h-8 px-2.5 text-slate-600 hover:text-[#B82E69] hover:bg-[#FDF2F5] text-xs gap-1 rounded-xl transition-colors"
                             title="New Appointment"
                           >
                             <Calendar className="w-3.5 h-3.5" />
@@ -531,7 +557,7 @@ export const ClientsPage: React.FC = () => {
                             variant="ghost"
                             size="sm"
                             onClick={() => navigate(`/pos?clientId=${client.id}`)}
-                            className="h-7 px-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 text-xs gap-1"
+                            className="h-8 px-2.5 text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50 text-xs gap-1 rounded-xl transition-colors"
                             title="Open in POS"
                           >
                             <Receipt className="w-3.5 h-3.5" />
@@ -542,7 +568,11 @@ export const ClientsPage: React.FC = () => {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleToggleArchive(client)}
-                            className="h-7 px-1.5 text-slate-400 hover:text-slate-700 text-xs"
+                            className={`h-8 px-2.5 text-xs gap-1 rounded-xl transition-colors ${
+                              client.isArchived
+                                ? 'text-amber-600 hover:text-amber-700 hover:bg-amber-50'
+                                : 'text-slate-400 hover:text-rose-600 hover:bg-rose-50'
+                            }`}
                             title={client.isArchived ? 'Restore Client' : 'Archive Client'}
                           >
                             {client.isArchived ? (

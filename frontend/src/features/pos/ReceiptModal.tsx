@@ -223,17 +223,19 @@ We look forward to serving you again.`;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[560px] w-[95vw] sm:w-full max-h-[88vh] flex flex-col p-0 overflow-hidden font-sans border border-slate-200/90 shadow-2xl rounded-2xl bg-white print:p-0 print:border-none print:shadow-none">
+      <DialogContent className="sm:max-w-[560px] w-[95vw] sm:w-full max-h-[88vh] flex flex-col p-0 overflow-hidden font-sans border border-white/90 shadow-[0_16px_50px_rgba(35,21,29,0.12)] rounded-[26px] bg-white/95 backdrop-blur-2xl print:p-0 print:border-none print:shadow-none print:rounded-none">
         {/* Header */}
-        <DialogHeader className="px-4 sm:px-5 py-3 sm:py-3.5 border-b border-slate-100 flex flex-row items-center justify-between shrink-0 bg-white print:hidden">
-          <DialogTitle className="flex items-center gap-2 text-sm font-bold text-slate-900">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+        <DialogHeader className="px-4 sm:px-6 py-3.5 border-b border-rose-100/60 flex flex-row items-center justify-between shrink-0 bg-white/60 backdrop-blur-md print:hidden">
+          <DialogTitle className="flex items-center gap-2 text-sm font-extrabold text-[#18191B]">
+            <span className="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-200/60">
+              <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+            </span>
             <span>Transaction Receipt</span>
           </DialogTitle>
           <div className="flex items-center gap-2 pr-6">
             <Badge
               variant={isPaid ? 'success' : isPartial ? 'warning' : 'neutral'}
-              className="text-[11px] font-semibold"
+              className="text-[11px] font-bold rounded-full px-2.5 py-0.5"
             >
               {invoice.status}
             </Badge>
@@ -241,7 +243,7 @@ We look forward to serving you again.`;
         </DialogHeader>
 
         {/* Scrollable Receipt Area */}
-        <div className="px-3 sm:px-5 py-3 sm:py-4 overflow-y-auto flex-1 space-y-3">
+        <div className="px-3 sm:px-6 py-3 sm:py-4 overflow-y-auto flex-1 space-y-3">
           {/* Minimal Quick Phone Prompt when customer has no phone number on file */}
           {isPromptingPhone && (
             <div className="bg-emerald-50/90 border border-emerald-200 rounded-xl p-3 space-y-2 animate-in fade-in duration-150 print:hidden">
@@ -320,7 +322,7 @@ We look forward to serving you again.`;
           {/* Printable Receipt Card */}
           <div
             ref={receiptRef}
-            className="receipt-print-area bg-white border border-slate-200/90 rounded-xl p-4 sm:p-5 text-xs text-slate-800 space-y-3 shadow-xs print:border-none print:shadow-none print:p-0"
+            className="receipt-print-area bg-white/90 border border-white/90 rounded-[20px] p-4 sm:p-5 text-xs text-slate-800 space-y-3 shadow-[0_4px_20px_rgba(35,21,29,0.04)] print:border-none print:shadow-none print:p-0 print:bg-white"
           >
             {invoice.lifecycle === 'VOIDED' && (
               <div className="bg-rose-50 border border-rose-300 text-rose-800 p-2 rounded-lg text-center font-bold text-xs tracking-wide flex items-center justify-center gap-1.5">
@@ -528,10 +530,10 @@ We look forward to serving you again.`;
         </div>
 
         {/* Footer Actions Toolbar */}
-        <div className="px-3 sm:px-4 py-2.5 sm:py-3 border-t border-slate-100 bg-slate-50/90 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 shrink-0 print:hidden">
+        <div className="px-3 sm:px-6 py-3 border-t border-rose-100/60 bg-white/70 backdrop-blur-md flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 shrink-0 print:hidden">
           {/* Secondary Actions (Close, Refund, Copy) */}
           <div className="flex items-center gap-1.5 order-2 sm:order-1">
-            <Button variant="outline" size="sm" onClick={onClose} className="text-xs h-8 px-3 text-slate-600 hover:bg-slate-100">
+            <Button variant="outline" size="sm" onClick={onClose} className="text-xs h-8 px-3 text-[#18191B] rounded-xl border border-rose-100/80 bg-white/80 hover:bg-rose-50/50">
               Close
             </Button>
             {onRefund && invoice.lifecycle !== 'VOIDED' && invoice.lifecycle !== 'REFUNDED' && (
@@ -542,7 +544,7 @@ We look forward to serving you again.`;
                   onClose();
                   onRefund(invoice);
                 }}
-                className="text-xs gap-1 h-8 px-2 text-rose-700 border-rose-300 hover:bg-rose-50 hover:text-rose-800"
+                className="text-xs gap-1 h-8 px-2.5 text-rose-700 border-rose-200 bg-rose-50/60 hover:bg-rose-100/60 rounded-xl font-semibold"
               >
                 <RotateCcw className="w-3.5 h-3.5 text-rose-600" />
                 <span>Refund</span>
@@ -553,7 +555,7 @@ We look forward to serving you again.`;
               size="sm"
               onClick={handleCopyMessage}
               title="Copy receipt text to clipboard"
-              className="text-xs h-8 px-2.5 text-slate-600 hover:bg-slate-100"
+              className="text-xs h-8 px-2.5 text-slate-700 border-rose-100/80 bg-white/80 hover:bg-rose-50/50 rounded-xl"
             >
               {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
               <span className="sm:hidden text-[11px] ml-1">Copy Text</span>
@@ -567,7 +569,7 @@ We look forward to serving you again.`;
               size="sm"
               disabled={isGeneratingPdf}
               onClick={handleWhatsAppClick}
-              className="bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs gap-1.5 h-8 px-2.5 sm:px-3 font-medium cursor-pointer shadow-xs disabled:opacity-60 shrink-0"
+              className="bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs gap-1.5 h-8 px-2.5 sm:px-3 font-semibold rounded-xl cursor-pointer shadow-xs disabled:opacity-60 shrink-0"
               title="Send A to Z receipt PDF to customer WhatsApp"
             >
               {isGeneratingPdf ? (
@@ -584,7 +586,7 @@ We look forward to serving you again.`;
               size="sm"
               disabled={isGeneratingPdf}
               onClick={handleDownloadPdf}
-              className="text-xs gap-1 h-8 px-2 text-slate-700 hover:text-slate-900 hover:bg-slate-100 shrink-0"
+              className="text-xs gap-1 h-8 px-2.5 text-slate-700 border-rose-100/80 bg-white/80 hover:bg-rose-50/50 rounded-xl shrink-0"
               title="Download receipt PDF directly"
             >
               <FileDown className="w-3.5 h-3.5 text-slate-600" />
@@ -595,7 +597,7 @@ We look forward to serving you again.`;
               variant="outline"
               size="sm"
               onClick={handlePrint}
-              className="text-xs gap-1 h-8 px-2.5 text-slate-700 hover:text-slate-900 hover:bg-slate-100 shrink-0"
+              className="text-xs gap-1 h-8 px-2.5 text-slate-700 border-rose-100/80 bg-white/80 hover:bg-rose-50/50 rounded-xl shrink-0"
             >
               <Printer className="w-3.5 h-3.5 text-slate-600" />
               <span>Print</span>
@@ -608,7 +610,7 @@ We look forward to serving you again.`;
                   onClose();
                   onNewSale();
                 }}
-                className="bg-[#9D2558] hover:bg-[#851C47] text-white text-xs gap-1 h-8 px-3 font-semibold shrink-0 cursor-pointer shadow-xs"
+                className="bg-gradient-to-r from-[#B82E69] to-[#9D2558] hover:from-[#9D2558] hover:to-[#831F49] text-white text-xs gap-1.5 h-8 px-3.5 font-bold rounded-xl shrink-0 cursor-pointer shadow-[0_4px_14px_rgba(184,46,105,0.25)] transition-all active:scale-[0.98]"
               >
                 <PlusCircle className="w-3.5 h-3.5" />
                 <span>New Sale</span>

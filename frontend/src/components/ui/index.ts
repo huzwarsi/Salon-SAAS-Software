@@ -17,3 +17,4 @@ export * from './alert';
 export * from './alert-dialog';
 export * from './stat-card';
 export * from './spinner';
+export * from './LuxurySelect';

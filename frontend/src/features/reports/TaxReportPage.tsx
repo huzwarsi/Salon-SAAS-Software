@@ -201,7 +201,7 @@ export const TaxReportPage: React.FC = () => {
         'Discount',
         'Taxable Base',
         'Rate %',
-        'Tax Amount',
+        'Net Tax',
         'Total Bill',
       ];
       const rows = serviceRows.map((r, i) => [
@@ -228,7 +228,7 @@ export const TaxReportPage: React.FC = () => {
         'Times Done (Qty)',
         'Total Taxable Sales',
         'Tax Rate %',
-        'Total Tax Collected',
+        'Net Tax',
       ];
       const rows = serviceSummary.map((s, i) => [
         i + 1,
@@ -249,7 +249,7 @@ export const TaxReportPage: React.FC = () => {
         'Client',
         'Taxable Base',
         'Rate %',
-        'Tax Collected',
+        'Net Tax',
         'Total Bill',
         'Method',
         'Status',
@@ -294,7 +294,7 @@ export const TaxReportPage: React.FC = () => {
         'Discount',
         'Taxable Base',
         'Rate %',
-        'Tax Amount',
+        'Net Tax',
         'Total Bill',
       ];
       const rows = serviceRows.map((r, i) => [
@@ -313,6 +313,14 @@ export const TaxReportPage: React.FC = () => {
         r.total.toFixed(2),
       ]);
       downloadReportCsv('Tax_Services_Report', meta, [{ headers, rows }]);
+    } else if (activeTab === 'INVOICES') {
+      const headers = ['#', 'Date', 'Invoice #', 'Branch', 'Client', 'Taxable Base', 'Rate %', 'Net Tax', 'Total Bill', 'Method', 'Status'];
+      const rows = invoiceRows.map((r, i) => [
+        i + 1, formatDateDisplay(r.date), r.reference, r.branchName, r.clientName,
+        r.taxableBase.toFixed(2), `${r.taxRate}%`, r.taxAmount.toFixed(2), r.total.toFixed(2),
+        formatMethod(r.paymentMethod), r.status,
+      ]);
+      downloadReportCsv('Tax_Invoices_Report', meta, [{ headers, rows }]);
     } else {
       const headers = [
         '#',
@@ -320,7 +328,7 @@ export const TaxReportPage: React.FC = () => {
         'Times Done',
         'Total Taxable Sales',
         'Tax Rate %',
-        'Total Tax Collected',
+        'Net Tax',
       ];
       const rows = serviceSummary.map((s, i) => [
         i + 1,
@@ -396,8 +404,23 @@ export const TaxReportPage: React.FC = () => {
           '—',
           `PKR ${formatPKR(reportData.totals.taxableBase)}`,
           '—',
+          `PKR ${formatPKR(reportData.totals.taxAmount)}`,
           `PKR ${formatPKR(reportData.totals.total ?? ((reportData.totals.taxableBase || 0) + (reportData.totals.taxAmount || 0)))}`,
         ],
+      });
+    } else if (activeTab === 'INVOICES') {
+      printReportWindow({
+        title: 'Tax Management Report — Invoices',
+        subtitle: `Branch: ${selectedBranch === 'ALL' ? 'All Branches' : reportData.meta.branchName || selectedBranch}`,
+        meta,
+        headers: ['#', 'Date', 'Invoice #', 'Branch', 'Client', 'Taxable Base', 'Rate %', 'Net Tax', 'Total Bill', 'Method', 'Status'],
+        rows: invoiceRows.map((r, i) => [
+          i + 1, formatDateDisplay(r.date), r.reference, r.branchName, r.clientName,
+          formatPKR(r.taxableBase), `${r.taxRate}%`, formatPKR(r.taxAmount), formatPKR(r.total),
+          formatMethod(r.paymentMethod), r.status,
+        ]),
+        totals: ['Total', '', '', '', '', formatPKR(reportData.totals.taxableBase), '',
+          formatPKR(reportData.totals.taxAmount), formatPKR(reportData.totals.total ?? 0), '', ''],
       });
     } else {
       const headers = [
@@ -407,7 +430,7 @@ export const TaxReportPage: React.FC = () => {
         'Times Done',
         'Taxable Sales (PKR)',
         'Rate %',
-        'Tax Collected (PKR)',
+        'Net Tax (PKR)',
       ];
       const rows = serviceSummary.map((s, i) => [
         i + 1,
@@ -449,7 +472,7 @@ export const TaxReportPage: React.FC = () => {
         <div className="mb-5">
           <h1 className="text-xl font-bold text-[#23151D] tracking-tight">Tax Management Reports</h1>
           <p className="text-xs text-slate-500 mt-1">
-            Provincial & Federal Sales Tax (PST / SST) · Har service ke sath exact tax breakdown aur aakhir mein total collection
+            Provincial & Federal Sales Tax (PST / SST) · Sale tax minus dated refunds and reversals. Full reversal in the selected period nets to zero.
           </p>
         </div>
 
@@ -664,7 +687,7 @@ export const TaxReportPage: React.FC = () => {
                     <th className="py-3.5 px-4 text-right whitespace-nowrap font-medium text-[#475569]">Discount</th>
                     <th className="py-3.5 px-4 text-right whitespace-nowrap font-medium text-[#475569]">Taxable Base</th>
                     <th className="py-3.5 px-4 text-center whitespace-nowrap font-medium text-[#475569]">Rate %</th>
-                    <th className="py-3.5 px-4 text-right whitespace-nowrap font-medium text-[#475569]">Tax Collected</th>
+                    <th className="py-3.5 px-4 text-right whitespace-nowrap font-medium text-[#475569]">Net Tax</th>
                     <th className="py-3.5 px-4 text-right whitespace-nowrap font-medium text-[#475569]">Total Bill</th>
                   </tr>
                 </thead>
@@ -718,7 +741,7 @@ export const TaxReportPage: React.FC = () => {
                             </span>
                           </td>
                           <td className="py-3.5 px-4 text-right font-bold text-emerald-600 whitespace-nowrap tabular-nums">
-                            +PKR {formatPKR(row.taxAmount)}
+                            PKR {formatPKR(row.taxAmount)}
                           </td>
                           <td className="py-3.5 px-4 text-right font-semibold text-slate-900 whitespace-nowrap tabular-nums">
                             PKR {formatPKR(row.total)}
@@ -753,7 +776,7 @@ export const TaxReportPage: React.FC = () => {
                     </td>
                     <td className="py-3.5 px-4 text-center text-slate-400">—</td>
                     <td className="py-3.5 px-4 text-right font-bold text-emerald-600 tabular-nums">
-                      +PKR {formatPKR(reportData?.totals.taxAmount || 0)}
+                      PKR {formatPKR(reportData?.totals.taxAmount ?? 0)}
                     </td>
                     <td className="py-3.5 px-4 text-right font-bold text-slate-900 tabular-nums">
                       PKR {formatPKR(reportData?.totals.total || 0)}
@@ -766,7 +789,7 @@ export const TaxReportPage: React.FC = () => {
                       Total Sales Tax Collected (Gross)
                     </td>
                     <td colSpan={4} className="py-3 px-4 text-right font-bold text-[13px] tabular-nums text-emerald-600">
-                      +PKR {formatPKR(reportData?.kpis.totalTaxCollected || reportData?.totals.taxAmount || 0)}
+                      +PKR {formatPKR(reportData?.kpis.totalTaxCollected ?? 0)}
                     </td>
                   </tr>
 
@@ -786,7 +809,7 @@ export const TaxReportPage: React.FC = () => {
                       Net Sales Tax Liability (Payable to Authority)
                     </td>
                     <td colSpan={4} className="py-3 px-4 text-right font-bold text-[13px] tabular-nums text-[#9D2558]">
-                      PKR {formatPKR(reportData?.kpis.netTaxLiability || reportData?.totals.netTax || 0)}
+                      PKR {formatPKR(reportData?.kpis.netTaxLiability ?? reportData?.totals.netTax ?? 0)}
                     </td>
                   </tr>
                 </tfoot>
@@ -803,10 +826,10 @@ export const TaxReportPage: React.FC = () => {
                     <th className="py-3.5 px-4 text-center w-12 font-medium text-[#475569]">#</th>
                     <th className="py-3.5 px-4 min-w-[220px] font-medium text-[#475569]">Service Name</th>
                     <th className="py-3.5 px-4 whitespace-nowrap font-medium text-[#475569]">Category / Type</th>
-                    <th className="py-3.5 px-4 text-center whitespace-nowrap font-medium text-[#475569]">Times Billed</th>
+                    <th className="py-3.5 px-4 text-center whitespace-nowrap font-medium text-[#475569]">Net Quantity</th>
                     <th className="py-3.5 px-4 text-right whitespace-nowrap font-medium text-[#475569]">Total Taxable Sales</th>
                     <th className="py-3.5 px-4 text-center whitespace-nowrap font-medium text-[#475569]">Tax Rate %</th>
-                    <th className="py-3.5 px-4 text-right whitespace-nowrap font-medium text-[#475569]">Total Tax Collected</th>
+                    <th className="py-3.5 px-4 text-right whitespace-nowrap font-medium text-[#475569]">Net Tax</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-dashed divide-slate-200">
@@ -834,7 +857,7 @@ export const TaxReportPage: React.FC = () => {
                           {s.taxRate}%
                         </td>
                         <td className="py-3.5 px-4 text-right font-bold text-emerald-600 whitespace-nowrap tabular-nums">
-                          +PKR {formatPKR(s.taxAmount)}
+                          PKR {formatPKR(s.taxAmount)}
                         </td>
                       </tr>
                     ))
@@ -857,7 +880,7 @@ export const TaxReportPage: React.FC = () => {
                     </td>
                     <td className="py-3.5 px-4 text-center text-slate-400">—</td>
                     <td className="py-3.5 px-4 text-right font-bold text-emerald-600 tabular-nums">
-                      +PKR {formatPKR(reportData?.totals.taxAmount || 0)}
+                      PKR {formatPKR(reportData?.totals.taxAmount ?? 0)}
                     </td>
                   </tr>
                 </tfoot>
@@ -878,7 +901,7 @@ export const TaxReportPage: React.FC = () => {
                     <th className="py-3.5 px-4 min-w-[180px] font-medium text-[#475569]">Client Name</th>
                     <th className="py-3.5 px-4 text-right whitespace-nowrap font-medium text-[#475569]">Taxable Base</th>
                     <th className="py-3.5 px-4 text-center whitespace-nowrap font-medium text-[#475569]">Rate %</th>
-                    <th className="py-3.5 px-4 text-right whitespace-nowrap font-medium text-[#475569]">Tax Collected</th>
+                    <th className="py-3.5 px-4 text-right whitespace-nowrap font-medium text-[#475569]">Net Tax</th>
                     <th className="py-3.5 px-4 text-right whitespace-nowrap font-medium text-[#475569]">Total Invoice</th>
                     <th className="py-3.5 px-4 whitespace-nowrap font-medium text-[#475569]">Payment Method</th>
                     <th className="py-3.5 px-4 text-center whitespace-nowrap font-medium text-[#475569]">Status</th>
@@ -917,7 +940,7 @@ export const TaxReportPage: React.FC = () => {
                             </span>
                           </td>
                           <td className="py-3.5 px-4 text-right font-bold text-emerald-600 whitespace-nowrap tabular-nums">
-                            +PKR {formatPKR(row.taxAmount)}
+                            PKR {formatPKR(row.taxAmount)}
                           </td>
                           <td className="py-3.5 px-4 text-right font-semibold text-slate-900 whitespace-nowrap tabular-nums">
                             PKR {formatPKR(row.total)}
@@ -952,7 +975,7 @@ export const TaxReportPage: React.FC = () => {
                     </td>
                     <td className="py-3.5 px-4 text-center text-slate-400">—</td>
                     <td className="py-3.5 px-4 text-right font-bold text-emerald-600 tabular-nums">
-                      +PKR {formatPKR(reportData?.totals.taxAmount || 0)}
+                      PKR {formatPKR(reportData?.totals.taxAmount ?? 0)}
                     </td>
                     <td className="py-3.5 px-4 text-right font-bold text-slate-900 tabular-nums">
                       PKR {formatPKR(reportData?.totals.total || 0)}

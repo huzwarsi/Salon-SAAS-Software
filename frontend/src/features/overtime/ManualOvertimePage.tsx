@@ -1,5 +1,6 @@
 import { BranchActionField } from '@/components/BranchActionField';
 import { useBranchAction } from '@/hooks/useBranchAction';
+import { LuxurySelect } from '@/components/ui/LuxurySelect';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { salonService } from '../../services';
@@ -24,6 +25,7 @@ import {
   Calendar,
 } from 'lucide-react';
 import { roundCurrency } from '../../lib/taxCalculations';
+import { formatCurrency } from '@/lib/formatters';
 import { AccessDeniedView } from '../scaffold/AccessDeniedView';
 import { toast } from '../../context/ToastContext';
 
@@ -393,35 +395,36 @@ export const ManualOvertimePage: React.FC = () => {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6 font-sans">
-      {/* HEADER */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-200 pb-5">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Manual Overtime Management</h1>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#FDF2F5] text-[#851C47] border border-[#F1DEE3]">
-              <Timer className="w-3.5 h-3.5" />
-              Administrative Verification
-            </span>
+    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6 font-sans">
+      {/* ── HEADER SECTION ─────────────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 rounded-2xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69] shrink-0">
+            <Timer className="w-5 h-5" />
           </div>
-          <p className="text-sm text-slate-500 mt-1">
-            Manual overtime minute logging, snapshotted hourly rates, and payroll review queue
-          </p>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-[#18191B] tracking-tight truncate">
+              Manual Overtime Management
+            </h1>
+            <p className="text-xs text-[#78616C] mt-0.5 line-clamp-1 xl:line-clamp-none">
+              Manual overtime minute logging, snapshotted hourly rates, and payroll review queue.
+            </p>
+          </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-auto flex-wrap sm:flex-nowrap">
           <button
             onClick={() => setShowAddModal(true)}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#9D2558] text-white text-xs font-semibold hover:bg-[#851C47] transition-colors shadow-xs"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-[#B82E69] to-[#9D2558] hover:from-[#A02359] hover:to-[#8B1A4B] text-white text-xs font-semibold shadow-xs cursor-pointer transition-all"
           >
             <Plus className="w-4 h-4" />
-            New Overtime Entry
+            <span>New Overtime Entry</span>
           </button>
 
           <button
             onClick={() => setShowPrintModal(true)}
-            className="p-2 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+            className="p-2 rounded-xl bg-white/80 backdrop-blur-md border border-white/80 text-slate-700 hover:bg-white shadow-2xs transition-all cursor-pointer"
             title="Print Overtime Audit"
           >
             <Printer className="w-4 h-4" />
@@ -429,7 +432,7 @@ export const ManualOvertimePage: React.FC = () => {
 
           <button
             onClick={handleExportCsv}
-            className="p-2 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+            className="p-2 rounded-xl bg-white/80 backdrop-blur-md border border-white/80 text-slate-700 hover:bg-white shadow-2xs transition-all cursor-pointer"
             title="Export CSV"
           >
             <FileSpreadsheet className="w-4 h-4" />
@@ -440,7 +443,7 @@ export const ManualOvertimePage: React.FC = () => {
       {/* FEEDBACK BANNER */}
       {feedbackMsg && (
         <div
-          className={`p-3.5 rounded-lg flex items-center justify-between text-sm ${
+          className={`p-3.5 rounded-2xl flex items-center justify-between text-xs shadow-2xs ${
             feedbackMsg.type === 'success'
               ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
               : 'bg-rose-50 text-rose-800 border border-rose-200'
@@ -462,97 +465,130 @@ export const ManualOvertimePage: React.FC = () => {
 
       {/* SUMMARY KPI CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Entered Minutes</span>
-            <Clock className="w-4 h-4 text-slate-400" />
+        {/* Entered Minutes */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+              <Clock className="w-4 h-4" />
+            </div>
+            <span className="bg-[#FDF2F5] text-[#B82E69] shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Entered
+            </span>
           </div>
-          <p className="text-2xl font-bold text-slate-900 mt-2">
-            {summaryKpis.totalEnteredMinutes.toLocaleString()} <span className="text-sm font-normal text-slate-500">mins</span>
-          </p>
-          <p className="text-xs text-slate-400 mt-0.5">
-            ≈ {((summaryKpis.totalEnteredMinutes || 0) / 60).toFixed(1)} total hours submitted
-          </p>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {summaryKpis.totalEnteredMinutes.toLocaleString()} <span className="text-xs font-semibold text-[#78616C]">mins</span>
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              ≈ {((summaryKpis.totalEnteredMinutes || 0) / 60).toFixed(1)} submitted hours
+            </span>
+          </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Approved Minutes</span>
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+        {/* Approved Minutes */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-emerald-600">
+              <CheckCircle2 className="w-4 h-4" />
+            </div>
+            <span className="bg-emerald-50 text-emerald-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Approved
+            </span>
           </div>
-          <p className="text-2xl font-bold text-emerald-700 mt-2">
-            {summaryKpis.totalApprovedMinutes.toLocaleString()} <span className="text-sm font-normal text-emerald-600">mins</span>
-          </p>
-          <p className="text-xs text-emerald-600 mt-0.5">
-            ≈ {((summaryKpis.totalApprovedMinutes || 0) / 60).toFixed(1)} verified hours
-          </p>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {summaryKpis.totalApprovedMinutes.toLocaleString()} <span className="text-xs font-semibold text-[#78616C]">mins</span>
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              ≈ {((summaryKpis.totalApprovedMinutes || 0) / 60).toFixed(1)} verified hours
+            </span>
+          </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Approved Amount</span>
-            <TrendingUp className="w-4 h-4 text-[#9D2558]" />
+        {/* Approved Amount */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+              <TrendingUp className="w-4 h-4" />
+            </div>
+            <span className="bg-[#FAF8F9] text-[#78616C] shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Payable
+            </span>
           </div>
-          <p className="text-2xl font-bold text-[#851C47] mt-2">
-            Rs. {summaryKpis.totalApprovedAmount.toLocaleString()}
-          </p>
-          <p className="text-xs text-[#9D2558] mt-0.5">Payable in future payroll</p>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {formatCurrency(summaryKpis.totalApprovedAmount)}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Payable in upcoming payroll
+            </span>
+          </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pending Review</span>
-            <Timer className="w-4 h-4 text-amber-600" />
+        {/* Pending Review */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-amber-600">
+              <Timer className="w-4 h-4" />
+            </div>
+            <span className="bg-amber-50 text-amber-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Pending
+            </span>
           </div>
-          <p className="text-2xl font-bold text-amber-700 mt-2">{summaryKpis.pendingCount}</p>
-          <p className="text-xs text-amber-600 mt-0.5">Awaiting manager approval</p>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {summaryKpis.pendingCount}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Awaiting manager signoff
+            </span>
+          </div>
         </div>
       </div>
 
       {/* FILTERS BAR */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs space-y-3">
+      <div className="bg-white/75 backdrop-blur-2xl p-4 rounded-[22px] border border-white/90 shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-1.5 text-xs text-slate-600">
+            <div className="flex items-center gap-1.5 text-xs text-[#78616C]">
               <span className="font-medium">From:</span>
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#9D2558]/20"
+                className="px-2.5 py-1.5 text-xs border border-white/80 rounded-xl bg-white/80 text-[#18191B] font-medium shadow-2xs cursor-pointer"
               />
             </div>
-            <div className="flex items-center gap-1.5 text-xs text-slate-600">
+            <div className="flex items-center gap-1.5 text-xs text-[#78616C]">
               <span className="font-medium">To:</span>
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#9D2558]/20"
+                className="px-2.5 py-1.5 text-xs border border-white/80 rounded-xl bg-white/80 text-[#18191B] font-medium shadow-2xs cursor-pointer"
               />
             </div>
           </div>
 
           {user?.role === 'SUPER_ADMIN' && (
-            <div className="flex items-center gap-1.5 text-xs">
-              <span className="font-medium text-slate-500">Branch:</span>
-              <select
-                value={selectedBranchId}
-                onChange={(e) => setSelectedBranchId(e.target.value)}
-                className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#9D2558]/20 bg-white"
-              >
-                <option value="ALL">All Branches</option>
-                {allBranches.map((b) => (
-                  <option key={b.id} value={b.id}>
-                    {b.name}
-                  </option>
-                ))}
-              </select>
+            <div className="flex items-center gap-1.5 text-xs min-w-[170px]">
+              <span className="font-medium text-[#78616C]">Branch:</span>
+              <div className="flex-1">
+                <LuxurySelect
+                  value={selectedBranchId}
+                  onValueChange={setSelectedBranchId}
+                  options={[
+                    { value: 'ALL', label: 'All Branches' },
+                    ...allBranches.map((b) => ({ value: b.id, label: b.name })),
+                  ]}
+                  placeholder="All Branches"
+                />
+              </div>
             </div>
           )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2 border-t border-slate-100">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2 border-t border-rose-100/40">
           <div className="relative">
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
             <input
@@ -560,44 +596,45 @@ export const ManualOvertimePage: React.FC = () => {
               placeholder="Search voucher, staff, reason..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-8 pr-2.5 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#9D2558]/20"
+              className="w-full pl-8 pr-2.5 py-1.5 text-xs border border-white/80 rounded-xl bg-white/80 text-[#18191B] font-medium shadow-2xs"
             />
           </div>
 
-          <select
+          <LuxurySelect
             value={staffFilter}
-            onChange={(e) => setStaffFilter(e.target.value)}
-            className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#9D2558]/20 bg-white text-slate-700"
-          >
-            <option value="ALL">All Employees</option>
-            {staffList.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name} ({s.employeeCode})
-              </option>
-            ))}
-          </select>
+            onValueChange={setStaffFilter}
+            options={[
+              { value: 'ALL', label: 'All Employees' },
+              ...staffList.map((s) => ({
+                value: s.id,
+                label: `${s.name} (${s.employeeCode})`,
+              })),
+            ]}
+            placeholder="All Employees"
+          />
 
-          <select
+          <LuxurySelect
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#9D2558]/20 bg-white text-slate-700"
-          >
-            <option value="ALL">All Statuses</option>
-            <option value="SUBMITTED">Submitted (Pending)</option>
-            <option value="DRAFT">Draft</option>
-            <option value="APPROVED">Approved</option>
-            <option value="REJECTED">Rejected</option>
-            <option value="CANCELLED">Cancelled</option>
-          </select>
+            onValueChange={setStatusFilter}
+            options={[
+              { value: 'ALL', label: 'All Statuses' },
+              { value: 'SUBMITTED', label: 'Submitted (Pending)' },
+              { value: 'DRAFT', label: 'Draft' },
+              { value: 'APPROVED', label: 'Approved' },
+              { value: 'REJECTED', label: 'Rejected' },
+              { value: 'CANCELLED', label: 'Cancelled' },
+            ]}
+            placeholder="All Statuses"
+          />
         </div>
       </div>
 
       {/* OVERTIME TABLE */}
-      <div className="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
+      <div className="overflow-hidden rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
         <div className="overflow-x-auto">
           <table className="report-records w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/80 border-b border-slate-200 text-[11px] font-semibold text-slate-600 uppercase tracking-wider">
+              <tr className="bg-[#FAF8F9]/80 border-b border-rose-100/40 text-[11px] font-semibold text-[#78616C] uppercase tracking-wider">
                 <th className="py-3 px-4">Voucher & Date</th>
                 <th className="py-3 px-3">Employee</th>
                 <th className="py-3 px-3">Minutes (Hours)</th>
@@ -818,22 +855,19 @@ export const ManualOvertimePage: React.FC = () => {
               <BranchActionField value={actionScope.branchId} onChange={(id) => { actionScope.setBranchId(id); setAddForm((prev) => ({ ...prev, staffId: '' })); }} />
               {actionScope.error && <p role="alert" className="text-xs text-rose-600">{actionScope.error}</p>}
               <fieldset disabled={!actionScope.ready} className="space-y-4 disabled:opacity-50">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Select Employee *</label>
-                <select
-                  required
+                <LuxurySelect
+                  label="Select Employee *"
                   value={addForm.staffId}
-                  onChange={(e) => setAddForm({ ...addForm, staffId: e.target.value })}
-                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#9D2558]/20 bg-white"
-                >
-                  <option value="">-- Choose Staff Member --</option>
-                  {(actionScope.data?.staff || []).map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name} ({s.employeeCode}) • Rate: Rs. {(s.overtimeHourlyRate ?? 0).toLocaleString()}/hr
-                    </option>
-                  ))}
-                </select>
-              </div>
+                  onValueChange={(val) => setAddForm({ ...addForm, staffId: val })}
+                  options={[
+                    { value: '', label: '-- Choose Staff Member --' },
+                    ...(actionScope.data?.staff || []).map((s) => ({
+                      value: s.id,
+                      label: `${s.name} (${s.employeeCode}) • Rate: Rs. ${(s.overtimeHourlyRate ?? 0).toLocaleString()}/hr`,
+                    })),
+                  ]}
+                  placeholder="-- Choose Staff Member --"
+                />
 
               <div className="grid grid-cols-2 gap-3">
                 <div>

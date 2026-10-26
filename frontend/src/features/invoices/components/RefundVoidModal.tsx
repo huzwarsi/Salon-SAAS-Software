@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import {
   AlertTriangle,
@@ -280,350 +281,331 @@ export const RefundVoidModal: React.FC<RefundVoidModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[92vh] overflow-y-auto font-sans p-6">
-        <DialogHeader>
-          <div className="flex items-center justify-between pb-2 border-b border-slate-200">
-            <div className="flex items-center gap-2.5">
-              <div
-                className={`w-9 h-9 rounded-lg flex items-center justify-center ${
-                  actionType === 'VOID'
-                    ? 'bg-rose-100 text-rose-700'
-                    : 'bg-amber-100 text-amber-700'
-                }`}
-              >
-                {actionType === 'VOID' ? <Ban className="w-5 h-5" /> : <RotateCcw className="w-5 h-5" />}
-              </div>
-              <div>
-                <DialogTitle className="text-base font-bold text-slate-800">
-                  {actionType === 'VOID'
-                    ? 'Void Invoice'
-                    : 'Issue Sale Refund'}
-                </DialogTitle>
-                <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
-                  <span className="font-semibold text-[#9D2558]">{invoice.invoiceNumber}</span>
-                  <span>•</span>
-                  <span>{invoice.clientName || 'Walk-in'}</span>
-                  <span>•</span>
-                  <Badge
-                    variant="outline"
-                    className={`text-[10px] uppercase font-bold ${
-                      invoice.lifecycle === 'VOIDED'
-                        ? 'border-rose-400 bg-rose-50 text-rose-700'
-                        : invoice.lifecycle === 'REFUNDED'
-                        ? 'border-purple-400 bg-purple-50 text-purple-700'
-                        : invoice.lifecycle === 'PARTIALLY_REFUNDED'
-                        ? 'border-amber-400 bg-amber-50 text-amber-700'
-                        : 'border-emerald-400 bg-emerald-50 text-emerald-700'
-                    }`}
-                  >
-                    {invoice.lifecycle || 'ACTIVE'}
-                  </Badge>
-                </div>
+      <DialogContent className="max-w-xl max-h-[90vh] flex flex-col p-0 overflow-hidden font-sans rounded-2xl border-0 shadow-2xl bg-white">
+        {/* Sticky Header */}
+        <DialogHeader className="px-5 py-4 border-b border-slate-100 flex items-center justify-between shrink-0 bg-white">
+          <div className="flex items-center gap-3">
+            <div
+              className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold shrink-0 ${
+                actionType === 'VOID'
+                  ? 'bg-rose-100/80 text-rose-700'
+                  : 'bg-amber-100/80 text-amber-700'
+              }`}
+            >
+              {actionType === 'VOID' ? <Ban className="w-5 h-5" /> : <RotateCcw className="w-5 h-5" />}
+            </div>
+            <div>
+              <DialogTitle className="text-base font-bold text-slate-800 leading-tight">
+                {actionType === 'VOID' ? 'Void Invoice' : 'Issue Sale Refund'}
+              </DialogTitle>
+              <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
+                <span className="font-semibold text-[#9D2558]">{invoice.invoiceNumber}</span>
+                <span>•</span>
+                <span>{invoice.clientName || 'Walk-in'}</span>
+                <span>•</span>
+                <Badge
+                  variant="outline"
+                  className={`text-[10px] uppercase font-bold px-2 py-0.2 ${
+                    invoice.lifecycle === 'VOIDED'
+                      ? 'border-rose-400 bg-rose-50 text-rose-700'
+                      : invoice.lifecycle === 'REFUNDED'
+                      ? 'border-purple-400 bg-purple-50 text-purple-700'
+                      : invoice.lifecycle === 'PARTIALLY_REFUNDED'
+                      ? 'border-amber-400 bg-amber-50 text-amber-700'
+                      : 'border-emerald-400 bg-emerald-50 text-emerald-700'
+                  }`}
+                >
+                  {invoice.lifecycle || 'ACTIVE'}
+                </Badge>
               </div>
             </div>
           </div>
         </DialogHeader>
 
-        {/* Action Type Selector Cards - Simple & Clean */}
-        <div className="grid grid-cols-2 gap-2.5 mt-3">
-          <button
-            type="button"
-            onClick={() => setActionType('VOID')}
-            className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between ${
-              actionType === 'VOID'
-                ? 'border-rose-500 bg-rose-50/70 shadow-xs ring-1 ring-rose-500 text-rose-900'
-                : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 text-slate-700'
-            }`}
-          >
-            <span className="text-xs font-bold flex items-center gap-2">
-              <Ban className="w-4 h-4 text-rose-600" />
+        {/* Scrollable Body */}
+        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+          {/* Fluid Segmented Mode Control */}
+          <div className="bg-slate-100 p-1 rounded-xl flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setActionType('VOID')}
+              className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                actionType === 'VOID'
+                  ? 'bg-white text-rose-700 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Ban className="w-3.5 h-3.5" />
               <span>Full Void</span>
-            </span>
-            {actionType === 'VOID' && <CheckCircle2 className="w-4 h-4 text-rose-600 shrink-0" />}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActionType('REFUND')}
-            className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between ${
-              actionType === 'REFUND'
-                ? 'border-amber-500 bg-amber-50/70 shadow-xs ring-1 ring-amber-500 text-amber-900'
-                : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 text-slate-700'
-            }`}
-          >
-            <span className="text-xs font-bold flex items-center gap-2">
-              <RotateCcw className="w-4 h-4 text-amber-600" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setActionType('REFUND')}
+              className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                actionType === 'REFUND'
+                  ? 'bg-white text-amber-700 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
               <span>Line-Item Refund</span>
-            </span>
-            {actionType === 'REFUND' && <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0" />}
-          </button>
-        </div>
-
-        {/* Line Items Table */}
-        <div className="mt-3.5 border border-slate-200 rounded-xl overflow-hidden bg-white shadow-xs">
-          <div className="px-3.5 py-2 bg-slate-50 border-b border-slate-200 flex items-center justify-between text-xs font-semibold text-slate-700">
-            <span>Items ({lines.length})</span>
-            <span className="text-[11px] text-slate-500 font-medium">Bill Total: {formatCurrency(invoice.total)}</span>
+            </button>
           </div>
-          <div className="divide-y divide-slate-100 max-h-52 overflow-y-auto">
-            {lines.map((line) => {
-              const already = alreadyRefundedMap.get(line.id) || 0;
-              const remaining = Math.max(0, line.quantity - already);
-              const sel = lineSelections[line.id] || { selected: false, quantity: 0, restock: 'NONE' };
-              const isFullyRefunded = remaining <= 0;
 
-              return (
-                <div
-                  key={line.id}
-                  className={`p-2.5 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 ${
-                    isFullyRefunded
-                      ? 'bg-slate-50/70 opacity-60'
-                      : sel.selected && actionType === 'REFUND'
-                      ? 'bg-amber-50/30'
-                      : ''
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                    {actionType === 'REFUND' && (
-                      <input
-                        type="checkbox"
-                        disabled={isFullyRefunded}
-                        checked={sel.selected}
-                        onChange={(e) => {
-                          setLineSelections((prev) => ({
-                            ...prev,
-                            [line.id]: {
-                              ...prev[line.id],
-                              selected: e.target.checked,
-                              quantity: e.target.checked ? (prev[line.id]?.quantity || remaining) : 0,
-                            },
-                          }));
-                        }}
-                        className="rounded border-slate-300 text-amber-600 focus:ring-amber-500 cursor-pointer"
-                      />
-                    )}
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="font-semibold text-slate-900">{line.name}</span>
-                        {already > 0 && (
-                          <span className="text-[10px] text-amber-600 bg-amber-50 px-1.5 py-0.2 rounded font-medium">
-                            {already} refunded
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-[11px] text-slate-500 font-mono mt-0.5">
-                        {line.quantity} × {formatCurrency(line.unitPrice || 0)} = {formatCurrency(line.total || 0)}
-                        {line.staffName && <span className="font-sans text-slate-400"> ({line.staffName})</span>}
-                      </div>
-                    </div>
-                  </div>
+          {/* Invoice Items Receipt Section */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-xs text-slate-500 font-semibold px-0.5">
+              <span>Invoice Items ({lines.length})</span>
+              <span className="font-mono text-slate-600 font-medium">Bill Total: {formatCurrency(invoice.total)}</span>
+            </div>
 
-                  {/* Quantity & Restock Controls (if in REFUND mode) */}
-                  {actionType === 'REFUND' && !isFullyRefunded && (
-                    <div className="flex items-center gap-2 shrink-0">
-                      <div className="flex items-center gap-1">
-                        <span className="text-[11px] text-slate-500">Qty:</span>
+            <div className="rounded-xl border border-slate-200/80 bg-slate-50/40 divide-y divide-slate-100 overflow-hidden">
+              {lines.map((line) => {
+                const already = alreadyRefundedMap.get(line.id) || 0;
+                const remaining = Math.max(0, line.quantity - already);
+                const sel = lineSelections[line.id] || { selected: false, quantity: 0, restock: 'NONE' };
+                const isFullyRefunded = remaining <= 0;
+
+                return (
+                  <div
+                    key={line.id}
+                    className={`p-3 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 transition-colors ${
+                      isFullyRefunded
+                        ? 'bg-slate-50 opacity-50'
+                        : sel.selected && actionType === 'REFUND'
+                        ? 'bg-amber-50/40'
+                        : 'hover:bg-white'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                      {actionType === 'REFUND' && (
                         <input
-                          type="number"
-                          min={1}
-                          max={remaining}
-                          disabled={!sel.selected}
-                          value={sel.quantity || 1}
-                          onChange={(e) => {
-                            const val = Math.max(1, Math.min(remaining, parseInt(e.target.value) || 1));
-                            setLineSelections((prev) => ({
-                              ...prev,
-                              [line.id]: { ...prev[line.id], quantity: val },
-                            }));
-                          }}
-                          className="w-12 text-center text-xs border border-slate-300 rounded px-1 py-0.5 bg-white font-mono disabled:bg-slate-100 disabled:text-slate-400"
-                        />
-                        <span className="text-[11px] text-slate-400">/ {remaining}</span>
-                      </div>
-
-                      {line.type === 'PRODUCT' && (
-                        <select
-                          disabled={!sel.selected}
-                          value={sel.restock}
+                          type="checkbox"
+                          disabled={isFullyRefunded}
+                          checked={sel.selected}
                           onChange={(e) => {
                             setLineSelections((prev) => ({
                               ...prev,
                               [line.id]: {
                                 ...prev[line.id],
-                                restock: e.target.value as 'RESALABLE' | 'DAMAGED' | 'NONE',
+                                selected: e.target.checked,
+                                quantity: e.target.checked ? (prev[line.id]?.quantity || remaining) : 0,
                               },
                             }));
                           }}
-                          className="text-[11px] border border-slate-300 rounded px-2 py-0.5 bg-white disabled:bg-slate-100"
-                        >
-                          <option value="RESALABLE">Restock</option>
-                          <option value="DAMAGED">Damaged</option>
-                          <option value="NONE">No Restock</option>
-                        </select>
+                          className="rounded border-slate-300 text-[#9D2558] focus:ring-[#9D2558] cursor-pointer w-4 h-4"
+                        />
                       )}
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-semibold text-slate-900">{line.name}</span>
+                          {already > 0 && (
+                            <span className="text-[10px] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded font-medium">
+                              {already} refunded
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[11px] text-slate-500 font-mono mt-0.5">
+                          {line.quantity} × {formatCurrency(line.unitPrice || 0)} = {formatCurrency(line.total || 0)}
+                          {line.staffName && <span className="font-sans text-slate-400"> • {line.staffName}</span>}
+                        </div>
+                      </div>
                     </div>
-                  )}
 
-                  {/* Void mode display */}
-                  {actionType === 'VOID' && (
-                    <div className="text-right text-[11px] font-semibold text-rose-600">
-                      Void all {remaining}
+                    {/* Quantity & Restock Controls (REFUND mode) */}
+                    {actionType === 'REFUND' && !isFullyRefunded && (
+                      <div className="flex items-center gap-2 shrink-0">
+                        <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg px-2 py-0.5">
+                          <span className="text-[11px] text-slate-400">Qty:</span>
+                          <input
+                            type="number"
+                            min={1}
+                            max={remaining}
+                            disabled={!sel.selected}
+                            value={sel.quantity || 1}
+                            onChange={(e) => {
+                              const val = Math.max(1, Math.min(remaining, parseInt(e.target.value) || 1));
+                              setLineSelections((prev) => ({
+                                ...prev,
+                                [line.id]: { ...prev[line.id], quantity: val },
+                              }));
+                            }}
+                            className="w-10 text-center text-xs font-mono font-bold bg-transparent disabled:text-slate-400 outline-none"
+                          />
+                          <span className="text-[11px] text-slate-400">/ {remaining}</span>
+                        </div>
+
+                        {line.type === 'PRODUCT' && (
+                          <select
+                            disabled={!sel.selected}
+                            value={sel.restock}
+                            onChange={(e) => {
+                              setLineSelections((prev) => ({
+                                ...prev,
+                                [line.id]: {
+                                  ...prev[line.id],
+                                  restock: e.target.value as 'RESALABLE' | 'DAMAGED' | 'NONE',
+                                },
+                              }));
+                            }}
+                            className="text-[11px] border border-slate-200 rounded-lg px-2 py-1 bg-white disabled:bg-slate-100 text-slate-700 outline-none cursor-pointer"
+                          >
+                            <option value="RESALABLE">Restock</option>
+                            <option value="DAMAGED">Damaged</option>
+                            <option value="NONE">No Restock</option>
+                          </select>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Void mode tag */}
+                    {actionType === 'VOID' && (
+                      <span className="text-[11px] font-semibold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-full shrink-0">
+                        Reversing all {remaining}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Customer Payout Section */}
+          {calculations.cashOut > 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs px-0.5">
+                <span className="font-semibold text-slate-700 flex items-center gap-1.5">
+                  <DollarSign className="w-3.5 h-3.5 text-emerald-600" /> Return Payout
+                </span>
+                <span className="font-mono text-emerald-700 font-bold text-sm">
+                  {formatCurrency(calculations.cashOut)}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setRefundMethod('CASH')}
+                  className={`py-2.5 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                    refundMethod === 'CASH'
+                      ? 'border-[#9D2558] bg-[#FDF2F5] text-[#9D2558] ring-1 ring-[#9D2558] shadow-2xs'
+                      : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  <Wallet className="w-4 h-4" />
+                  <span>Cash Drawer</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setRefundMethod('ONLINE_ACCOUNT')}
+                  className={`py-2.5 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                    refundMethod === 'ONLINE_ACCOUNT'
+                      ? 'border-[#9D2558] bg-[#FDF2F5] text-[#9D2558] ring-1 ring-[#9D2558] shadow-2xs'
+                      : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  <Building className="w-4 h-4" />
+                  <span>Bank / Online</span>
+                </button>
+              </div>
+
+              {refundMethod === 'ONLINE_ACCOUNT' && (
+                <div>
+                  {isLoadingAccounts ? (
+                    <div className="text-xs text-slate-500 flex items-center gap-1.5 py-1">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading accounts...
                     </div>
+                  ) : (
+                    <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
+                      <SelectTrigger className="w-full text-xs h-9 bg-white border border-slate-300 rounded-xl">
+                        <SelectValue placeholder="Select Bank / Account" />
+                      </SelectTrigger>
+                      <SelectContent className="z-[70]">
+                        {paymentAccounts.map((acc) => (
+                          <SelectItem key={acc.id} value={acc.id} className="text-xs">
+                            {acc.name} ({acc.accountType}) — Bal: {formatCurrency(acc.currentBalance)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   )}
                 </div>
-              );
-            })}
+              )}
+            </div>
+          )}
+
+          {/* Reason Section */}
+          <div className="space-y-1.5">
+            <label className="block text-xs font-semibold text-slate-700 px-0.5">
+              Reason <span className="text-rose-500">*</span>
+            </label>
+            <div className="flex flex-wrap gap-1.5">
+              {QUICK_REASONS.map((qr) => (
+                <button
+                  key={qr}
+                  type="button"
+                  onClick={() => setReason(qr)}
+                  className={`text-[11px] px-2.5 py-1 rounded-lg border transition-all cursor-pointer font-medium ${
+                    reason === qr
+                      ? 'bg-[#9D2558] text-white border-[#9D2558] shadow-2xs font-semibold'
+                      : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                  }`}
+                >
+                  {qr}
+                </button>
+              ))}
+            </div>
+            <Input
+              type="text"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="Reason details or notes..."
+              className="w-full text-xs h-9 bg-white border-slate-300 rounded-xl px-3"
+            />
           </div>
-        </div>
 
-        {/* Refund Payment Source Section (If money has been paid) */}
-        {calculations.cashOut > 0 && (
-          <div className="mt-3.5 p-3 rounded-xl border border-slate-200 bg-slate-50/80 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                <DollarSign className="w-4 h-4 text-emerald-600" />
-                <span>Return Payout:</span>
-                <span className="font-mono text-emerald-700 text-sm font-bold">{formatCurrency(calculations.cashOut)}</span>
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <label
-                className={`flex items-center gap-2 p-2 rounded-lg border text-xs cursor-pointer transition-colors ${
-                  refundMethod === 'CASH'
-                    ? 'border-[#9D2558] bg-[#FDF2F5] text-[#9D2558] font-semibold'
-                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="refundMethod"
-                  value="CASH"
-                  checked={refundMethod === 'CASH'}
-                  onChange={() => setRefundMethod('CASH')}
-                  className="text-[#9D2558]"
-                />
-                <Wallet className="w-4 h-4" />
-                <span>Cash Drawer</span>
-              </label>
-
-              <label
-                className={`flex items-center gap-2 p-2 rounded-lg border text-xs cursor-pointer transition-colors ${
-                  refundMethod === 'ONLINE_ACCOUNT'
-                    ? 'border-[#9D2558] bg-[#FDF2F5] text-[#9D2558] font-semibold'
-                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="refundMethod"
-                  value="ONLINE_ACCOUNT"
-                  checked={refundMethod === 'ONLINE_ACCOUNT'}
-                  onChange={() => setRefundMethod('ONLINE_ACCOUNT')}
-                  className="text-[#9D2558]"
-                />
-                <Building className="w-4 h-4" />
-                <span>Bank / Online</span>
-              </label>
-            </div>
-
-            {refundMethod === 'ONLINE_ACCOUNT' && (
-              <div className="pt-1">
-                {isLoadingAccounts ? (
-                  <div className="text-xs text-slate-500 flex items-center gap-1.5">
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading accounts...
-                  </div>
-                ) : (
-                  <Select
-                    value={selectedAccountId}
-                    onValueChange={setSelectedAccountId}
-                  >
-                    <SelectTrigger className="w-full text-xs h-8.5 bg-white border border-slate-300 rounded-lg">
-                      <SelectValue placeholder="Select Bank / Account" />
-                    </SelectTrigger>
-                    <SelectContent className="z-[70]">
-                      {paymentAccounts.map((acc) => (
-                        <SelectItem key={acc.id} value={acc.id} className="text-xs">
-                          {acc.name} ({acc.accountType}) — Bal: {formatCurrency(acc.currentBalance)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
+          {/* Financial Impact Strip */}
+          <div className="rounded-xl bg-slate-50 border border-slate-200/80 p-3">
+            <div className="grid grid-cols-4 gap-2 text-center divide-x divide-slate-200">
+              <div className="px-1">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Reversed Net</span>
+                <span className="font-mono font-bold text-xs text-rose-600">
+                  -{formatCurrency(calculations.netReversed)}
+                </span>
               </div>
-            )}
-          </div>
-        )}
-
-        {/* Reason Section (Required) */}
-        <div className="mt-3.5 space-y-1.5">
-          <label className="block text-xs font-bold text-slate-800">
-            Reason <span className="text-rose-500">*</span>
-          </label>
-          <div className="flex flex-wrap gap-1.5">
-            {QUICK_REASONS.map((qr) => (
-              <button
-                key={qr}
-                type="button"
-                onClick={() => setReason(qr)}
-                className={`text-[11px] px-2.5 py-0.5 rounded-full border transition-colors cursor-pointer ${
-                  reason === qr
-                    ? 'bg-slate-800 text-white border-slate-800 font-semibold'
-                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                }`}
-              >
-                {qr}
-              </button>
-            ))}
-          </div>
-          <textarea
-            rows={2}
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            placeholder="Reason or notes..."
-            className="w-full text-xs border border-slate-300 rounded-lg p-2 bg-white text-slate-800 focus:ring-1 focus:ring-[#9D2558] focus:border-[#9D2558]"
-          />
-        </div>
-
-        {/* Financial Summary */}
-        <div className="mt-3.5 p-3 rounded-xl border border-slate-200 bg-slate-50 text-xs">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-            <div className="bg-white p-2 rounded-lg border border-slate-200/80">
-              <span className="block text-[10px] text-slate-500 font-medium">Reversed Net</span>
-              <span className="font-bold text-rose-600 text-xs font-mono">
-                -{formatCurrency(calculations.netReversed)}
-              </span>
-            </div>
-            <div className="bg-white p-2 rounded-lg border border-slate-200/80">
-              <span className="block text-[10px] text-slate-500 font-medium">Reversed Tax</span>
-              <span className="font-bold text-rose-600 text-xs font-mono">
-                -{formatCurrency(calculations.taxReversed)}
-              </span>
-            </div>
-            <div className="bg-white p-2 rounded-lg border border-slate-200/80">
-              <span className="block text-[10px] text-slate-500 font-medium">Customer Payout</span>
-              <span className="font-bold text-emerald-600 text-xs font-mono">
-                {formatCurrency(calculations.cashOut)}
-              </span>
-            </div>
-            <div className="bg-white p-2 rounded-lg border border-slate-200/80">
-              <span className="block text-[10px] text-slate-500 font-medium">Cancelled Due</span>
-              <span className="font-bold text-slate-700 text-xs font-mono">
-                {formatCurrency(calculations.receivableCancelled)}
-              </span>
+              <div className="px-1">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Reversed Tax</span>
+                <span className="font-mono font-bold text-xs text-rose-600">
+                  -{formatCurrency(calculations.taxReversed)}
+                </span>
+              </div>
+              <div className="px-1">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Cash Payout</span>
+                <span className="font-mono font-bold text-xs text-emerald-700">
+                  {formatCurrency(calculations.cashOut)}
+                </span>
+              </div>
+              <div className="px-1">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Cancelled Due</span>
+                <span className="font-mono font-bold text-xs text-slate-700">
+                  {formatCurrency(calculations.receivableCancelled)}
+                </span>
+              </div>
             </div>
           </div>
         </div>
 
-        <DialogFooter className="mt-5 flex items-center justify-end gap-2 border-t border-slate-200 pt-3">
-          <Button variant="outline" size="sm" onClick={onClose} disabled={isSubmitting}>
+        {/* Sticky Fixed Footer */}
+        <DialogFooter className="px-5 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2.5 shrink-0">
+          <Button variant="outline" size="sm" onClick={onClose} disabled={isSubmitting} className="rounded-xl">
             Cancel
           </Button>
           <Button
             size="sm"
             onClick={handleSubmit}
             disabled={!calculations.canSubmit || isSubmitting}
-            className={`text-white text-xs gap-1.5 ${
+            className={`text-white text-xs font-semibold gap-1.5 rounded-xl shadow-xs ${
               actionType === 'VOID'
                 ? 'bg-rose-600 hover:bg-rose-700'
                 : 'bg-amber-600 hover:bg-amber-700'

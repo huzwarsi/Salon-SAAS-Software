@@ -41,6 +41,14 @@ import {
 } from '../../lib/attendanceCalculations';
 import { AccessDeniedView } from '../scaffold/AccessDeniedView';
 import { toast } from '../../context/ToastContext';
+import {
+  LuxurySelect,
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from '@/components/ui';
 
 function formatTo24Hour(timeStr?: string): string {
   if (!timeStr || !timeStr.trim()) return '';
@@ -498,431 +506,497 @@ export const StaffAttendancePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] pb-16">
-      {/* ── HEADER ────────────────────────────────────────────────────────── */}
-      <div className="bg-white border-b border-slate-200 px-6 py-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6 font-sans">
+      {/* ── HEADER SECTION ─────────────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 rounded-2xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69] shrink-0">
+            <Clock className="w-5 h-5" />
+          </div>
           <div>
-            <h1 className="text-xl font-bold text-slate-900 tracking-tight">Staff Attendance</h1>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Daily attendance marking, arrival timings & real-time shift verification
+            <h1 className="text-xl sm:text-2xl font-bold text-[#18191B] tracking-tight truncate">
+              Staff Attendance & Biometric Punches
+            </h1>
+            <p className="text-xs text-[#78616C] mt-0.5 line-clamp-1 xl:line-clamp-none">
+              Daily attendance marking, shift verification, grace lateness penalties & biometric sync.
             </p>
           </div>
+        </div>
 
-          {/* Secondary tools */}
-          <div className="flex items-center gap-2">
+        {/* Secondary tools */}
+        <div className="flex items-center gap-2 flex-wrap shrink-0">
+          <button
+            type="button"
+            onClick={() => navigate('/admin/attendance-settings')}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/80 bg-white/80 backdrop-blur-md shadow-2xs hover:bg-white text-slate-700 text-xs font-semibold transition-all cursor-pointer"
+            title="Configure auto-absent cutoff threshold and shift grace"
+          >
+            <Sliders className="w-3.5 h-3.5 text-[#B82E69]" />
+            <span>Settings</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => { setImportBranchId(isSuperAdmin ? '' : user.branchId || ''); setShowImportModal(true); }}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/80 bg-white/80 backdrop-blur-md shadow-2xs hover:bg-white text-slate-700 text-xs font-semibold transition-all cursor-pointer"
+          >
+            <Upload className="w-3.5 h-3.5 text-[#78616C]" />
+            <span>Import CSV</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowFinalizeModal(true)}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer"
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>Finalize Day (EOD)</span>
+          </button>
+        </div>
+      </div>
+
+      {/* KPI Cards Row - Pure White Frosted Glass */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total Staff */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+              <Users className="w-4 h-4" />
+            </div>
+            <span className="bg-[#FDF2F5] text-[#B82E69] shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Total
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {summaryCounts.total}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Active staff on branch roster
+            </span>
+          </div>
+        </div>
+
+        {/* Present Today */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-emerald-600">
+              <CheckCircle2 className="w-4 h-4" />
+            </div>
+            <span className="bg-emerald-50 text-emerald-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Present
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {summaryCounts.present}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Marked present or half-day
+            </span>
+          </div>
+        </div>
+
+        {/* Absent / Leaves */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-rose-600">
+              <X className="w-4 h-4" />
+            </div>
+            <span className="bg-rose-50 text-rose-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Absent
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {summaryCounts.absent + summaryCounts.leaves}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Unexcused absentees & leaves
+            </span>
+          </div>
+        </div>
+
+        {/* Unmarked / Pending */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-amber-600">
+              <AlertCircle className="w-4 h-4" />
+            </div>
+            <span className="bg-amber-50 text-amber-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Pending
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {summaryCounts.unselected}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Staff awaiting attendance mark
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── FILTER CARD ────────────────────────────────────────────────────── */}
+      <div className="bg-white/75 backdrop-blur-2xl rounded-[22px] border border-white/90 p-4 shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 items-end">
+          {/* Branch Selector */}
+          <LuxurySelect
+            label="Branch Location"
+            value={selectedBranchId}
+            onValueChange={setSelectedBranchId}
+            disabled={!isSuperAdmin}
+            placeholder="Select branch"
+            options={allBranches.map((b) => ({ value: b.id, label: b.name }))}
+            triggerClassName="h-9 rounded-xl border-white/80 bg-white/80 text-xs font-semibold"
+          />
+
+          {/* Staff Category */}
+          <LuxurySelect
+            label="Staff Category"
+            value={categoryFilter}
+            onValueChange={setCategoryFilter}
+            options={[
+              { value: 'ALL', label: 'All Categories' },
+              ...staffCategories.map((cat) => ({ value: cat, label: cat })),
+            ]}
+            triggerClassName="h-9 rounded-xl border-white/80 bg-white/80 text-xs font-semibold"
+          />
+
+          {/* Type */}
+          <LuxurySelect
+            label="Type"
+            value={attendanceType}
+            onValueChange={setAttendanceType}
+            options={[
+              { value: 'NORMAL', label: 'Normal Attendance' },
+              { value: 'ALL', label: 'All Attendance' },
+            ]}
+            triggerClassName="h-9 rounded-xl border-white/80 bg-white/80 text-xs font-semibold"
+          />
+
+          {/* Date */}
+          <div>
+            <label className="block text-[11px] font-semibold text-[#78616C] mb-1">Attendance Date</label>
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => {
+                setSelectedDate(e.target.value);
+                setHasFiltered(false);
+                setRows([]);
+              }}
+              className="w-full h-9 text-xs border border-white/80 rounded-xl px-3 bg-white/80 text-[#18191B] font-medium transition-colors cursor-pointer shadow-2xs"
+            />
+          </div>
+
+          {/* Filter Button */}
+          <div>
             <button
               type="button"
-              onClick={() => navigate('/admin/attendance-settings')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium shadow-xs transition-colors cursor-pointer"
-              title="Configure auto-absent cutoff threshold and shift grace"
+              onClick={handleApplyFilter}
+              disabled={loading}
+              className="w-full h-9 bg-gradient-to-r from-[#B82E69] to-[#9D2558] hover:from-[#A02359] hover:to-[#8B1A4B] text-white text-xs font-semibold rounded-xl shadow-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer disabled:opacity-60"
             >
-              <Sliders className="w-3.5 h-3.5 text-[#9D2558]" />
-              <span>Attendance Settings</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => { setImportBranchId(isSuperAdmin ? '' : user.branchId || ''); setShowImportModal(true); }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium shadow-xs transition-colors cursor-pointer"
-            >
-              <Upload className="w-3.5 h-3.5 text-slate-500" />
-              <span>Import Biometric/CSV</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowFinalizeModal(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium shadow-xs transition-colors cursor-pointer"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Finalize Day (EOD)</span>
+              {loading ? <span className="w-3.5 h-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin inline-block" /> : <Filter className="w-3.5 h-3.5" />}
+              <span>Filter Roster</span>
             </button>
           </div>
         </div>
       </div>
 
-      <div className="px-6 py-5 max-w-[1600px] mx-auto space-y-4">
-        {/* ── FILTER CARD (Matching User Reference) ────────────────────────── */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 items-end">
-            {/* Branch Selector */}
-            <div>
-              <label className="block text-[11px] font-semibold text-slate-600 mb-1">Branch</label>
-              <div className="relative">
-                <select
-                  value={selectedBranchId}
-                  disabled={!isSuperAdmin}
-                  onChange={(e) => setSelectedBranchId(e.target.value)}
-                  className="w-full h-9 text-xs border border-slate-300 rounded-lg px-3 bg-white text-slate-800 font-medium focus:ring-1 focus:ring-[#9D2558] focus:border-[#9D2558] transition-colors appearance-none cursor-pointer disabled:bg-slate-50 disabled:text-slate-500"
-                >
-                  <option value="">Select branch</option>
-                  {allBranches.map((b) => (
-                    <option key={b.id} value={b.id}>
-                      {b.name}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="w-4 h-4 text-slate-400 absolute right-2.5 top-2.5 pointer-events-none" />
-              </div>
-            </div>
-
-            {/* Staff Category */}
-            <div>
-              <label className="block text-[11px] font-semibold text-slate-600 mb-1">Staff Category</label>
-              <div className="relative">
-                <select
-                  value={categoryFilter}
-                  onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="w-full h-9 text-xs border border-slate-300 rounded-lg px-3 bg-white text-slate-800 font-medium focus:ring-1 focus:ring-[#9D2558] focus:border-[#9D2558] transition-colors appearance-none cursor-pointer"
-                >
-                  <option value="ALL">All Categories</option>
-                  {staffCategories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="w-4 h-4 text-slate-400 absolute right-2.5 top-2.5 pointer-events-none" />
-              </div>
-            </div>
-
-            {/* Type */}
-            <div>
-              <label className="block text-[11px] font-semibold text-slate-600 mb-1">Type</label>
-              <div className="relative">
-                <select
-                  value={attendanceType}
-                  onChange={(e) => setAttendanceType(e.target.value)}
-                  className="w-full h-9 text-xs border border-slate-300 rounded-lg px-3 bg-white text-slate-800 font-medium focus:ring-1 focus:ring-[#9D2558] focus:border-[#9D2558] transition-colors appearance-none cursor-pointer"
-                >
-                  <option value="NORMAL">Normal Attendance</option>
-                  <option value="ALL">All Attendance</option>
-                </select>
-                <ChevronDown className="w-4 h-4 text-slate-400 absolute right-2.5 top-2.5 pointer-events-none" />
-              </div>
-            </div>
-
-            {/* Date */}
-            <div>
-              <label className="block text-[11px] font-semibold text-slate-600 mb-1">Date</label>
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => {
-                  setSelectedDate(e.target.value);
-                  setHasFiltered(false);
-                  setRows([]);
-                }}
-                className="w-full h-9 text-xs border border-slate-300 rounded-lg px-3 bg-white text-slate-800 font-medium focus:ring-1 focus:ring-[#9D2558] focus:border-[#9D2558] transition-colors cursor-pointer"
-              />
-            </div>
-
-            {/* Filter Button */}
-            <div>
-              <button
-                type="button"
-                onClick={handleApplyFilter}
-                disabled={loading}
-                className="w-full h-9 bg-[#9D2558] hover:bg-[#851C47] active:bg-[#002a66] text-white text-xs font-semibold rounded-lg shadow-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-60"
-              >
-                {loading ? <span className="w-3.5 h-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin inline-block" /> : <Filter className="w-3.5 h-3.5" />}
-                <span>= Filter</span>
-              </button>
-            </div>
-          </div>
+      {/* ── SELECTED PILL & QUICK ACTION BUTTONS ROW ───────────────────────── */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white/75 backdrop-blur-2xl p-3.5 rounded-[22px] border border-white/90 shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+        {/* Branch Pill Badge */}
+        <div>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#FDF2F5] text-[#B82E69] border border-white/60 text-xs font-semibold shadow-2xs">
+            <Building2 className="w-3.5 h-3.5" />
+            Branch: {currentBranch?.name || 'Main Branch'}
+          </span>
         </div>
 
-        {/* ── SELECTED PILL & QUICK ACTION BUTTONS ROW ─────────────────────── */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-1">
-          {/* Branch Pill Badge */}
-          <div>
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#9D2558] text-white text-xs font-semibold shadow-xs">
-              Branch: {currentBranch?.name || 'Main Branch'}
-            </span>
-          </div>
+        {/* Quick Bulk Action Buttons */}
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            disabled={!hasFiltered || loading || visibleRows.length === 0}
+            onClick={() => handleMarkAll('PRESENT')}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+            <span>Mark All Present</span>
+          </button>
 
-          {/* Quick Bulk Action Buttons */}
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              disabled={!hasFiltered || loading || visibleRows.length === 0}
-              onClick={() => handleMarkAll('PRESENT')}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#10b981] hover:bg-[#059669] text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <Check className="w-3.5 h-3.5 stroke-[2.5]" />
-              <span>Mark All Present</span>
-            </button>
+          <button
+            type="button"
+            disabled={!hasFiltered || loading || visibleRows.length === 0}
+            onClick={() => handleMarkAll('ABSENT')}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <X className="w-3.5 h-3.5 stroke-[2.5]" />
+            <span>Mark All Absent</span>
+          </button>
 
-            <button
-              type="button"
-              disabled={!hasFiltered || loading || visibleRows.length === 0}
-              onClick={() => handleMarkAll('ABSENT')}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#ef4444] hover:bg-[#dc2626] text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <X className="w-3.5 h-3.5 stroke-[2.5]" />
-              <span>Mark All Absent</span>
-            </button>
+          <button
+            type="button"
+            disabled={!hasFiltered || loading || visibleRows.length === 0}
+            onClick={() => handleMarkAll('HOLIDAY')}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <Calendar className="w-3.5 h-3.5" />
+            <span>Mark All Holiday</span>
+          </button>
 
-            <button
-              type="button"
-              disabled={!hasFiltered || loading || visibleRows.length === 0}
-              onClick={() => handleMarkAll('HOLIDAY')}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#f59e0b] hover:bg-[#d97706] text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <Calendar className="w-3.5 h-3.5" />
-              <span>Mark All Holiday</span>
-            </button>
-
-            <button
-              type="button"
-              disabled={!hasFiltered || loading || visibleRows.length === 0}
-              onClick={() => handleMarkAll('WEEKLY_OFF')}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <Calendar className="w-3.5 h-3.5" />
-              <span>Mark All Sunday / Off</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            disabled={!hasFiltered || loading || visibleRows.length === 0}
+            onClick={() => handleMarkAll('WEEKLY_OFF')}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-white/80 bg-white/80 backdrop-blur-md shadow-2xs hover:bg-white text-slate-700 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <Calendar className="w-3.5 h-3.5" />
+            <span>Mark All Off</span>
+          </button>
         </div>
+      </div>
 
-        {/* ── MAIN ATTENDANCE TABLE ────────────────────────────────────────── */}
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
-          <div className="overflow-x-auto w-full">
-            <table className="report-records min-w-[1100px] w-full text-left text-xs border-collapse whitespace-nowrap">
-              <thead>
-                <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-700 font-semibold uppercase text-[11px] tracking-wider whitespace-nowrap">
-                  <th className="py-3 px-4 w-[110px] whitespace-nowrap">Emp. ID</th>
-                  <th className="py-3 px-4 min-w-[180px] whitespace-nowrap">Name</th>
-                  <th className="py-3 px-4 min-w-[140px] whitespace-nowrap">Phone / Info</th>
-                  <th className="py-3 px-4 min-w-[140px] whitespace-nowrap">Designation</th>
-                  <th className="py-3 px-4 min-w-[160px] whitespace-nowrap">Attendance Status</th>
-                  <th className="py-3 px-4 min-w-[140px] whitespace-nowrap">Arrival Timing</th>
-                  <th className="py-3 px-4 min-w-[140px] whitespace-nowrap">Exit Timing</th>
-                  <th className="py-3 px-4 min-w-[120px] whitespace-nowrap">Late Arrival</th>
-                  <th className="py-3 px-4 min-w-[120px] whitespace-nowrap">Early Exit</th>
+      {/* ── MAIN ATTENDANCE TABLE ────────────────────────────────────────── */}
+      <div className="overflow-hidden rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+        <div className="overflow-x-auto w-full">
+          <table className="report-records min-w-[1100px] w-full text-left text-xs border-collapse whitespace-nowrap">
+            <thead>
+              <tr className="bg-[#FAF8F9]/80 border-b border-rose-100/40 text-[#78616C] font-semibold text-xs whitespace-nowrap">
+                <th className="py-3 px-4 w-[110px] whitespace-nowrap">Emp. ID</th>
+                <th className="py-3 px-4 min-w-[180px] whitespace-nowrap">Name</th>
+                <th className="py-3 px-4 min-w-[140px] whitespace-nowrap">Phone / Info</th>
+                <th className="py-3 px-4 min-w-[140px] whitespace-nowrap">Designation</th>
+                <th className="py-3 px-4 min-w-[160px] whitespace-nowrap">Attendance Status</th>
+                <th className="py-3 px-4 min-w-[140px] whitespace-nowrap">Arrival Timing</th>
+                <th className="py-3 px-4 min-w-[140px] whitespace-nowrap">Exit Timing</th>
+                <th className="py-3 px-4 min-w-[120px] whitespace-nowrap">Late Arrival</th>
+                <th className="py-3 px-4 min-w-[120px] whitespace-nowrap">Early Exit</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {!hasFiltered ? (
+                <tr>
+                  <td colSpan={9} className="py-20 text-center text-slate-500">
+                    <div className="max-w-md mx-auto space-y-2">
+                      <Filter className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                      <p className="font-semibold text-slate-700 text-sm">No Records Displayed</p>
+                      <p className="text-xs text-slate-400">
+                        Please select criteria above and click <span className="font-semibold text-[#9D2558]">= Filter</span> to load staff attendance records.
+                      </p>
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {!hasFiltered ? (
-                  <tr>
-                    <td colSpan={9} className="py-20 text-center text-slate-500">
-                      <div className="max-w-md mx-auto space-y-2">
-                        <Filter className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                        <p className="font-semibold text-slate-700 text-sm">No Records Displayed</p>
-                        <p className="text-xs text-slate-400">
-                          Please select criteria above and click <span className="font-semibold text-[#9D2558]">= Filter</span> to load staff attendance records.
-                        </p>
-                      </div>
-                    </td>
-                  </tr>
-                ) : loading ? (
-                  <tr>
-                    <td colSpan={9} className="py-12 text-center text-slate-400">
-                      <div className="w-6 h-6 rounded-full border-2 border-[#F1DEE3] border-t-[#9D2558] animate-spin mx-auto mb-2" />
-                      Loading staff attendance data...
-                    </td>
-                  </tr>
-                ) : visibleRows.length === 0 ? (
-                  <tr>
-                    <td colSpan={9} className="py-12 text-center text-slate-400">
-                      No active staff found for this branch or category on {selectedDate}.
-                    </td>
-                  </tr>
-                ) : (
-                  visibleRows.map((row) => {
-                    const isPresentLike = row.status === 'PRESENT' || row.status === 'HALF_DAY';
-                    const lateInfo = getLateArrivalInfo(row);
-                    const earlyInfo = getEarlyExitInfo(row);
+              ) : loading ? (
+                <tr>
+                  <td colSpan={9} className="py-12 text-center text-slate-400">
+                    <div className="w-6 h-6 rounded-full border-2 border-[#F1DEE3] border-t-[#9D2558] animate-spin mx-auto mb-2" />
+                    Loading staff attendance data...
+                  </td>
+                </tr>
+              ) : visibleRows.length === 0 ? (
+                <tr>
+                  <td colSpan={9} className="py-12 text-center text-slate-400">
+                    No active staff found for this branch or category on {selectedDate}.
+                  </td>
+                </tr>
+              ) : (
+                visibleRows.map((row) => {
+                  const isPresentLike = row.status === 'PRESENT' || row.status === 'HALF_DAY';
+                  const lateInfo = getLateArrivalInfo(row);
+                  const earlyInfo = getEarlyExitInfo(row);
 
-                    return (
-                      <tr
-                        key={row.staffId}
-                        className={`hover:bg-slate-50/60 transition-colors ${
-                          row.isModified ? 'bg-amber-50/20' : ''
+                  return (
+                    <tr
+                      key={row.staffId}
+                      className={`hover:bg-slate-50/60 transition-colors ${row.isModified ? 'bg-amber-50/20' : ''
                         }`}
-                      >
-                        {/* Emp ID */}
-                        <td className="py-3.5 px-4 font-mono font-semibold text-slate-700">
-                          {row.employeeCode}
-                        </td>
+                    >
+                      {/* Emp ID */}
+                      <td className="py-3.5 px-4 font-mono font-semibold text-slate-700">
+                        {row.employeeCode}
+                      </td>
 
-                        {/* Name */}
-                        <td className="py-3.5 px-4">
-                          <div className="font-semibold text-slate-900">{row.name}</div>
-                          <div className="text-[10px] text-slate-400 capitalize">
-                            {row.compensationType.replace(/_/g, ' ').toLowerCase()}
+                      {/* Name */}
+                      <td className="py-3.5 px-4">
+                        <div className="font-semibold text-slate-900">{row.name}</div>
+                        <div className="text-[10px] text-slate-400 capitalize">
+                          {row.compensationType.replace(/_/g, ' ').toLowerCase()}
+                        </div>
+                      </td>
+
+                      {/* Phone / Contact */}
+                      <td className="py-3.5 px-4 text-slate-600 font-mono text-[11px]">
+                        {row.phone}
+                      </td>
+
+                      {/* Designation & Scheduled Shift */}
+                      <td className="py-3.5 px-4 text-slate-700 font-medium">
+                        <div>{row.designation}</div>
+                        {row.startTime && row.endTime && (
+                          <div className="text-[10px] text-slate-400 font-mono mt-0.5">
+                            {row.startTime} - {row.endTime} (Grace: {row.lateGraceMinutes}m)
                           </div>
-                        </td>
+                        )}
+                      </td>
 
-                        {/* Phone / Contact */}
-                        <td className="py-3.5 px-4 text-slate-600 font-mono text-[11px]">
-                          {row.phone}
-                        </td>
-
-                        {/* Designation & Scheduled Shift */}
-                        <td className="py-3.5 px-4 text-slate-700 font-medium">
-                          <div>{row.designation}</div>
-                          {row.startTime && row.endTime && (
-                            <div className="text-[10px] text-slate-400 font-mono mt-0.5">
-                              {row.startTime} - {row.endTime} (Grace: {row.lateGraceMinutes}m)
-                            </div>
-                          )}
-                        </td>
-
-                        {/* Attendance Status Dropdown */}
-                        <td className="py-3.5 px-4">
-                          <div className="relative">
-                            <select
-                              value={row.status}
-                              onChange={(e) =>
-                                handleRowStatusChange(
-                                  row.staffId,
-                                  e.target.value as EditableAttendanceRow['status']
-                                )
-                              }
-                              className={`w-full h-8 text-xs font-semibold rounded-lg px-2.5 border transition-colors cursor-pointer appearance-none ${
-                                row.status === 'PRESENT'
-                                  ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
-                                  : row.status === 'ABSENT'
-                                  ? 'bg-red-50 text-red-700 border-red-300'
+                      {/* Attendance Status Dropdown */}
+                      <td className="py-3.5 px-4">
+                        <Select
+                          value={row.status}
+                          onValueChange={(val) =>
+                            handleRowStatusChange(
+                              row.staffId,
+                              val as EditableAttendanceRow['status']
+                            )
+                          }
+                        >
+                          <SelectTrigger
+                            className={`w-36 h-8 text-xs font-semibold rounded-xl border transition-colors shadow-2xs ${row.status === 'PRESENT'
+                                ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                                : row.status === 'ABSENT'
+                                  ? 'bg-rose-50 text-rose-700 border-rose-300'
                                   : row.status === 'HALF_DAY'
-                                  ? 'bg-amber-50 text-amber-800 border-amber-300'
-                                  : row.status === 'HOLIDAY'
-                                  ? 'bg-amber-50 text-amber-700 border-amber-300'
-                                  : row.status === 'WEEKLY_OFF'
-                                  ? 'bg-[#FDF2F5] text-[#851C47] border-[#F8D2DC]'
-                                  : row.status.includes('LEAVE')
-                                  ? 'bg-purple-50 text-purple-700 border-purple-300'
-                                  : 'bg-white text-slate-500 border-slate-300'
+                                    ? 'bg-amber-50 text-amber-800 border-amber-300'
+                                    : row.status === 'HOLIDAY'
+                                      ? 'bg-amber-50 text-amber-700 border-amber-300'
+                                      : row.status === 'WEEKLY_OFF'
+                                        ? 'bg-[#FDF2F5] text-[#851C47] border-[#F8D2DC]'
+                                        : row.status.includes('LEAVE')
+                                          ? 'bg-purple-50 text-purple-700 border-purple-300'
+                                          : 'bg-white text-slate-500 border-slate-200'
                               }`}
+                          >
+                            <SelectValue placeholder="Select Status" />
+                          </SelectTrigger>
+                          <SelectContent className="z-[70]">
+                            <SelectItem value="SELECT_STATUS">Select Status</SelectItem>
+                            <SelectItem value="PRESENT">Present</SelectItem>
+                            <SelectItem value="ABSENT">Absent</SelectItem>
+                            <SelectItem value="HALF_DAY">Half Day</SelectItem>
+                            <SelectItem value="PAID_LEAVE">Leave (Paid)</SelectItem>
+                            <SelectItem value="UNPAID_LEAVE">Leave (Unpaid)</SelectItem>
+                            <SelectItem value="HOLIDAY">Holiday</SelectItem>
+                            <SelectItem value="WEEKLY_OFF">Weekly Off</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {row.isAutoAbsent && row.status === 'ABSENT' && (
+                          <div className="mt-1">
+                            <span
+                              className="inline-block text-[10px] font-semibold text-rose-700 bg-rose-50 border border-rose-200 px-1.5 py-0.5 rounded shadow-2xs"
+                              title={row.notes}
                             >
-                              <option value="SELECT_STATUS">Select Status</option>
-                              <option value="PRESENT">Present</option>
-                              <option value="ABSENT">Absent</option>
-                              <option value="HALF_DAY">Half Day</option>
-                              <option value="PAID_LEAVE">Leave (Paid)</option>
-                              <option value="UNPAID_LEAVE">Leave (Unpaid)</option>
-                              <option value="HOLIDAY">Holiday</option>
-                              <option value="WEEKLY_OFF">Weekly Off</option>
-                            </select>
-                            <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 top-2.5 pointer-events-none" />
+                              Auto-Absent (&gt;{attendancePolicy?.autoAbsentThresholdMinutes || 60}m)
+                            </span>
                           </div>
-                          {row.isAutoAbsent && row.status === 'ABSENT' && (
-                            <div className="mt-1">
-                              <span
-                                className="inline-block text-[10px] font-semibold text-rose-700 bg-rose-50 border border-rose-200 px-1.5 py-0.5 rounded shadow-2xs"
-                                title={row.notes}
-                              >
-                                Auto-Absent (&gt;{attendancePolicy?.autoAbsentThresholdMinutes || 60}m)
-                              </span>
-                            </div>
-                          )}
-                        </td>
+                        )}
+                      </td>
 
-                        {/* Arrival Timing */}
-                        <td className="py-3.5 px-4">
-                          <div className="relative flex items-center">
-                            <Clock className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 pointer-events-none" />
-                            <input
-                              type="time"
-                              value={row.checkIn}
-                              disabled={!isPresentLike}
-                              onChange={(e) => handleRowCheckInChange(row.staffId, e.target.value)}
-                              className="w-full h-8 pl-8 pr-2 text-xs border border-slate-300 rounded-lg bg-white text-slate-800 font-medium focus:ring-1 focus:ring-[#9D2558] focus:border-[#9D2558] disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed transition-colors"
-                            />
-                          </div>
-                        </td>
+                      {/* Arrival Timing */}
+                      <td className="py-3.5 px-4">
+                        <div className="relative flex items-center">
+                          <Clock className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 pointer-events-none" />
+                          <input
+                            type="time"
+                            value={row.checkIn}
+                            disabled={!isPresentLike}
+                            onChange={(e) => handleRowCheckInChange(row.staffId, e.target.value)}
+                            className="w-full h-8 pl-8 pr-2 text-xs border border-slate-300 rounded-lg bg-white text-slate-800 font-medium focus:ring-1 focus:ring-[#9D2558] focus:border-[#9D2558] disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed transition-colors"
+                          />
+                        </div>
+                      </td>
 
-                        {/* Exit Timing */}
-                        <td className="py-3.5 px-4">
-                          <div className="relative flex items-center">
-                            <Clock className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 pointer-events-none" />
-                            <input
-                              type="time"
-                              value={row.checkOut}
-                              disabled={!isPresentLike}
-                              onChange={(e) => handleRowCheckOutChange(row.staffId, e.target.value)}
-                              className="w-full h-8 pl-8 pr-2 text-xs border border-slate-300 rounded-lg bg-white text-slate-800 font-medium focus:ring-1 focus:ring-[#9D2558] focus:border-[#9D2558] disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed transition-colors"
-                            />
-                          </div>
-                        </td>
+                      {/* Exit Timing */}
+                      <td className="py-3.5 px-4">
+                        <div className="relative flex items-center">
+                          <Clock className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 pointer-events-none" />
+                          <input
+                            type="time"
+                            value={row.checkOut}
+                            disabled={!isPresentLike}
+                            onChange={(e) => handleRowCheckOutChange(row.staffId, e.target.value)}
+                            className="w-full h-8 pl-8 pr-2 text-xs border border-slate-300 rounded-lg bg-white text-slate-800 font-medium focus:ring-1 focus:ring-[#9D2558] focus:border-[#9D2558] disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed transition-colors"
+                          />
+                        </div>
+                      </td>
 
-                        {/* Late Arrival Badge */}
-                        <td className="py-3.5 px-4">
-                          {lateInfo.isLate ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-50 text-rose-600 border border-rose-200">
-                              {lateInfo.text}
-                            </span>
-                          ) : lateInfo.text === 'On Time' ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-50 text-emerald-700">
-                              On Time
-                            </span>
-                          ) : (
-                            <span className="text-slate-400 text-xs font-mono">-</span>
-                          )}
-                        </td>
+                      {/* Late Arrival Badge */}
+                      <td className="py-3.5 px-4">
+                        {lateInfo.isLate ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-50 text-rose-600 border border-rose-200">
+                            {lateInfo.text}
+                          </span>
+                        ) : lateInfo.text === 'On Time' ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-50 text-emerald-700">
+                            On Time
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 text-xs font-mono">-</span>
+                        )}
+                      </td>
 
-                        {/* Early Exit Badge */}
-                        <td className="py-3.5 px-4">
-                          {earlyInfo.isEarly ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-                              {earlyInfo.text}
-                            </span>
-                          ) : earlyInfo.text === 'On Time' ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-50 text-emerald-700">
-                              On Time
-                            </span>
-                          ) : (
-                            <span className="text-slate-400 text-xs font-mono">-</span>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
+                      {/* Early Exit Badge */}
+                      <td className="py-3.5 px-4">
+                        {earlyInfo.isEarly ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                            {earlyInfo.text}
+                          </span>
+                        ) : earlyInfo.text === 'On Time' ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-50 text-emerald-700">
+                            On Time
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 text-xs font-mono">-</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* ── FOOTER: SUMMARY COUNTS & SAVE BUTTON ─────────────────────────── */}
+      <div className="bg-white/75 backdrop-blur-2xl rounded-[22px] border border-white/90 px-5 py-4 shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] flex flex-col sm:flex-row items-center justify-between gap-4">
+        {/* Summary status pills */}
+        <div className="flex flex-wrap items-center gap-2 text-xs font-medium">
+          <span className="px-3 py-1 rounded-xl bg-[#FAF8F9] text-[#78616C] shadow-2xs border border-white/60">
+            Total Staff: <strong className="font-bold text-[#18191B]">{summaryCounts.total}</strong>
+          </span>
+          <span className="px-3 py-1 rounded-xl bg-emerald-50 text-emerald-700 shadow-2xs border border-white/60">
+            Present: <strong className="font-bold">{summaryCounts.present}</strong>
+          </span>
+          <span className="px-3 py-1 rounded-xl bg-rose-50 text-rose-700 shadow-2xs border border-white/60">
+            Absent: <strong className="font-bold">{summaryCounts.absent}</strong>
+          </span>
+          <span className="px-3 py-1 rounded-xl bg-[#FDF2F5] text-[#B82E69] shadow-2xs border border-white/60">
+            Off/Holiday: <strong className="font-bold">{summaryCounts.holidays}</strong>
+          </span>
+          {summaryCounts.unselected > 0 && (
+            <span className="px-3 py-1 rounded-xl bg-amber-50 text-amber-700 font-semibold shadow-2xs border border-white/60">
+              Unmarked: {summaryCounts.unselected}
+            </span>
+          )}
         </div>
 
-        {/* ── FOOTER: SUMMARY COUNTS & SAVE BUTTON ─────────────────────────── */}
-        <div className="bg-white rounded-xl border border-slate-200 px-5 py-4 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
-          {/* Summary status pills */}
-          <div className="flex flex-wrap items-center gap-2 text-xs font-medium">
-            <span className="px-2.5 py-1 rounded-md bg-slate-100 text-slate-700">
-              Total Staff: <strong className="font-bold">{summaryCounts.total}</strong>
-            </span>
-            <span className="px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700">
-              Present: <strong className="font-bold">{summaryCounts.present}</strong>
-            </span>
-            <span className="px-2.5 py-1 rounded-md bg-rose-50 text-rose-700">
-              Absent: <strong className="font-bold">{summaryCounts.absent}</strong>
-            </span>
-            <span className="px-2.5 py-1 rounded-md bg-[#FDF2F5] text-[#851C47]">
-              Off/Holiday: <strong className="font-bold">{summaryCounts.holidays}</strong>
-            </span>
-            {summaryCounts.unselected > 0 && (
-              <span className="px-2.5 py-1 rounded-md bg-amber-50 text-amber-700 font-semibold">
-                Unmarked: {summaryCounts.unselected}
-              </span>
+        {/* Save Attendance Button */}
+        <div>
+          <button
+            type="button"
+            onClick={handleSaveAttendance}
+            disabled={!hasFiltered || saving || loading || visibleRows.length === 0}
+            className="w-full sm:w-auto px-7 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white text-xs font-bold shadow-xs flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {saving ? (
+              <span className="w-3.5 h-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin inline-block" />
+            ) : (
+              <Save className="w-4 h-4" />
             )}
-          </div>
-
-          {/* Save Attendance Button */}
-          <div>
-            <button
-              type="button"
-              onClick={handleSaveAttendance}
-              disabled={!hasFiltered || saving || loading || visibleRows.length === 0}
-              className="w-full sm:w-auto px-7 py-2.5 rounded-lg bg-[#10b981] hover:bg-[#059669] active:bg-[#047857] text-white text-xs font-bold shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {saving ? (
-                <span className="w-3.5 h-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin inline-block" />
-              ) : (
-                <Save className="w-4 h-4" />
-              )}
-              <span>Save Attendance</span>
-            </button>
-          </div>
+            <span>Save Daily Sheet</span>
+          </button>
         </div>
       </div>
 

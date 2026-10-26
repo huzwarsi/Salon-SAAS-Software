@@ -1,13 +1,14 @@
 import { BranchActionField } from '@/components/BranchActionField';
 import { useBranchAction } from '@/hooks/useBranchAction';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Plus, X } from 'lucide-react';
+import { Plus, X, Calendar, Palmtree, Users, CheckCircle2, AlertCircle, Building2, Clock } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { salonService } from '../../services';
 import { LeaveRecord, StaffMember, BranchHoliday } from '../../types/salon';
 import { evaluateLeaveAllowance } from '../../lib/attendanceCalculations';
 import { toast } from '../../context/ToastContext';
 import { AccessDeniedView } from '../scaffold/AccessDeniedView';
+import { LuxurySelect } from '@/components/ui';
 
 const loadLeaveAction = async (branchId: string) => {
   const [staff, leaves, holidays] = await Promise.all([salonService.getStaff(branchId), salonService.getLeaves(branchId), salonService.getBranchHolidays(branchId)]);
@@ -82,6 +83,16 @@ const LeaveManagementContent: React.FC = () => {
     }).sort((a, b) => b.startDate.localeCompare(a.startDate));
   }, [leavesList, staffList, viewMode, selectedDate, selectedMonth, staffFilter, designationFilter, leaveTypeFilter, leaveStatusFilter, searchQuery]);
 
+  const leaveKPIs = useMemo(() => {
+    const total = filteredLeaves.length;
+    const approved = filteredLeaves.filter((l) => l.status === 'APPROVED').length;
+    const totalDays = filteredLeaves
+      .filter((l) => l.status === 'APPROVED')
+      .reduce((sum, l) => sum + (l.totalDays || 1), 0);
+    const cancelled = filteredLeaves.filter((l) => l.status === 'CANCELLED').length;
+    return { total, approved, totalDays, cancelled };
+  }, [filteredLeaves]);
+
   const handleCancelLeave = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!leaveToCancel || !cancellationReason.trim() || cancellingLeave) return;
@@ -141,184 +152,280 @@ const LeaveManagementContent: React.FC = () => {
   }, [leaveForm.staffId, leaveForm.startDate, actionScope.data]);
 
 
-  return <div className="p-6 max-w-7xl mx-auto space-y-6">
-    <div><h1 className="text-2xl font-bold text-slate-900">Leave Management</h1><p className="text-sm text-slate-500 mt-1">Manage employee leave, entitlement and leave history.</p></div>
-    {loadError && <div role="alert" className="p-4 bg-rose-50 text-rose-700 rounded-xl">{loadError}<button onClick={loadData} className="ml-3 underline">Retry</button></div>}
-    {/* Filter Card */}
-    <div className="bg-white rounded-xl border border-slate-200/90 shadow-2xs p-4">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-3 items-end">
-        {user?.role === 'SUPER_ADMIN' && (
+  return (
+    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6 font-sans">
+      {/* ── HEADER SECTION ─────────────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 rounded-2xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69] shrink-0">
+            <Palmtree className="w-5 h-5" />
+          </div>
           <div>
-            <label className="block text-[11px] font-semibold text-slate-600 mb-1">Branch</label>
-            <select
+            <h1 className="text-xl sm:text-2xl font-bold text-[#18191B] tracking-tight truncate">
+              Employee Leave & Entitlement Management
+            </h1>
+            <p className="text-xs text-[#78616C] mt-0.5 line-clamp-1 xl:line-clamp-none">
+              Approve vacation vouchers, calculate annual allowances, track active absences and adjustments.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-auto flex-wrap sm:flex-nowrap">
+          <button
+            onClick={() => {
+              setLeaveForm({
+                staffId: staffFilter === 'ALL' ? '' : staffFilter,
+                startDate: selectedDate,
+                endDate: selectedDate,
+                type: 'PAID',
+                reason: '',
+              });
+              setShowLeaveModal(true);
+            }}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-[#B82E69] to-[#9D2558] hover:from-[#A02359] hover:to-[#8B1A4B] text-white text-xs font-semibold shadow-xs cursor-pointer transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Mark Leave</span>
+          </button>
+        </div>
+      </div>
+
+      {loadError && (
+        <div role="alert" className="p-4 bg-rose-50 text-rose-700 rounded-2xl border border-rose-200 text-xs">
+          {loadError}
+          <button onClick={loadData} className="ml-3 underline font-semibold">Retry</button>
+        </div>
+      )}
+
+      {/* KPI Cards Row - Pure White Frosted Glass */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total Vouchers */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+              <Palmtree className="w-4 h-4" />
+            </div>
+            <span className="bg-[#FDF2F5] text-[#B82E69] shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Leaves
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {leaveKPIs.total}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Total recorded leave vouchers
+            </span>
+          </div>
+        </div>
+
+        {/* Approved Leaves */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-emerald-600">
+              <CheckCircle2 className="w-4 h-4" />
+            </div>
+            <span className="bg-emerald-50 text-emerald-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Approved
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {leaveKPIs.approved}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Active validated leave passes
+            </span>
+          </div>
+        </div>
+
+        {/* Cumulative Days */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+              <Calendar className="w-4 h-4" />
+            </div>
+            <span className="bg-[#FAF8F9] text-[#78616C] shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Days
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {leaveKPIs.totalDays}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Cumulative approved leave days
+            </span>
+          </div>
+        </div>
+
+        {/* Cancelled / Revoked */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-rose-600">
+              <AlertCircle className="w-4 h-4" />
+            </div>
+            <span className="bg-rose-50 text-rose-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Revoked
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {leaveKPIs.cancelled}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Cancelled or revoked passes
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Filter Card */}
+      <div className="bg-white/75 backdrop-blur-2xl rounded-[22px] border border-white/90 p-4 shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-3 items-end">
+          {user?.role === 'SUPER_ADMIN' && (
+            <LuxurySelect
+              label="Branch"
               value={selectedBranchId}
-              onChange={(e) => {
-                setSelectedBranchId(e.target.value);
+              onValueChange={(val) => {
+                setSelectedBranchId(val);
                 setStaffFilter('ALL');
                 setDesignationFilter('ALL');
               }}
-              className="w-full h-9 text-xs border border-slate-300 rounded-lg px-3 bg-white text-slate-800 font-medium focus:ring-1 focus:ring-[#9D2558] focus:border-[#9D2558] transition-colors cursor-pointer"
-            >
-              <option value="ALL">All branches</option>
-              {allBranches.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+              options={[
+                { value: 'ALL', label: 'All branches' },
+                ...allBranches.map((b) => ({ value: b.id, label: b.name })),
+              ]}
+              triggerClassName="h-9 rounded-xl border-white/80 bg-white/80 text-xs font-semibold"
+            />
+          )}
 
-        <div>
-          <label className="block text-[11px] font-semibold text-slate-600 mb-1">Period</label>
-          <select
+          <LuxurySelect
+            label="Period Scope"
             value={viewMode}
-            onChange={(e) => setViewMode(e.target.value as 'DAY' | 'MONTH')}
-            className="w-full h-9 text-xs border border-slate-300 rounded-lg px-3 bg-white text-slate-800 font-medium focus:ring-1 focus:ring-[#9D2558] focus:border-[#9D2558] transition-colors cursor-pointer"
-          >
-            <option value="MONTH">Month</option>
-            <option value="DAY">Day</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-[11px] font-semibold text-slate-600 mb-1">
-            {viewMode === 'DAY' ? 'Date' : 'Month'}
-          </label>
-          <input
-            type={viewMode === 'DAY' ? 'date' : 'month'}
-            value={viewMode === 'DAY' ? selectedDate : selectedMonth}
-            onChange={(e) =>
-              viewMode === 'DAY' ? setSelectedDate(e.target.value) : setSelectedMonth(e.target.value)
-            }
-            className="w-full h-9 text-xs border border-slate-300 rounded-lg px-3 bg-white text-slate-800 font-medium focus:ring-1 focus:ring-[#9D2558] focus:border-[#9D2558] transition-colors cursor-pointer"
+            onValueChange={(val) => setViewMode(val as 'DAY' | 'MONTH')}
+            options={[
+              { value: 'MONTH', label: 'Month Scope' },
+              { value: 'DAY', label: 'Daily Scope' },
+            ]}
+            triggerClassName="h-9 rounded-xl border-white/80 bg-white/80 text-xs font-semibold"
           />
-        </div>
 
-        <div>
-          <label className="block text-[11px] font-semibold text-slate-600 mb-1">Employee</label>
-          <select
+          <div>
+            <label className="block text-[11px] font-semibold text-[#78616C] mb-1">
+              {viewMode === 'DAY' ? 'Date' : 'Month'}
+            </label>
+            <input
+              type={viewMode === 'DAY' ? 'date' : 'month'}
+              value={viewMode === 'DAY' ? selectedDate : selectedMonth}
+              onChange={(e) =>
+                viewMode === 'DAY' ? setSelectedDate(e.target.value) : setSelectedMonth(e.target.value)
+              }
+              className="w-full h-9 text-xs border border-white/80 rounded-xl px-3 bg-white/80 text-[#18191B] font-medium transition-colors cursor-pointer shadow-2xs"
+            />
+          </div>
+
+          <LuxurySelect
+            label="Employee"
             value={staffFilter}
-            onChange={(e) => setStaffFilter(e.target.value)}
-            className="w-full h-9 text-xs border border-slate-300 rounded-lg px-3 bg-white text-slate-800 font-medium focus:ring-1 focus:ring-[#9D2558] focus:border-[#9D2558] transition-colors cursor-pointer"
-          >
-            <option value="ALL">All employees</option>
-            {staffList.map((staff) => (
-              <option key={staff.id} value={staff.id}>
-                {staff.name} ({staff.employeeCode})
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-[11px] font-semibold text-slate-600 mb-1">Designation</label>
-          <select
-            value={designationFilter}
-            onChange={(e) => setDesignationFilter(e.target.value)}
-            className="w-full h-9 text-xs border border-slate-300 rounded-lg px-3 bg-white text-slate-800 font-medium focus:ring-1 focus:ring-[#9D2558] focus:border-[#9D2558] transition-colors cursor-pointer"
-          >
-            <option value="ALL">All designations</option>
-            {Array.from(
-              new Set(staffList.map((staff) => staff.designation || staff.roleTitle).filter(Boolean))
-            ).map((title) => (
-              <option key={title} value={title}>
-                {title}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="flex-1 min-w-[200px]">
-          <label className="block text-[11px] font-semibold text-slate-600 mb-1">Search</label>
-          <input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Employee name or code..."
-            className="w-full h-9 text-xs border border-slate-300 rounded-lg px-3 bg-white text-slate-800 font-medium focus:ring-1 focus:ring-[#9D2558] focus:border-[#9D2558] transition-colors"
+            onValueChange={setStaffFilter}
+            options={[
+              { value: 'ALL', label: 'All employees' },
+              ...staffList.map((staff) => ({
+                value: staff.id,
+                label: `${staff.name} (${staff.employeeCode})`,
+              })),
+            ]}
+            triggerClassName="h-9 rounded-xl border-white/80 bg-white/80 text-xs font-semibold"
           />
+
+          <LuxurySelect
+            label="Designation"
+            value={designationFilter}
+            onValueChange={setDesignationFilter}
+            options={[
+              { value: 'ALL', label: 'All designations' },
+              ...Array.from(
+                new Set(staffList.map((staff) => staff.designation || staff.roleTitle).filter(Boolean))
+              ).map((title) => ({ value: title, label: title })),
+            ]}
+            triggerClassName="h-9 rounded-xl border-white/80 bg-white/80 text-xs font-semibold"
+          />
+
+          <div className="flex-1 min-w-[200px]">
+            <label className="block text-[11px] font-semibold text-[#78616C] mb-1">Search Filter</label>
+            <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Employee name or code..."
+              className="w-full h-9 text-xs border border-white/80 rounded-xl px-3 bg-white/80 text-[#18191B] font-medium transition-colors shadow-2xs"
+            />
+          </div>
         </div>
       </div>
-    </div>
 
-    <section className="bg-white rounded-xl border border-slate-200/90 shadow-2xs overflow-hidden">
-      <div className="p-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-sm font-semibold text-slate-900">Leave vouchers register</h2>
-          <p className="text-xs text-slate-500 mt-1">
-            {filteredLeaves.length} vouchers overlapping the selected period. Date, branch, employee, designation and search filters apply.
-          </p>
+      <section className="overflow-hidden rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+        <div className="p-4 border-b border-rose-100/40 flex flex-wrap items-center justify-between gap-3 bg-[#FAF8F9]/60">
+          <div>
+            <h2 className="text-sm font-semibold text-[#18191B]">Leave Vouchers Register</h2>
+            <p className="text-xs text-[#78616C] mt-0.5">
+              {filteredLeaves.length} vouchers recorded in current view scope.
+            </p>
+          </div>
         </div>
-        <button
-          onClick={() => {
-            setLeaveForm({
-              staffId: staffFilter === 'ALL' ? '' : staffFilter,
-              startDate: selectedDate,
-              endDate: selectedDate,
-              type: 'PAID',
-              reason: '',
-            });
-            setShowLeaveModal(true);
-          }}
-          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#9D2558] text-white text-xs font-semibold hover:bg-[#1B3FC5] cursor-pointer shadow-2xs"
-        >
-          <Plus className="w-4 h-4" />
-          Add Leave
-        </button>
-      </div>
 
-      <div className="p-3.5 flex flex-wrap items-center gap-3 bg-slate-50/70 border-b border-slate-200/60">
-        <label className="text-xs font-medium text-slate-600 flex items-center">
-          Leave type
-          <select
-            value={leaveTypeFilter}
-            onChange={(e) => setLeaveTypeFilter(e.target.value)}
-            className="ml-2 border border-slate-300 rounded-lg bg-white px-2.5 py-1 text-xs text-slate-700 cursor-pointer"
+        <div className="p-3.5 flex flex-wrap items-center gap-3 bg-white/40 border-b border-rose-100/30">
+          <label className="text-xs font-medium text-[#78616C] flex items-center">
+            Leave type:
+            <select
+              value={leaveTypeFilter}
+              onChange={(e) => setLeaveTypeFilter(e.target.value)}
+              className="ml-2 border border-white/80 rounded-xl bg-white/90 shadow-2xs px-2.5 py-1 text-xs text-[#18191B] cursor-pointer"
+            >
+              <option value="ALL">All types</option>
+              <option value="PAID">Paid</option>
+              <option value="UNPAID">Unpaid</option>
+            </select>
+          </label>
+          <label className="text-xs font-medium text-[#78616C] flex items-center">
+            Leave status:
+            <select
+              value={leaveStatusFilter}
+              onChange={(e) => setLeaveStatusFilter(e.target.value)}
+              className="ml-2 border border-white/80 rounded-xl bg-white/90 shadow-2xs px-2.5 py-1 text-xs text-[#18191B] cursor-pointer"
+            >
+              <option value="ALL">All statuses</option>
+              <option value="APPROVED">Approved</option>
+              <option value="CANCELLED">Cancelled</option>
+            </select>
+          </label>
+          <button
+            onClick={() => {
+              setStaffFilter('ALL');
+              setDesignationFilter('ALL');
+              setSearchQuery('');
+              setLeaveTypeFilter('ALL');
+              setLeaveStatusFilter('ALL');
+            }}
+            className="text-xs font-semibold text-[#B82E69] hover:underline cursor-pointer ml-auto"
           >
-            <option value="ALL">All types</option>
-            <option value="PAID">Paid</option>
-            <option value="UNPAID">Unpaid</option>
-          </select>
-        </label>
-        <label className="text-xs font-medium text-slate-600 flex items-center">
-          Leave status
-          <select
-            value={leaveStatusFilter}
-            onChange={(e) => setLeaveStatusFilter(e.target.value)}
-            className="ml-2 border border-slate-300 rounded-lg bg-white px-2.5 py-1 text-xs text-slate-700 cursor-pointer"
-          >
-            <option value="ALL">All statuses</option>
-            <option value="APPROVED">Approved</option>
-            <option value="CANCELLED">Cancelled</option>
-          </select>
-        </label>
-        <button
-          onClick={() => {
-            setStaffFilter('ALL');
-            setDesignationFilter('ALL');
-            setSearchQuery('');
-            setLeaveTypeFilter('ALL');
-            setLeaveStatusFilter('ALL');
-          }}
-          className="text-xs font-semibold text-[#9D2558] hover:underline cursor-pointer ml-auto"
-        >
-          Reset record filters
-        </button>
-      </div>
+            Reset Filters
+          </button>
+        </div>
 
-      <div className="overflow-x-auto w-full">
-        <table className="report-records w-full min-w-[1050px] text-left text-xs border-collapse whitespace-nowrap">
-          <thead className="bg-slate-50/80 text-slate-600 border-b border-slate-200 uppercase text-[11px] tracking-wider font-semibold">
-            <tr>
-              {['Employee / Voucher', 'Branch', 'Leave period', 'Working days', 'Type', 'Status', 'Reason / Audit', 'Action'].map(
-                (title) => (
-                  <th key={title} className="px-4 py-3 whitespace-nowrap">
-                    {title}
-                  </th>
-                )
-              )}
-            </tr>
-          </thead>
+        <div className="overflow-x-auto w-full">
+          <table className="report-records w-full min-w-[1050px] text-left text-xs border-collapse whitespace-nowrap">
+            <thead className="bg-[#FAF8F9]/80 text-[#78616C] border-b border-rose-100/40 text-xs font-semibold">
+              <tr>
+                {['Employee / Voucher', 'Branch', 'Leave period', 'Working days', 'Type', 'Status', 'Reason / Audit', 'Action'].map(
+                  (title) => (
+                    <th key={title} className="px-4 py-3.5 whitespace-nowrap">
+                      {title}
+                    </th>
+                  )
+                )}
+              </tr>
+            </thead>
           <tbody className="divide-y divide-slate-100">
             {loading ? (
               <tr>
@@ -574,5 +681,6 @@ const LeaveManagementContent: React.FC = () => {
       )}
 
 
-  </div>;
+    </div>
+  );
 };

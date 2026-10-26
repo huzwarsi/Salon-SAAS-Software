@@ -418,121 +418,148 @@ export const StockInPurchasesPage: React.FC = () => {
   }, [purchases]);
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9] px-4 py-6 md:px-8 max-w-7xl mx-auto font-['Inter',sans-serif]">
+    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6 font-sans">
       {/* Header */}
       <InventoryNavHeader
         title="Stock In & Purchases"
         subtitle="Receive new stock shipments from suppliers, verify stock on hand before merging, and record vendor ledger bills."
+        icon={<ArrowDownRight className="w-6 h-6 text-[#B82E69]" />}
         activePath="/operations/stock-in"
         selectedBranchId={selectedBranchId}
         onBranchChange={setSelectedBranchId}
         primaryAction={{
           label: 'New Stock In',
-          icon: <ArrowDownRight className="w-3.5 h-3.5" />,
+          icon: <ArrowDownRight className="w-4 h-4" />,
           onClick: handleOpenStockIn,
         }}
         secondaryAction={{
           label: 'Suppliers Directory',
-          icon: <Truck className="w-3.5 h-3.5 text-[#9D2558]" />,
+          icon: <Truck className="w-4 h-4 text-[#B82E69]" />,
           onClick: () => navigate('/operations/suppliers'),
         }}
       />
 
-      {/* KPI Cards (Compact & Refined) */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 mb-4 sm:mb-5">
-        <div className="bg-white rounded-xl border border-[#F1DEE3] p-3 sm:p-3.5 shadow-2xs hover:shadow-xs transition-all">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-              Total Stock-In Orders
+      {/* KPI Cards: Pure White Frosted Glass (Zero Wavy Lines, Zero Watermarks) */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+        {/* Total Stock-In Orders */}
+        <div className="group relative overflow-hidden rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl p-4 sm:p-5 shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:bg-white/85 transition-all">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+              Stock-In Shipments
             </span>
-            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-[#FDF2F5] text-[#9D2558] flex items-center justify-center shrink-0">
-              <Receipt className="w-3.5 h-3.5" />
+            <div className="w-8 h-8 rounded-2xl bg-white/90 border border-white/80 shadow-2xs flex items-center justify-center text-[#B82E69] shrink-0">
+              <Receipt className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-lg sm:text-xl font-bold text-[#23151D] font-mono">{kpis.totalPurchases}</div>
-          <div className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 truncate">Recorded purchase shipments</div>
+          <div className="text-2xl sm:text-3xl font-extrabold text-[#18191B] tracking-tight">
+            {kpis.totalPurchases}
+          </div>
+          <div className="text-[11px] font-medium text-slate-400 mt-1 truncate">
+            Recorded purchase invoices
+          </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-[#F1DEE3] p-3 sm:p-3.5 shadow-2xs hover:shadow-xs transition-all">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+        {/* Total Purchased Value */}
+        <div className="group relative overflow-hidden rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl p-4 sm:p-5 shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:bg-white/85 transition-all">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
               Total Purchased Value
             </span>
-            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-              <Banknote className="w-3.5 h-3.5" />
+            <div className="w-8 h-8 rounded-2xl bg-white/90 border border-white/80 shadow-2xs flex items-center justify-center text-emerald-600 shrink-0">
+              <Banknote className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-lg sm:text-xl font-bold text-emerald-800 font-mono truncate">PKR {formatPKR(kpis.totalSpent)}</div>
-          <div className="text-[10px] sm:text-[11px] text-emerald-600 mt-0.5 truncate">Cumulative intake value</div>
+          <div className="text-xl sm:text-2xl font-extrabold text-[#18191B] tracking-tight truncate">
+            PKR {formatPKR(kpis.totalSpent)}
+          </div>
+          <div className="text-[11px] font-semibold text-emerald-600 mt-1 truncate">
+            Cumulative intake value
+          </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-amber-200/80 p-3 sm:p-3.5 shadow-2xs hover:shadow-xs transition-all bg-gradient-to-br from-white to-amber-50/20">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] sm:text-[11px] font-bold text-amber-700 uppercase tracking-wider">
-              Vendor Credit (Payable)
+        {/* Vendor Credit (Payable) */}
+        <div className="group relative overflow-hidden rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl p-4 sm:p-5 shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:bg-white/85 transition-all">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-bold text-amber-700/80 uppercase tracking-wider">
+              Vendor Khata (Payable)
             </span>
-            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-              <CreditCard className="w-3.5 h-3.5" />
+            <div className="w-8 h-8 rounded-2xl bg-amber-50/80 border border-amber-200/50 shadow-2xs flex items-center justify-center text-amber-600 shrink-0">
+              <CreditCard className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-lg sm:text-xl font-bold text-amber-900 font-mono truncate">PKR {formatPKR(kpis.totalCredit)}</div>
-          <div className="text-[10px] sm:text-[11px] text-amber-700 mt-0.5 truncate">Purchases on supplier khata</div>
+          <div className="text-xl sm:text-2xl font-extrabold text-amber-950 tracking-tight truncate">
+            PKR {formatPKR(kpis.totalCredit)}
+          </div>
+          <div className="text-[11px] font-semibold text-amber-700 mt-1 truncate">
+            Outstanding supplier credit
+          </div>
         </div>
       </div>
 
-      {/* Search Bar */}
-      <div className="bg-white rounded-xl border border-slate-200/90 shadow-xs p-4 mb-6 flex items-center justify-between gap-3">
-        <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+      {/* Search Bar: Frosted Card */}
+      <div className="rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
+        <div className="relative w-full sm:w-96">
+          <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
           <input
             type="text"
             placeholder="Search by PO #, Supplier, Invoice..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full text-xs pl-9 pr-3 py-2 border border-slate-300 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-[#9D2558]"
+            className="w-full text-xs pl-10 pr-4 py-2.5 rounded-2xl border border-white/90 bg-white/70 backdrop-blur-xl focus:bg-white focus:outline-hidden focus:ring-4 focus:ring-[#B82E69]/10 text-[#18191B] font-medium shadow-2xs transition-all placeholder:text-slate-400"
           />
         </div>
         <button
           type="button"
           onClick={handleOpenStockIn}
-          className="text-xs font-semibold px-4 py-2 bg-[#9D2558] hover:bg-[#851C47] text-white rounded-lg flex items-center gap-1.5 shadow-xs cursor-pointer"
+          className="w-full sm:w-auto h-10 px-4.5 text-xs font-bold text-white bg-gradient-to-r from-[#B82E69] to-[#9D2558] hover:from-[#A02359] hover:to-[#851C47] rounded-2xl shadow-[0_8px_20px_rgba(184,46,105,0.25)] hover:shadow-[0_10px_26px_rgba(184,46,105,0.35)] transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0 whitespace-nowrap active:scale-[0.98]"
         >
-          <ArrowDownRight className="w-3.5 h-3.5" />
+          <ArrowDownRight className="w-4 h-4" />
           <span>New Stock In</span>
         </button>
       </div>
 
-      {/* Main Table */}
-      <div className="bg-white rounded-xl border border-slate-200/90 shadow-xs overflow-hidden mb-8">
-        <div className="bg-[#9D2558] text-white px-5 py-3 flex items-center justify-between rounded-t-xl">
-          <div className="flex items-center gap-2 font-bold text-sm tracking-wide">
-            <ArrowDownRight className="w-4 h-4 stroke-[2.5]" />
-            <span>Stock In Orders & Receiving Log ({filteredPurchases.length})</span>
+      {/* Main Table: Luxury Frosted Container */}
+      <div className="rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] overflow-hidden">
+        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between flex-wrap gap-3 bg-white/50 backdrop-blur-md">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-white/90 border border-white/80 shadow-2xs flex items-center justify-center text-[#B82E69]">
+              <ArrowDownRight className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="font-bold text-sm text-[#18191B] tracking-tight">
+                Stock In Orders & Receiving Log
+              </h3>
+              <p className="text-[11px] text-slate-400 font-medium">
+                {filteredPurchases.length} purchase shipments recorded
+              </p>
+            </div>
           </div>
         </div>
 
         {isLoading ? (
           <div className="p-16 flex flex-col items-center justify-center text-center">
-            <div className="w-10 h-10 rounded-full border-3 border-[#F1DEE3] border-t-[#9D2558] animate-spin mb-3" />
+            <div className="w-10 h-10 rounded-full border-3 border-[#F1DEE3] border-t-[#B82E69] animate-spin mb-3" />
             <p className="text-slate-600 text-sm font-medium">Loading stock in records...</p>
           </div>
         ) : filteredPurchases.length === 0 ? (
           <div className="p-16 flex flex-col items-center justify-center text-center">
-            <ArrowDownRight className="w-12 h-12 stroke-[1.25] text-slate-400 mb-3" />
-            <p className="text-slate-600 text-sm font-semibold mb-1">No stock in orders recorded yet</p>
+            <div className="w-14 h-14 rounded-2xl bg-white/90 border border-white/80 shadow-2xs flex items-center justify-center text-slate-400 mb-3">
+              <ArrowDownRight className="w-7 h-7 stroke-[1.5]" />
+            </div>
+            <p className="text-[#18191B] text-sm font-bold mb-1">No stock in orders recorded yet</p>
             <p className="text-slate-400 text-xs mb-4">Record your first stock shipment from a supplier to update inventory.</p>
             <button
               onClick={handleOpenStockIn}
-              className="text-xs font-semibold px-4 py-2 bg-[#9D2558] text-white rounded-md hover:bg-[#851C47] transition-colors"
+              className="text-xs font-bold px-4 py-2 bg-gradient-to-r from-[#B82E69] to-[#9D2558] text-white rounded-xl shadow-[0_4px_14px_rgba(184,46,105,0.2)] hover:shadow-[0_6px_20px_rgba(184,46,105,0.3)] transition-all cursor-pointer"
             >
               Record First Stock In
             </button>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="report-records w-full min-w-[950px] text-left border-collapse text-[13px]">
+            <table className="w-full min-w-[950px] text-left border-collapse text-[13px]">
               <thead>
-                <tr className="bg-[#FDF2F5] border-b border-[#F1DEE3] text-[#475569] font-medium text-[13px]">
+                <tr className="bg-slate-50/70 border-b border-slate-100 text-slate-400 font-bold text-[11px] uppercase tracking-wider">
                   <th className="py-3.5 px-4 text-center w-12">#</th>
                   <th className="py-3.5 px-4 whitespace-nowrap">PO / Invoice #</th>
                   <th className="py-3.5 px-4 whitespace-nowrap">Date</th>
@@ -543,53 +570,59 @@ export const StockInPurchasesPage: React.FC = () => {
                   <th className="py-3.5 px-4 text-center whitespace-nowrap">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-dashed divide-slate-200">
+              <tbody className="divide-y divide-slate-100/80">
                 {filteredPurchases.map((p, idx) => (
-                  <tr key={p.id} className="hover:bg-[#FDF2F5]/20 transition-colors">
-                    <td className="py-3.5 px-4 text-center text-slate-400 font-normal">
+                  <tr key={p.id} className="hover:bg-rose-50/20 transition-colors">
+                    <td className="py-3.5 px-4 text-center text-slate-400 font-medium">
                       {idx + 1}
                     </td>
-                    <td className="py-3.5 px-4 whitespace-nowrap font-semibold text-[#9D2558]">
+                    <td className="py-3.5 px-4 whitespace-nowrap font-bold text-[#B82E69]">
                       {p.invoiceNumber || p.supplierInvoiceNumber || `PO-${p.id.slice(0, 6)}`}
                     </td>
-                    <td className="py-3.5 px-4 whitespace-nowrap text-slate-700">
+                    <td className="py-3.5 px-4 whitespace-nowrap text-slate-600 font-medium">
                       {formatDate(p.purchaseDate)}
                     </td>
-                    <td className="py-3.5 px-4 text-slate-900 font-medium">
+                    <td className="py-3.5 px-4 text-[#18191B] font-bold">
                       <div className="flex items-center justify-between gap-2">
                         <span>{p.supplierName}</span>
                         {p.supplierId && (
                           <button
                             type="button"
                             onClick={() => navigate(`/operations/supplier-ledger?supplierId=${p.supplierId}`)}
-                            className="text-[11px] font-semibold text-[#9D2558] bg-[#FDF2F5] hover:bg-[#FCE8EC] border border-[#F1DEE3] px-2 py-0.5 rounded cursor-pointer transition-colors flex items-center gap-1 shrink-0"
+                            className="text-[11px] font-bold text-[#B82E69] bg-white/90 hover:bg-white border border-white/80 shadow-2xs px-2.5 py-1 rounded-xl cursor-pointer transition-all flex items-center gap-1 shrink-0"
                             title="View Supplier Khata Ledger"
                           >
-                            <BookOpen className="w-2.5 h-2.5" />
-                            <span>Ledger</span>
+                            <BookOpen className="w-3 h-3" />
+                            <span>Khata</span>
                           </button>
                         )}
                       </div>
                     </td>
                     <td className="py-3.5 px-4 text-center text-slate-700 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-slate-100 text-slate-800 font-semibold">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white/90 border border-white/80 shadow-2xs text-[#18191B]">
                         {p.lines?.length || 1} Products
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-right font-bold text-slate-900 whitespace-nowrap">
+                    <td className="py-3.5 px-4 text-right font-extrabold text-[#18191B] whitespace-nowrap">
                       PKR {formatPKR(p.totalCost ?? 0)}
                     </td>
                     <td className="py-3.5 px-4 text-slate-600 whitespace-nowrap">
                       {p.paymentMethod === 'CREDIT' ? (
-                        <span className="text-amber-700 font-semibold">Supplier Credit (Khata)</span>
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200/60 shadow-2xs">
+                          Supplier Credit (Khata)
+                        </span>
                       ) : p.paymentMethod === 'CASH' ? (
-                        <span className="text-emerald-700 font-semibold">Cash Drawer</span>
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60 shadow-2xs">
+                          Cash Drawer
+                        </span>
                       ) : (
-                        <span className="text-[#851C47] font-semibold">Bank Transfer</span>
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200/60 shadow-2xs">
+                          Bank Transfer
+                        </span>
                       )}
                     </td>
                     <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60 shadow-2xs">
                         {p.paymentStatus === 'PAID' ? 'Fully Paid' : p.paymentStatus === 'PARTIAL' ? 'Partially Paid' : p.paymentStatus === 'UNPAID' ? 'Unpaid' : 'Completed'}
                       </span>
                     </td>

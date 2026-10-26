@@ -762,28 +762,44 @@ export const ServicesPackagesPage: React.FC = () => {
     return candidate;
   };
 
+  // Summary KPIs for Services & Packages Catalogue
+  const catalogueKPIs = useMemo(() => {
+    const totalServices = services.length;
+    const activeServices = services.filter((s) => s.isActive).length;
+    const totalPackages = packages.length;
+    const totalCategories = categories.length;
+    return { totalServices, activeServices, totalPackages, totalCategories };
+  }, [services, packages, categories]);
+
   return (
     <div className="space-y-6 font-sans">
       {/* HEADER SECTION */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 sm:p-6 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
         <div className="min-w-0 flex-1">
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 truncate">
-            Services & Package Catalogue
-          </h1>
-          <p className="text-xs text-slate-500 mt-1 line-clamp-1 xl:line-clamp-none">
-            Configure standalone treatments, bundled packages, and multi-stylist allocation.
-          </p>
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#FDF2F5] to-white border border-white/80 shadow-2xs flex items-center justify-center text-[#B82E69] shrink-0">
+              <Scissors className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#18191B] truncate">
+                Services & Package Catalogue
+              </h1>
+              <p className="text-xs text-[#78616C] font-medium mt-0.5 line-clamp-1 xl:line-clamp-none">
+                Configure standalone treatments, bundled packages, and multi-stylist allocation.
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Super Admin Branch Switcher */}
         {isSuperAdmin && (
           <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto flex-wrap sm:flex-nowrap">
-            <span className="text-xs font-medium text-slate-600 flex items-center gap-1.5 shrink-0">
+            <span className="text-xs font-semibold text-[#78616C] flex items-center gap-1.5 shrink-0">
               <Building2 className="w-3.5 h-3.5 text-slate-400" />
               Branch Context:
             </span>
             <Select value={selectedBranchId} onValueChange={(val) => setSelectedBranchId(val)}>
-              <SelectTrigger className="w-48 sm:w-56 h-9 text-xs">
+              <SelectTrigger className="w-48 sm:w-56 h-9 text-xs rounded-xl border border-white/80 bg-white/80 backdrop-blur-md shadow-2xs">
                 <SelectValue placeholder="Select Branch" />
               </SelectTrigger>
               <SelectContent>
@@ -798,17 +814,106 @@ export const ServicesPackagesPage: React.FC = () => {
         )}
       </div>
 
+      {/* KPI Cards Row - Pure White Frosted Glass */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total Treatments */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+              <Scissors className="w-4 h-4" />
+            </div>
+            <span className="bg-[#FDF2F5] text-[#B82E69] shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Services
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {catalogueKPIs.totalServices}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Configured standalone services
+            </span>
+          </div>
+        </div>
+
+        {/* Active Treatments */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+              <CheckCircle2 className="w-4 h-4" />
+            </div>
+            <span className="bg-emerald-50 text-emerald-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Active
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {catalogueKPIs.activeServices}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Live in booking catalogue
+            </span>
+          </div>
+        </div>
+
+        {/* Bundled Packages */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+              <Package className="w-4 h-4" />
+            </div>
+            <span className="bg-[#FDF2F5] text-[#B82E69] shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Packages
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {catalogueKPIs.totalPackages}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Multi-service combo bundles
+            </span>
+          </div>
+        </div>
+
+        {/* Categories Master */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+              <Layers className="w-4 h-4" />
+            </div>
+            <span className="bg-[#FAF8F9] text-[#78616C] shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Categories
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {catalogueKPIs.totalCategories}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Treatment groupings
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* TABS NAVIGATION */}
       <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as any)}>
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3">
           <div className="overflow-x-auto max-w-full pb-1 xl:pb-0 scrollbar-none">
-            <TabsList className="bg-slate-100/80 p-1 shrink-0">
-              <TabsTrigger value="SERVICES" className="text-xs gap-2 py-1.5 px-3 sm:px-4 whitespace-nowrap">
-                <Scissors className="w-3.5 h-3.5 text-[#9D2558]" />
+            <TabsList className="bg-[#FDF2F5] p-1 rounded-2xl border border-white/60 shadow-inner shrink-0">
+              <TabsTrigger
+                value="SERVICES"
+                className="text-xs gap-2 py-2 px-3 sm:px-4 rounded-xl font-bold whitespace-nowrap data-[state=active]:bg-white data-[state=active]:text-[#B82E69] data-[state=active]:shadow-xs text-[#78616C]"
+              >
+                <Scissors className="w-3.5 h-3.5 text-[#B82E69]" />
                 Standalone Services ({services.length})
               </TabsTrigger>
-              <TabsTrigger value="PACKAGES" className="text-xs gap-2 py-1.5 px-3 sm:px-4 whitespace-nowrap">
-                <Package className="w-3.5 h-3.5 text-[#9D2558]" />
+              <TabsTrigger
+                value="PACKAGES"
+                className="text-xs gap-2 py-2 px-3 sm:px-4 rounded-xl font-bold whitespace-nowrap data-[state=active]:bg-white data-[state=active]:text-[#B82E69] data-[state=active]:shadow-xs text-[#78616C]"
+              >
+                <Package className="w-3.5 h-3.5 text-[#B82E69]" />
                 Bundled Packages ({packages.length})
               </TabsTrigger>
             </TabsList>
@@ -818,18 +923,18 @@ export const ServicesPackagesPage: React.FC = () => {
             {activeTab === 'SERVICES' ? (
               <>
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
-                  className="shrink-0 text-xs"
-                  leftIcon={<Layers className="w-3.5 h-3.5" />}
+                  className="shrink-0 text-xs rounded-xl border border-white/80 bg-white/70 hover:bg-white text-slate-700 shadow-2xs font-semibold"
+                  leftIcon={<Layers className="w-3.5 h-3.5 text-[#B82E69]" />}
                   onClick={() => setIsCategoryModalOpen(true)}
                 >
                   Manage Categories
                 </Button>
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
-                  className="shrink-0 text-xs"
+                  className="shrink-0 text-xs rounded-xl border border-white/80 bg-white/70 hover:bg-white text-slate-700 shadow-2xs font-semibold"
                   leftIcon={<Download className="w-3.5 h-3.5 text-slate-600" />}
                   onClick={handleExportServicesCsv}
                   title="Export filtered/active services to CSV"
@@ -837,10 +942,10 @@ export const ServicesPackagesPage: React.FC = () => {
                   Export CSV
                 </Button>
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
-                  className="shrink-0 text-xs"
-                  leftIcon={<Upload className="w-3.5 h-3.5 text-[#9D2558]" />}
+                  className="shrink-0 text-xs rounded-xl border border-white/80 bg-white/70 hover:bg-white text-slate-700 shadow-2xs font-semibold"
+                  leftIcon={<Upload className="w-3.5 h-3.5 text-[#B82E69]" />}
                   onClick={() => {
                     setBulkUploadType('SERVICES');
                     setIsBulkUploadModalOpen(true);
@@ -851,7 +956,7 @@ export const ServicesPackagesPage: React.FC = () => {
                 <Button
                   variant="primary"
                   size="sm"
-                  className="shrink-0 text-xs whitespace-nowrap"
+                  className="shrink-0 text-xs whitespace-nowrap bg-[#B82E69] hover:bg-[#A02358] text-white rounded-xl shadow-xs font-semibold"
                   leftIcon={<Plus className="w-3.5 h-3.5" />}
                   onClick={() => {
                     const defaultCat = categories[0]?.name || '';
@@ -878,9 +983,9 @@ export const ServicesPackagesPage: React.FC = () => {
             ) : (
               <>
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
-                  className="shrink-0 text-xs"
+                  className="shrink-0 text-xs rounded-xl border border-white/80 bg-white/70 hover:bg-white text-slate-700 shadow-2xs font-semibold"
                   leftIcon={<Download className="w-3.5 h-3.5 text-slate-600" />}
                   onClick={handleExportPackagesCsv}
                   title="Export filtered/active packages to CSV"
@@ -888,10 +993,10 @@ export const ServicesPackagesPage: React.FC = () => {
                   Export CSV
                 </Button>
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
-                  className="shrink-0 text-xs"
-                  leftIcon={<Upload className="w-3.5 h-3.5 text-[#9D2558]" />}
+                  className="shrink-0 text-xs rounded-xl border border-white/80 bg-white/70 hover:bg-white text-slate-700 shadow-2xs font-semibold"
+                  leftIcon={<Upload className="w-3.5 h-3.5 text-[#B82E69]" />}
                   onClick={() => {
                     setBulkUploadType('PACKAGES');
                     setIsBulkUploadModalOpen(true);
@@ -902,7 +1007,7 @@ export const ServicesPackagesPage: React.FC = () => {
                 <Button
                   variant="primary"
                   size="sm"
-                  className="shrink-0 text-xs whitespace-nowrap"
+                  className="shrink-0 text-xs whitespace-nowrap bg-[#B82E69] hover:bg-[#A02358] text-white rounded-xl shadow-xs font-semibold"
                   leftIcon={<Plus className="w-3.5 h-3.5" />}
                   onClick={() => {
                     setPackageFormData({
@@ -929,19 +1034,19 @@ export const ServicesPackagesPage: React.FC = () => {
         {activeTab === 'SERVICES' && (
           <div className="space-y-4 mt-4">
             {/* Filter Bar */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-white p-3 rounded-xl border border-slate-200">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
               <div className="relative">
                 <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
                 <Input
                   placeholder="Search by code, title, or category..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 h-9 text-xs"
+                  className="pl-9 h-9 text-xs rounded-xl border border-white/80 bg-white/80 backdrop-blur-md shadow-2xs focus:bg-white"
                 />
               </div>
 
               <Select value={categoryFilter} onValueChange={(val) => setCategoryFilter(val)}>
-                <SelectTrigger className="h-9 text-xs">
+                <SelectTrigger className="h-9 text-xs rounded-xl border border-white/80 bg-white/80 backdrop-blur-md shadow-2xs">
                   <SelectValue placeholder="All Categories" />
                 </SelectTrigger>
                 <SelectContent>
@@ -955,7 +1060,7 @@ export const ServicesPackagesPage: React.FC = () => {
               </Select>
 
               <Select value={statusFilter} onValueChange={(val) => setStatusFilter(val as any)}>
-                <SelectTrigger className="h-9 text-xs">
+                <SelectTrigger className="h-9 text-xs rounded-xl border border-white/80 bg-white/80 backdrop-blur-md shadow-2xs">
                   <SelectValue placeholder="All Statuses" />
                 </SelectTrigger>
                 <SelectContent>
@@ -967,11 +1072,11 @@ export const ServicesPackagesPage: React.FC = () => {
             </div>
 
             {/* Services Table */}
-            <Card padding="none" className="overflow-hidden">
+            <Card variant="glass" padding="none" className="overflow-hidden rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-slate-50/75">
+                    <TableRow className="bg-[#FAF8F9]/80 backdrop-blur-md border-b border-white/60">
                       <TableHead className="w-28 text-xs font-semibold">Code</TableHead>
                       <TableHead className="text-xs font-semibold">Service Details</TableHead>
                       <TableHead className="text-xs font-semibold">Category</TableHead>
@@ -1084,19 +1189,19 @@ export const ServicesPackagesPage: React.FC = () => {
         {activeTab === 'PACKAGES' && (
           <div className="space-y-4 mt-4">
             {/* Filter Bar */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-white p-3 rounded-xl border border-slate-200">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
               <div className="relative">
                 <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
                 <Input
                   placeholder="Search package code, bundle name, or description..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 h-9 text-xs"
+                  className="pl-9 h-9 text-xs rounded-xl border border-white/80 bg-white/80 backdrop-blur-md shadow-2xs focus:bg-white"
                 />
               </div>
 
               <Select value={statusFilter} onValueChange={(val) => setStatusFilter(val as any)}>
-                <SelectTrigger className="h-9 text-xs">
+                <SelectTrigger className="h-9 text-xs rounded-xl border border-white/80 bg-white/80 backdrop-blur-md shadow-2xs">
                   <SelectValue placeholder="All Statuses" />
                 </SelectTrigger>
                 <SelectContent>
@@ -1108,11 +1213,11 @@ export const ServicesPackagesPage: React.FC = () => {
             </div>
 
             {/* Packages Table */}
-            <Card padding="none" className="overflow-hidden">
+            <Card variant="glass" padding="none" className="overflow-hidden rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-slate-50/75">
+                    <TableRow className="bg-[#FAF8F9]/80 backdrop-blur-md border-b border-white/60">
                       <TableHead className="w-28 text-xs font-semibold">Code</TableHead>
                       <TableHead className="text-xs font-semibold">Package Bundle</TableHead>
                       <TableHead className="text-xs font-semibold">Included Services Breakdown</TableHead>
