@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { ReportKpis } from './components/ReportKpis';
 import { salonService } from '@/services';
 import { Branch, StaffMember, StaffSalaryReport, StaffSalaryReportQuery } from '@/types/salon';
 import { AccessDeniedView } from '@/features/scaffold/AccessDeniedView';
@@ -16,13 +15,18 @@ import {
   Printer,
   Loader2,
   Banknote,
+  Calendar,
+  CheckCircle2,
+  Clock,
+  TrendingUp,
+  AlertCircle,
 } from 'lucide-react';
 
 const selectClass =
-  'w-full text-xs border border-slate-300 rounded-md px-3 py-2 bg-white text-slate-700 focus:outline-hidden focus:ring-1 focus:ring-[#9D2558] focus:border-[#9D2558] transition-colors';
+  'w-full text-xs rounded-xl border border-white/80 bg-white/80 hover:bg-white px-3 py-2 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#B82E69]/20 focus:border-[#B82E69] shadow-2xs font-medium transition-all cursor-pointer';
 const inputClass =
-  'w-full text-xs border border-slate-300 rounded-md px-3 py-2 bg-white text-slate-700 focus:outline-hidden focus:ring-1 focus:ring-[#9D2558] focus:border-[#9D2558] transition-colors';
-const labelClass = 'block text-[11px] font-semibold text-[#23151D] mb-1.5';
+  'w-full text-xs rounded-xl border border-white/80 bg-white/80 hover:bg-white px-3 py-2 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#B82E69]/20 focus:border-[#B82E69] shadow-2xs font-medium transition-all';
+const labelClass = 'block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5';
 
 const formatPKR = (amt: number, withSign = false) => {
   const num = Number(amt) || 0;
@@ -238,17 +242,24 @@ export const StaffSalaryReportPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9] px-4 py-5 md:px-8 md:py-6 text-slate-800">
-      {/* Top Header Card with Title & Filters */}
-      <div className="bg-white rounded-xl shadow-xs border border-slate-200/90 p-5 md:p-6 mb-6">
-        <div className="mb-5">
-          <h1 className="text-xl font-bold text-[#23151D] tracking-tight">Staff Salary Reports</h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Finalized staff remuneration payroll audit: basic wages, attendance penalties, overtime additions, allowances, gross earnings, net pay and payouts
-          </p>
+    <div className="w-full max-w-full space-y-6 text-slate-800 font-sans">
+      {/* Top Header Banner Card */}
+      <div className="border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-6 rounded-[24px] flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#FDF2F5] to-white border border-white/80 shadow-2xs flex items-center justify-center text-[#B82E69]">
+            <Banknote className="w-6 h-6" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-slate-900 tracking-tight">Staff Salary Reports</h1>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Finalized staff remuneration payroll audit: basic wages, attendance penalties, overtime additions, allowances, gross earnings, net pay and payouts
+            </p>
+          </div>
         </div>
+      </div>
 
-        {/* Filters Form Row */}
+      {/* Filter Form Card */}
+      <div className="border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-5 rounded-[24px]">
         <form onSubmit={handleApplyFilters} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-3.5 items-end">
           {/* Branch Filter */}
           <div>
@@ -327,11 +338,11 @@ export const StaffSalaryReportPage: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full h-[35px] bg-[#9D2558] hover:bg-[#851C47] active:bg-[#002b66] text-white font-medium text-xs rounded-md shadow-xs flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-70"
+              className="w-full h-[38px] bg-gradient-to-r from-[#B82E69] to-[#9D2558] hover:from-[#9D2558] hover:to-[#831F4A] text-white font-semibold text-xs rounded-xl shadow-md shadow-[#B82E69]/20 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-60"
             >
               {isLoading ? (
                 <>
-                  <span className="w-3.5 h-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin inline-block" />
+                  <Loader2 className="w-4 h-4 animate-spin" />
                   <span>Loading...</span>
                 </>
               ) : (
@@ -348,219 +359,258 @@ export const StaffSalaryReportPage: React.FC = () => {
       {/* Main Content Area */}
       {!hasFiltered ? (
         /* Empty State before Filter clicked */
-        <div className="bg-white rounded-xl border border-slate-200/90 p-16 md:p-24 flex flex-col items-center justify-center min-h-[380px] shadow-xs text-center">
-          <div className="text-slate-400 mb-3">
-            <Filter className="w-14 h-14 stroke-[1.25] text-slate-400" />
+        <div className="border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-16 md:p-24 flex flex-col items-center justify-center min-h-[380px] rounded-[24px] text-center">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#FDF2F5] to-white border border-rose-100/80 text-[#B82E69] flex items-center justify-center mx-auto mb-3 shadow-2xs">
+            <Filter className="w-7 h-7 stroke-[1.5]" />
           </div>
-          <p className="text-slate-400 text-sm font-medium">Please apply filters to view reports</p>
+          <p className="text-slate-500 text-sm font-semibold">Please apply filters to view salary reports</p>
+          <p className="text-slate-400 text-xs mt-1">Select branch and date range above to load auditable payroll register</p>
         </div>
       ) : isLoading ? (
         /* Loading Skeleton */
-        <div className="bg-white rounded-xl border border-slate-200/90 p-16 flex flex-col items-center justify-center min-h-[380px] shadow-xs text-center">
-          <div className="w-10 h-10 rounded-full border-3 border-[#F1DEE3] border-t-[#9D2558] animate-spin mb-3" />
+        <div className="border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-16 flex flex-col items-center justify-center min-h-[380px] rounded-[24px] text-center">
+          <div className="w-10 h-10 rounded-full border-3 border-rose-100 border-t-[#B82E69] animate-spin mb-3" />
           <p className="text-slate-600 text-sm font-medium">Loading Staff Salary Reports...</p>
         </div>
       ) : errorMessage ? (
         /* Error Message */
-        <div className="bg-white rounded-xl border border-rose-200 p-8 shadow-xs text-center">
+        <div className="border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-8 rounded-[24px] text-center">
           <p className="text-rose-600 text-sm font-medium mb-3">{errorMessage}</p>
           <button
             onClick={() => handleApplyFilters()}
-            className="px-4 py-1.5 bg-[#9D2558] text-white text-xs font-semibold rounded-md shadow-xs hover:bg-[#851C47]"
+            className="px-5 py-2 bg-gradient-to-r from-[#B82E69] to-[#9D2558] hover:from-[#9D2558] text-white text-xs font-semibold rounded-xl shadow-sm transition-all cursor-pointer"
           >
             Retry
           </button>
         </div>
       ) : (
         /* Filtered Data Layout */
-        <div className="mb-8">
-          <ReportKpis items={[
-            { label: 'Gross Salary', value: `PKR ${formatPKR(totals.gross)}` },
-            { label: 'Net Salary', value: `PKR ${formatPKR(totals.net)}` },
-            { label: 'Paid', value: `PKR ${formatPKR(totals.paid)}`, tone: 'positive' },
-            { label: 'Outstanding', value: `PKR ${formatPKR(totals.outstanding)}`, tone: 'negative' },
-          ]} />
-          {/* Royal Blue Banner Header */}
-          <div className="bg-[#9D2558] text-white px-5 py-3 rounded-t-xl flex flex-wrap items-center justify-between gap-3 shadow-sm">
-            <div className="flex items-center gap-2.5">
-              <Banknote className="w-5 h-5 text-white/90" />
-              <span className="font-semibold text-sm tracking-wide">Staff Salary Register</span>
+        <div className="space-y-6 mb-8">
+          {/* 4 Pure White Frosted KPI Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-5 rounded-[24px] flex items-center justify-between">
+              <div>
+                <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Gross Salary</p>
+                <p className="text-xl font-bold text-slate-900 mt-1 font-mono tabular-nums">PKR {formatPKR(totals.gross)}</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">Pre-deduction earnings</p>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+                <TrendingUp className="w-5 h-5" />
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleExportExcel}
-                className="bg-[#009688] hover:bg-[#00897B] text-white text-xs font-semibold px-3.5 py-1.5 rounded-md flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
-              >
-                <FileSpreadsheet className="w-3.5 h-3.5" />
-                CSV
-              </button>
-              <button
-                type="button"
-                onClick={handleExportPdf}
-                className="bg-[#DC2626] hover:bg-[#B91C1C] text-white text-xs font-semibold px-3.5 py-1.5 rounded-md flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
-              >
-                <FileText className="w-3.5 h-3.5" />
-                PDF
-              </button>
-              <button
-                type="button"
-                onClick={handlePrint}
-                className="bg-[#4B5563] hover:bg-[#374151] text-white text-xs font-semibold px-3.5 py-1.5 rounded-md flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
-              >
-                <Printer className="w-3.5 h-3.5" />
-                Print
-              </button>
+
+            <div className="border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-5 rounded-[24px] flex items-center justify-between">
+              <div>
+                <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Net Salary</p>
+                <p className="text-xl font-bold text-[#B82E69] mt-1 font-mono tabular-nums">PKR {formatPKR(totals.net)}</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">Payable after deductions</p>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-rose-50 text-[#B82E69] flex items-center justify-center">
+                <Banknote className="w-5 h-5" />
+              </div>
+            </div>
+
+            <div className="border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-5 rounded-[24px] flex items-center justify-between">
+              <div>
+                <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Disbursed (Paid)</p>
+                <p className="text-xl font-bold text-emerald-600 mt-1 font-mono tabular-nums">PKR {formatPKR(totals.paid)}</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">Successfully settled</p>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <CheckCircle2 className="w-5 h-5" />
+              </div>
+            </div>
+
+            <div className="border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-5 rounded-[24px] flex items-center justify-between">
+              <div>
+                <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Outstanding</p>
+                <p className="text-xl font-bold text-amber-600 mt-1 font-mono tabular-nums">PKR {formatPKR(totals.outstanding)}</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">Pending disbursement</p>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                <Clock className="w-5 h-5" />
+              </div>
             </div>
           </div>
 
           {/* Table Container with Horizontal Scroll */}
-          <div className="bg-white overflow-x-auto rounded-b-xl border border-t-0 border-slate-200/90 shadow-sm">
-            <table className="report-records w-full min-w-[1300px] text-left border-collapse font-['Inter',sans-serif] text-[13px] antialiased">
-              <thead>
-                <tr className="bg-[#FDF2F5] border-b border-[#F1DEE3] text-[#475569] font-medium text-[13px]">
-                  <th className="py-3.5 px-3 text-center w-8">#</th>
-                  <th className="py-3.5 px-4 whitespace-nowrap">Period</th>
-                  <th className="py-3.5 px-4 whitespace-nowrap">Payslip #</th>
-                  <th className="py-3.5 px-4">Staff</th>
-                  <th className="py-3.5 px-4">Branch</th>
-                  <th className="py-3.5 px-4 text-right">Basic</th>
-                  <th className="py-3.5 px-4 text-right">Gross</th>
-                  <th className="py-3.5 px-4 text-right">Net Salary</th>
-                  <th className="py-3.5 px-4 text-right">Paid</th>
-                  <th className="py-3.5 px-4 text-right">Outstanding</th>
-                  <th className="py-3.5 px-4 text-center">Status</th>
-                </tr>
-              </thead>
-              <tbody className="text-[#334155]">
-                {reportData && reportData.rows.length > 0 ? (
-                  reportData.rows.map((row, idx) => {
-                    const isPaid = row.status === 'PAID';
+          <div className="border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] rounded-[24px] overflow-hidden">
+            {/* Header Banner */}
+            <div className="bg-gradient-to-r from-[#B82E69] to-[#9D2558] text-white px-6 py-4 flex flex-wrap items-center justify-between gap-3 shadow-sm">
+              <div className="flex items-center gap-2.5">
+                <Banknote className="w-5 h-5 text-white/90" />
+                <span className="font-semibold text-sm tracking-wide">Staff Salary Register</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleExportExcel}
+                  className="bg-white/20 hover:bg-white/30 text-white text-xs font-semibold px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 backdrop-blur-sm transition-all cursor-pointer"
+                >
+                  <FileSpreadsheet className="w-3.5 h-3.5" />
+                  CSV Export
+                </button>
+                <button
+                  type="button"
+                  onClick={handleExportPdf}
+                  className="bg-white/20 hover:bg-white/30 text-white text-xs font-semibold px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 backdrop-blur-sm transition-all cursor-pointer"
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  PDF Export
+                </button>
+                <button
+                  type="button"
+                  onClick={handlePrint}
+                  className="bg-white/20 hover:bg-white/30 text-white text-xs font-semibold px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 backdrop-blur-sm transition-all cursor-pointer"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  Print
+                </button>
+              </div>
+            </div>
 
-                    return (
-                      <tr key={row.payslipId || idx} className="hover:bg-[#FDF2F5]/20 transition-colors border-b border-dashed border-slate-200">
-                        {/* 1. # */}
-                        <td className="py-3.5 px-3 text-center font-normal text-slate-400">
-                          {idx + 1}
-                        </td>
+            <div className="overflow-x-auto">
+              <table className="report-records w-full min-w-[1200px] text-left border-collapse text-xs">
+                <thead>
+                  <tr className="bg-[#FAF8F9] border-b border-rose-100/60 text-[#B82E69] font-bold text-[11px] uppercase tracking-wider">
+                    <th className="py-3.5 px-3 text-center w-8">#</th>
+                    <th className="py-3.5 px-4 whitespace-nowrap">Period</th>
+                    <th className="py-3.5 px-4 whitespace-nowrap">Payslip #</th>
+                    <th className="py-3.5 px-4">Staff</th>
+                    <th className="py-3.5 px-4">Branch</th>
+                    <th className="py-3.5 px-4 text-right">Basic</th>
+                    <th className="py-3.5 px-4 text-right">Gross</th>
+                    <th className="py-3.5 px-4 text-right">Net Salary</th>
+                    <th className="py-3.5 px-4 text-right">Paid</th>
+                    <th className="py-3.5 px-4 text-right">Outstanding</th>
+                    <th className="py-3.5 px-4 text-center">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="text-slate-700 divide-y divide-rose-100/50">
+                  {reportData && reportData.rows.length > 0 ? (
+                    reportData.rows.map((row, idx) => {
+                      const isPaid = row.status === 'PAID';
 
-                        {/* 2. Period */}
-                        <td className="py-3.5 px-4 whitespace-nowrap font-medium text-slate-700">
-                          {row.period}
-                        </td>
+                      return (
+                        <tr key={row.payslipId || idx} className="hover:bg-[#B82E69]/[0.02] transition-colors border-b border-dashed border-rose-100/60">
+                          {/* 1. # */}
+                          <td className="py-3.5 px-3 text-center font-normal text-slate-400">
+                            {idx + 1}
+                          </td>
 
-                        {/* 3. Payslip # */}
-                        <td className="py-3.5 px-4 font-semibold text-[#9D2558] whitespace-nowrap">
-                          {row.payslipNumber}
-                        </td>
+                          {/* 2. Period */}
+                          <td className="py-3.5 px-4 whitespace-nowrap font-medium text-slate-700">
+                            {row.period}
+                          </td>
 
-                        {/* 4. Staff */}
-                        <td className="py-3.5 px-4 whitespace-nowrap font-medium text-slate-800">
-                          {row.staffName} <span className="text-slate-400 font-normal">({row.employeeCode})</span>
-                        </td>
+                          {/* 3. Payslip # */}
+                          <td className="py-3.5 px-4 font-semibold text-[#B82E69] whitespace-nowrap font-mono">
+                            {row.payslipNumber}
+                          </td>
 
-                        {/* 5. Branch */}
-                        <td className="py-3.5 px-4 whitespace-nowrap text-slate-600">
-                          {row.branchName || 'Main Branch'}
-                        </td>
+                          {/* 4. Staff */}
+                          <td className="py-3.5 px-4 whitespace-nowrap font-semibold text-slate-900">
+                            {row.staffName} <span className="text-slate-400 font-mono text-[11px]">({row.employeeCode})</span>
+                          </td>
 
-                        {/* 6. Basic */}
-                        <td className="py-3.5 px-4 text-right tabular-nums text-slate-600 whitespace-nowrap">
-                          {formatPKR(row.basic)}
-                        </td>
+                          {/* 5. Branch */}
+                          <td className="py-3.5 px-4 whitespace-nowrap text-slate-600">
+                            {row.branchName || 'Main Branch'}
+                          </td>
 
-                        {/* 7. Gross */}
-                        <td className="py-3.5 px-4 text-right tabular-nums font-semibold text-slate-800 whitespace-nowrap">
-                          {formatPKR(row.gross)}
-                        </td>
+                          {/* 6. Basic */}
+                          <td className="py-3.5 px-4 text-right font-mono tabular-nums text-slate-600 whitespace-nowrap">
+                            {formatPKR(row.basic)}
+                          </td>
 
-                        {/* 8. Net Salary */}
-                        <td className="py-3.5 px-4 text-right tabular-nums font-bold text-[#9D2558] whitespace-nowrap">
-                          {formatPKR(row.net)}
-                        </td>
+                          {/* 7. Gross */}
+                          <td className="py-3.5 px-4 text-right font-mono tabular-nums font-semibold text-slate-800 whitespace-nowrap">
+                            {formatPKR(row.gross)}
+                          </td>
 
-                        {/* 9. Paid */}
-                        <td className="py-3.5 px-4 text-right tabular-nums font-semibold text-[#10B981] whitespace-nowrap">
-                          {formatPKR(row.paid)}
-                        </td>
+                          {/* 8. Net Salary */}
+                          <td className="py-3.5 px-4 text-right font-mono tabular-nums font-bold text-[#B82E69] whitespace-nowrap">
+                            {formatPKR(row.net)}
+                          </td>
 
-                        {/* 10. Outstanding */}
-                        <td
-                          className={`py-3.5 px-4 text-right tabular-nums whitespace-nowrap ${
-                            row.outstanding > 0 ? 'text-[#EF4444] font-semibold' : 'text-slate-400'
-                          }`}
-                        >
-                          {formatPKR(row.outstanding)}
-                        </td>
+                          {/* 9. Paid */}
+                          <td className="py-3.5 px-4 text-right font-mono tabular-nums font-semibold text-emerald-600 whitespace-nowrap">
+                            {formatPKR(row.paid)}
+                          </td>
 
-                        {/* 11. Status */}
-                        <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                          {isPaid ? (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#10B981] text-white shadow-2xs">
-                              PAID
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#F59E0B] text-white shadow-2xs">
-                              {row.status}
-                            </span>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })
-                ) : (
+                          {/* 10. Outstanding */}
+                          <td
+                            className={`py-3.5 px-4 text-right font-mono tabular-nums whitespace-nowrap ${
+                              row.outstanding > 0 ? 'text-amber-600 font-semibold' : 'text-slate-400'
+                            }`}
+                          >
+                            {formatPKR(row.outstanding)}
+                          </td>
+
+                          {/* 11. Status */}
+                          <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                            {isPaid ? (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs">
+                                PAID
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 shadow-2xs">
+                                {row.status}
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan={11} className="py-12 text-center text-slate-400 font-medium">
+                        No salary records found for the selected branch, dates, and filters.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+
+                {/* Integrated Table Footer */}
+                <tfoot className="bg-[#FAF8F9] border-t-2 border-rose-200/60 text-xs text-slate-800 font-semibold">
+                  {/* Row 1: TOTALS (PKR) */}
+                  <tr className="border-b border-rose-100/60">
+                    <td colSpan={5} className="py-3.5 px-4 text-right font-bold text-slate-800 tracking-wide">
+                      TOTAL SALARIES (PKR)
+                    </td>
+                    <td className="py-3.5 px-4 text-right font-mono tabular-nums font-semibold text-slate-700">
+                      {formatPKR(totals.basic)}
+                    </td>
+                    <td className="py-3.5 px-4 text-right font-mono tabular-nums font-semibold text-slate-800">
+                      {formatPKR(totals.gross)}
+                    </td>
+                    <td className="py-3.5 px-4 text-right font-mono tabular-nums font-bold text-[#B82E69]">
+                      {formatPKR(totals.net)}
+                    </td>
+                    <td className="py-3.5 px-4 text-right font-mono tabular-nums font-semibold text-emerald-600">
+                      {formatPKR(totals.paid)}
+                    </td>
+                    <td className="py-3.5 px-4 text-right font-mono tabular-nums font-bold text-amber-600">
+                      {formatPKR(totals.outstanding)}
+                    </td>
+                    <td className="py-3.5 px-4"></td>
+                  </tr>
+
+                  {/* Row 2: Net Disbursed */}
                   <tr>
-                    <td colSpan={11} className="py-12 text-center text-slate-400 font-medium">
-                      No salary records found for the selected branch, dates, and filters.
+                    <td colSpan={5} className="py-3 px-4 text-right font-medium text-slate-500">
+                      Net Paid Salary Disbursements
+                    </td>
+                    <td colSpan={6} className="py-3 px-4 text-right font-mono tabular-nums font-bold text-[#B82E69] text-sm">
+                      +{formatPKR(totals.paid)}
                     </td>
                   </tr>
-                )}
-              </tbody>
-
-              {/* Integrated Table Footer */}
-              <tfoot className="bg-[#F8FAFC] border-t-2 border-slate-200 font-['Inter',sans-serif] text-[13px] text-[#334155]">
-                {/* Row 1: TOTALS (PKR) */}
-                <tr className="border-b border-slate-200/70">
-                  <td colSpan={5} className="py-3.5 px-4 text-right font-bold text-slate-800 tracking-wide">
-                    TOTAL SALARIES (PKR)
-                  </td>
-                  <td className="py-3.5 px-4 text-right tabular-nums font-semibold text-slate-700">
-                    {formatPKR(totals.basic)}
-                  </td>
-                  <td className="py-3.5 px-4 text-right tabular-nums font-semibold text-slate-800">
-                    {formatPKR(totals.gross)}
-                  </td>
-                  <td className="py-3.5 px-4 text-right tabular-nums font-bold text-[#9D2558]">
-                    {formatPKR(totals.net)}
-                  </td>
-                  <td className="py-3.5 px-4 text-right tabular-nums font-semibold text-[#10B981]">
-                    {formatPKR(totals.paid)}
-                  </td>
-                  <td className="py-3.5 px-4 text-right tabular-nums font-bold text-[#EF4444]">
-                    {formatPKR(totals.outstanding)}
-                  </td>
-                  <td className="py-3.5 px-4"></td>
-                </tr>
-
-                {/* Row 2: Net Disbursed */}
-                <tr>
-                  <td colSpan={5} className="py-3 px-4 text-right font-medium text-slate-600">
-                    Net Paid Salary Disbursements
-                  </td>
-                  <td colSpan={6} className="py-3 px-4 text-right tabular-nums font-bold text-[#9D2558] text-sm">
-                    +{formatPKR(totals.paid)}
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
+                </tfoot>
+              </table>
+            </div>
           </div>
         </div>
       )}
-
-      {/* Footer Branding */}
-      <div className="text-center py-4 text-xs text-slate-400 font-medium tracking-wide">
-        © iSysware Management System
-      </div>
     </div>
   );
 };

@@ -154,19 +154,21 @@ const LeaveManagementContent: React.FC = () => {
 
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6 font-sans">
-      {/* ── HEADER SECTION ─────────────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-2xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69] shrink-0">
-            <Palmtree className="w-5 h-5" />
-          </div>
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-[#18191B] tracking-tight truncate">
-              Employee Leave & Entitlement Management
-            </h1>
-            <p className="text-xs text-[#78616C] mt-0.5 line-clamp-1 xl:line-clamp-none">
-              Approve vacation vouchers, calculate annual allowances, track active absences and adjustments.
-            </p>
+      {/* Top Header Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-5 sm:p-6 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#FDF2F5] to-white border border-white/80 shadow-2xs flex items-center justify-center text-[#B82E69] shrink-0">
+              <Palmtree className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold text-[#18191B] tracking-tight truncate">
+                Employee Leave & Entitlement Management
+              </h1>
+              <p className="text-xs text-[#78616C] font-medium mt-0.5 line-clamp-1 xl:line-clamp-none">
+                Approve vacation vouchers, calculate annual allowances, track active absences and adjustments.
+              </p>
+            </div>
           </div>
         </div>
 
@@ -182,7 +184,7 @@ const LeaveManagementContent: React.FC = () => {
               });
               setShowLeaveModal(true);
             }}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-[#B82E69] to-[#9D2558] hover:from-[#A02359] hover:to-[#8B1A4B] text-white text-xs font-semibold shadow-xs cursor-pointer transition-all"
+            className="h-9 px-4 inline-flex items-center gap-1.5 rounded-xl bg-[#B82E69] hover:bg-[#A02358] text-white text-xs font-semibold shadow-xs cursor-pointer transition-all shrink-0"
           >
             <Plus className="w-4 h-4" />
             <span>Mark Leave</span>

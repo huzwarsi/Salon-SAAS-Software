@@ -33,6 +33,10 @@ import {
   FileCheck,
   Eye,
   Check,
+  Landmark,
+  ShieldCheck,
+  Wallet,
+  TrendingUp,
 } from 'lucide-react';
 
 const formatPKR = (num: number) => {
@@ -384,453 +388,571 @@ export const AccountSettlementPage: React.FC = () => {
 
   const hasUnsettledCash = activeDrawerExpectedCash > 0;
 
-  return (
-    <div className="min-h-screen bg-[#F4F6F9] px-4 py-5 md:px-8 md:py-6 text-slate-800 font-['Inter',sans-serif]">
-      {/* 1. Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-[#23151D] tracking-tight">
-            {canReview ? 'Account Settlements' : 'My Account Settlement'}
-          </h1>
-          <p className="text-xs text-slate-500 font-medium mt-0.5">
-            Count the cash in your drawer, enter it once, and submit.
-          </p>
-        </div>
+  const pendingApprovalsCount = useMemo(() => {
+    return settlements.filter((s) => s.status === 'SUBMITTED' || s.status === 'PENDING_VERIFICATION').length;
+  }, [settlements]);
 
-        {/* View Balance Sheet Button */}
-        <button
-          type="button"
-          onClick={() => navigate('/accounts/my-balance-sheet')}
-          className="border border-slate-300 hover:bg-slate-50 text-slate-700 bg-white text-xs font-semibold px-4 py-2 rounded-md shadow-xs flex items-center gap-2 transition-colors cursor-pointer self-start md:self-auto"
-        >
-          <FileCheck className="w-4 h-4 text-slate-500" />
-          <span>View Balance Sheet</span>
-        </button>
+  const totalSettledAmount = useMemo(() => {
+    return settlements
+      .filter((s) => s.status === 'APPROVED')
+      .reduce((acc, s) => acc + (s.handoverAmount || s.countedCash || 0), 0);
+  }, [settlements]);
+
+  return (
+    <div className="w-full max-w-full space-y-6 text-slate-800 font-sans">
+      {/* 1. Top Header Banner */}
+      <div className="relative overflow-hidden rounded-[24px] border border-white/90 bg-white/75 p-6 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-gradient-to-br from-[#B82E69]/10 via-[#D94883]/5 to-transparent blur-3xl" />
+
+        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#B82E69] to-[#9D2558] text-white shadow-lg shadow-[#B82E69]/25">
+              <Landmark className="h-6 w-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold tracking-tight text-[#23151D]">
+                  {canReview ? 'Account Settlements & Safe Vault' : 'My Account Settlement'}
+                </h1>
+                {pendingApprovalsCount > 0 && canReview && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                    <AlertTriangle className="w-3 h-3 text-amber-600" />
+                    {pendingApprovalsCount} Pending
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">
+                Count the physical drawer cash, reconcile shift variance, and hand over custody to the safe vault.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => navigate('/accounts/my-balance-sheet')}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-white/80 bg-white/80 px-3.5 py-2 text-xs font-bold text-slate-700 shadow-2xs hover:bg-white hover:text-[#B82E69] transition-colors cursor-pointer"
+            >
+              <FileCheck className="w-3.5 h-3.5 text-[#B82E69]" />
+              <span>View Balance Sheet</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={loadData}
+              disabled={isLoading}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-white/80 bg-white/80 px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-white transition-colors cursor-pointer"
+            >
+              <RotateCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-[#B82E69]' : ''}`} />
+              <span>Refresh</span>
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* 2. Top Card: SETTLE CURRENT SHIFT */}
-      <div className="bg-white rounded-xl shadow-xs border border-slate-200/90 overflow-hidden mb-8">
-        <div className="bg-slate-50/80 border-b border-slate-200 px-5 py-3">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700">
-            SETTLE CURRENT SHIFT
-          </h2>
+      {/* 2. Top Metric KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Drawer Expected Cash */}
+        <div className="relative overflow-hidden rounded-[20px] border border-white/90 bg-white/75 p-5 backdrop-blur-xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Drawer Expected</span>
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+              <ShieldCheck className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="mt-3">
+            <div className="text-xl font-extrabold text-emerald-600 font-mono tracking-tight">
+              {formatPKR(formExpectedCash)}
+            </div>
+            <p className="text-[11px] text-slate-400 mt-0.5">Physical cash due in till</p>
+          </div>
+        </div>
+
+        {/* Calculated Handover */}
+        <div className="relative overflow-hidden rounded-[20px] border border-white/90 bg-white/75 p-5 backdrop-blur-xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Handover Prepared</span>
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-50 text-[#B82E69]">
+              <ArrowRightLeft className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="mt-3">
+            <div className="text-xl font-extrabold text-[#B82E69] font-mono tracking-tight">
+              {formatPKR(handoverNum)}
+            </div>
+            <p className="text-[11px] text-slate-400 mt-0.5">Cash to transfer to vault</p>
+          </div>
+        </div>
+
+        {/* Retained Float */}
+        <div className="relative overflow-hidden rounded-[20px] border border-white/90 bg-white/75 p-5 backdrop-blur-xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Retained Float</span>
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
+              <Wallet className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="mt-3">
+            <div className="text-xl font-extrabold text-slate-800 font-mono tracking-tight">
+              {formatPKR(retainedNum)}
+            </div>
+            <p className="text-[11px] text-slate-400 mt-0.5">Left in drawer for next shift</p>
+          </div>
+        </div>
+
+        {/* Total Settled / Pending */}
+        <div className="relative overflow-hidden rounded-[20px] border border-white/90 bg-gradient-to-br from-white/90 via-white/80 to-[#B82E69]/5 p-5 backdrop-blur-xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+              {canReview ? 'Total Approved Vault' : 'Approved Settled'}
+            </span>
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#B82E69]/10 text-[#B82E69]">
+              <CheckCircle2 className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="mt-3">
+            <div className="text-xl font-extrabold text-[#23151D] font-mono tracking-tight">
+              {formatPKR(totalSettledAmount)}
+            </div>
+            <p className="text-[11px] text-slate-500 mt-0.5">{settlements.length} total records</p>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Settle Current Shift Card */}
+      <div className="rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] overflow-hidden">
+        <div className="bg-gradient-to-r from-[#B82E69] to-[#9D2558] text-white px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <ArrowRightLeft className="w-4 h-4 text-white/90" />
+            <h2 className="text-xs font-bold uppercase tracking-wider">
+              Settle Current Shift Cash Drawer
+            </h2>
+          </div>
+          <span className="text-[11px] font-mono text-white/80">Custodian Handover</span>
         </div>
 
         <div className="p-6">
           {!isSuperAdmin && !hasUnsettledCash && !showSettleForm ? (
-            <div className="py-8 text-center text-slate-500 text-sm font-medium">
-              Nothing to settle — you have no unsettled cash right now.
+            <div className="py-8 text-center text-slate-500 text-xs font-medium">
+              Nothing to settle — you have no unsettled physical cash in custody right now.
             </div>
           ) : (
-            <form onSubmit={handleInlineSubmitSettlement} className="space-y-4">
-              <BranchActionField value={actionScope.branchId} disabled={isSubmitting} onChange={(id) => { actionScope.setBranchId(id); setCountedCashInput(''); setRetainedFloatInput('0'); setVarianceExplanation(''); }} />
-              {actionScope.error && <p role="alert" className="text-xs text-rose-600">{actionScope.error}</p>}
-              {actionScope.ready && !formDrawer && <p role="status" className="text-xs text-slate-500">No open cash drawer in your custody for this branch.</p>}
-              <fieldset disabled={!actionScope.ready || !formDrawer} className="space-y-4 disabled:opacity-50">
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                {/* Expected Cash in drawer */}
-                <div className="bg-slate-50 border border-slate-200 rounded-lg p-3.5">
-                  <span className="block text-[11px] font-bold uppercase text-slate-500 mb-1">
-                    Expected Cash in Drawer
-                  </span>
-                  <span className="text-base font-extrabold text-[#15803D] tabular-nums">
-                    {formatPKR(formExpectedCash)}
-                  </span>
-                </div>
-
-                {/* Counted Cash input */}
-                <div>
-                  <label className="block text-[11px] font-bold uppercase text-slate-700 mb-1">
-                    Counted Cash (PKR) *
-                  </label>
-                  <input
-                    type="number"
-                    step="any"
-                    min="0"
-                    placeholder="Enter counted amount"
-                    value={countedCashInput}
-                    onChange={(e) => setCountedCashInput(e.target.value)}
-                    required
-                    className="w-full text-xs border border-slate-300 rounded-md px-3 py-2 bg-white text-slate-800 font-semibold focus:outline-hidden focus:ring-1 focus:ring-[#0D6251]"
-                  />
-                </div>
-
-                {/* Retained Float input */}
-                <div>
-                  <label className="block text-[11px] font-bold uppercase text-slate-700 mb-1">
-                    Retained Float (PKR)
-                  </label>
-                  <input
-                    type="number"
-                    step="any"
-                    min="0"
-                    placeholder="Cash left in drawer (usually 0)"
-                    value={retainedFloatInput}
-                    onChange={(e) => setRetainedFloatInput(e.target.value)}
-                    className="w-full text-xs border border-slate-300 rounded-md px-3 py-2 bg-white text-slate-800 font-semibold focus:outline-hidden focus:ring-1 focus:ring-[#0D6251]"
-                  />
-                </div>
-
-                {/* Handover Amount calculated */}
-                <div className="bg-slate-50 border border-slate-200 rounded-lg p-3.5">
-                  <span className="block text-[11px] font-bold uppercase text-slate-500 mb-1">
-                    Handover to Safe / Admin
-                  </span>
-                  <span className="text-base font-extrabold text-[#9D2558] tabular-nums">
-                    {formatPKR(handoverNum)}
-                  </span>
-                </div>
-              </div>
-
-              {/* Difference Indicator */}
-              {countedCashInput && (
-                <div
-                  className={`text-xs p-3 rounded-md border flex items-center justify-between ${
-                    varianceNum === 0
-                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                      : varianceNum > 0
-                      ? 'bg-[#FDF2F5] text-[#23151D] border-[#F1DEE3]'
-                      : 'bg-rose-50 text-rose-800 border-rose-200'
-                  }`}
-                >
-                  <span className="font-semibold">
-                    Difference:{' '}
-                    {varianceNum === 0
-                      ? 'Exact Match (Rs. 0)'
-                      : varianceNum > 0
-                      ? `Cash Overage (+${formatPKR(varianceNum)})`
-                      : `Cash Shortage (-${formatPKR(Math.abs(varianceNum))})`}
-                  </span>
-                </div>
+            <form onSubmit={handleInlineSubmitSettlement} className="space-y-5">
+              <BranchActionField
+                value={actionScope.branchId}
+                disabled={isSubmitting}
+                onChange={(id) => {
+                  actionScope.setBranchId(id);
+                  setCountedCashInput('');
+                  setRetainedFloatInput('0');
+                  setVarianceExplanation('');
+                }}
+              />
+              {actionScope.error && (
+                <p role="alert" className="text-xs text-rose-600 font-medium">
+                  {actionScope.error}
+                </p>
               )}
-
-              {/* Variance reason if mismatch */}
-              {Math.abs(varianceNum) > 0.001 && countedCashInput && (
-                <div>
-                  <label className="block text-[11px] font-bold uppercase text-slate-700 mb-1">
-                    Variance Explanation *
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Reason for cash difference..."
-                    value={varianceExplanation}
-                    onChange={(e) => setVarianceExplanation(e.target.value)}
-                    required
-                    className="w-full text-xs border border-slate-300 rounded-md px-3 py-2 bg-white text-slate-800"
-                  />
-                </div>
+              {actionScope.ready && !formDrawer && (
+                <p role="status" className="text-xs text-slate-500">
+                  No open cash drawer in your custody for this branch.
+                </p>
               )}
+              <fieldset
+                disabled={!actionScope.ready || !formDrawer}
+                className="space-y-4 disabled:opacity-50"
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                  {/* Expected Cash in drawer */}
+                  <div className="rounded-xl border border-emerald-100 bg-emerald-50/50 p-4">
+                    <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                      Expected Cash in Drawer
+                    </span>
+                    <span className="text-lg font-extrabold text-emerald-700 font-mono tabular-nums">
+                      {formatPKR(formExpectedCash)}
+                    </span>
+                  </div>
 
-              {/* Submit Buttons */}
-              <div className="flex items-center gap-3 pt-2">
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="bg-[#0D6251] hover:bg-[#0B5345] text-white text-xs font-semibold px-5 py-2 rounded-md shadow-xs cursor-pointer disabled:opacity-50"
-                >
-                  {isSubmitting ? 'Submitting...' : 'Submit Settlement'}
-                </button>
-                {showSettleForm && (
-                  <button
-                    type="button"
-                    onClick={() => setShowSettleForm(false)}
-                    className="text-xs text-slate-500 hover:text-slate-700 px-3 py-2 cursor-pointer font-medium"
+                  {/* Counted Cash input */}
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">
+                      Counted Cash (PKR) *
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      min="0"
+                      placeholder="Enter counted amount"
+                      value={countedCashInput}
+                      onChange={(e) => setCountedCashInput(e.target.value)}
+                      required
+                      className="w-full text-xs font-mono font-semibold border border-slate-200 rounded-xl px-3.5 py-2.5 bg-white text-slate-800 shadow-2xs focus:outline-hidden focus:ring-2 focus:ring-[#B82E69]/30"
+                    />
+                  </div>
+
+                  {/* Retained Float input */}
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">
+                      Retained Float (PKR)
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      min="0"
+                      placeholder="Cash left in drawer (usually 0)"
+                      value={retainedFloatInput}
+                      onChange={(e) => setRetainedFloatInput(e.target.value)}
+                      className="w-full text-xs font-mono font-semibold border border-slate-200 rounded-xl px-3.5 py-2.5 bg-white text-slate-800 shadow-2xs focus:outline-hidden focus:ring-2 focus:ring-[#B82E69]/30"
+                    />
+                  </div>
+
+                  {/* Handover Amount calculated */}
+                  <div className="rounded-xl border border-[#B82E69]/20 bg-[#B82E69]/5 p-4">
+                    <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                      Handover to Safe / Admin
+                    </span>
+                    <span className="text-lg font-extrabold text-[#B82E69] font-mono tabular-nums">
+                      {formatPKR(handoverNum)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Difference Indicator */}
+                {countedCashInput && (
+                  <div
+                    className={`text-xs p-3.5 rounded-xl border flex items-center justify-between font-mono ${
+                      varianceNum === 0
+                        ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                        : varianceNum > 0
+                        ? 'bg-amber-50 text-amber-800 border-amber-200'
+                        : 'bg-rose-50 text-rose-800 border-rose-200'
+                    }`}
                   >
-                    Cancel
-                  </button>
+                    <span className="font-bold">
+                      Difference / Variance:{' '}
+                      {varianceNum === 0
+                        ? 'Exact Match (Rs. 0)'
+                        : varianceNum > 0
+                        ? `Cash Overage (+${formatPKR(varianceNum)})`
+                        : `Cash Shortage (-${formatPKR(Math.abs(varianceNum))})`}
+                    </span>
+                  </div>
                 )}
-              </div>
-            
+
+                {/* Variance reason if mismatch */}
+                {Math.abs(varianceNum) > 0.001 && countedCashInput && (
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1">
+                      Variance Explanation *
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Reason for cash difference..."
+                      value={varianceExplanation}
+                      onChange={(e) => setVarianceExplanation(e.target.value)}
+                      required
+                      className="w-full text-xs border border-slate-200 rounded-xl px-3.5 py-2 bg-white text-slate-800 shadow-2xs focus:outline-hidden focus:ring-2 focus:ring-[#B82E69]/30"
+                    />
+                  </div>
+                )}
+
+                {/* Submit Buttons */}
+                <div className="flex items-center gap-3 pt-2">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="rounded-xl bg-gradient-to-r from-[#B82E69] to-[#9D2558] px-5 py-2.5 text-xs font-bold text-white shadow-xs hover:opacity-95 cursor-pointer disabled:opacity-50"
+                  >
+                    {isSubmitting ? 'Submitting Handover...' : 'Submit Settlement Handover'}
+                  </button>
+                  {showSettleForm && (
+                    <button
+                      type="button"
+                      onClick={() => setShowSettleForm(false)}
+                      className="text-xs text-slate-500 hover:text-slate-700 px-3 py-2 cursor-pointer font-semibold"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
               </fieldset>
-</form>
+            </form>
           )}
         </div>
       </div>
 
-      {/* 3. Bottom Section: Settlement History */}
-      <div className="mb-4">
-        <h2 className="text-xl font-bold text-[#23151D] tracking-tight">Settlement History</h2>
-        <p className="text-xs text-slate-500 font-medium mt-0.5">
-          Your submitted settlements and their review status.
-        </p>
-      </div>
+      {/* 4. Settlement History Section */}
+      <div className="space-y-3">
+        {/* Filters Toolbar */}
+        <div className="rounded-[20px] border border-white/90 bg-white/75 p-4 backdrop-blur-xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Period Filter */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Period:</span>
+              <select
+                value={selectedPeriod}
+                onChange={(e) => setSelectedPeriod(e.target.value)}
+                className="text-xs font-semibold border border-slate-200 rounded-xl px-3 py-1.5 bg-white text-slate-700 shadow-2xs focus:outline-hidden focus:ring-2 focus:ring-[#B82E69]/30"
+              >
+                <option value="ALL">All Time</option>
+                <option value="TODAY">Today</option>
+                <option value="THIS_WEEK">This Week</option>
+                <option value="THIS_MONTH">This Month</option>
+              </select>
+            </div>
 
-      {/* Filters Toolbar */}
-      <div className="bg-white border border-slate-200/90 rounded-xl px-4 py-3 shadow-xs mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-3">
-          {/* Period Filter */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-slate-600">Period:</span>
-            <select
-              value={selectedPeriod}
-              onChange={(e) => setSelectedPeriod(e.target.value)}
-              className="text-xs border border-slate-300 rounded-md px-3 py-1.5 bg-white text-slate-700"
-            >
-              <option value="ALL">All Time</option>
-              <option value="TODAY">Today</option>
-              <option value="THIS_WEEK">This Week</option>
-              <option value="THIS_MONTH">This Month</option>
-            </select>
-          </div>
-
-          {/* Status Filter */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-slate-600">Status:</span>
-            <select
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="text-xs border border-slate-300 rounded-md px-3 py-1.5 bg-white text-slate-700"
-            >
-              <option value="ALL">All</option>
-              <option value="SUBMITTED">Submitted</option>
-              <option value="APPROVED">Approved</option>
-              <option value="REJECTED">Rejected</option>
-            </select>
-          </div>
-
-          <button
-            type="button"
-            onClick={loadData}
-            className="bg-[#0D6251] text-white text-xs font-semibold px-4 py-1.5 rounded-md hover:bg-[#0B5345] shadow-xs cursor-pointer"
-          >
-            Filter
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              setSelectedPeriod('ALL');
-              setSelectedStatus('ALL');
-              setSearchQuery('');
-            }}
-            className="border border-slate-300 text-slate-700 text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-slate-50 shadow-xs cursor-pointer"
-          >
-            Reset
-          </button>
-        </div>
-      </div>
-
-      {/* Green Header Card Table */}
-      <div className="bg-white rounded-xl shadow-xs border border-slate-200/90 overflow-hidden">
-        {/* Dark Green Banner */}
-        <div className="bg-[#0D6251] text-white px-4 py-3 flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <RotateCw className="w-4 h-4 opacity-90" />
-            <span className="font-bold text-sm tracking-wide">Settlement History</span>
-            <span className="bg-white/20 text-white text-[11px] font-semibold px-2.5 py-0.5 rounded-full">
-              {selectedPeriod === 'ALL' ? 'All Time' : selectedPeriod}
-            </span>
-          </div>
-
-          {/* Search & Export Buttons */}
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Search Input */}
-            <div className="relative">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Search in results..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="text-xs bg-white text-slate-800 placeholder-slate-400 pl-8 pr-3 py-1.5 rounded-md border-0 focus:outline-hidden focus:ring-1 focus:ring-white w-48"
-              />
+            {/* Status Filter */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Status:</span>
+              <select
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+                className="text-xs font-semibold border border-slate-200 rounded-xl px-3 py-1.5 bg-white text-slate-700 shadow-2xs focus:outline-hidden focus:ring-2 focus:ring-[#B82E69]/30"
+              >
+                <option value="ALL">All</option>
+                <option value="SUBMITTED">Submitted</option>
+                <option value="APPROVED">Approved</option>
+                <option value="REJECTED">Rejected</option>
+              </select>
             </div>
 
             <button
               type="button"
-              onClick={handleExportExcel}
-              className="bg-[#107C41] hover:bg-[#0E6837] text-white text-xs font-semibold px-2.5 py-1.5 rounded-md flex items-center gap-1 cursor-pointer"
+              onClick={loadData}
+              className="rounded-xl bg-gradient-to-r from-[#B82E69] to-[#9D2558] px-4 py-1.5 text-xs font-bold text-white shadow-xs hover:opacity-95 cursor-pointer"
             >
-              <FileSpreadsheet className="w-3 h-3" />
-              <span>Excel</span>
+              Filter
             </button>
 
             <button
               type="button"
-              onClick={handleExportCSV}
-              className="bg-[#0D9488] hover:bg-[#0F766E] text-white text-xs font-semibold px-2.5 py-1.5 rounded-md flex items-center gap-1 cursor-pointer"
+              onClick={() => {
+                setSelectedPeriod('ALL');
+                setSelectedStatus('ALL');
+                setSearchQuery('');
+              }}
+              className="border border-slate-200 text-slate-700 text-xs font-bold px-3 py-1.5 rounded-xl hover:bg-slate-50 shadow-2xs cursor-pointer"
             >
-              <FileText className="w-3 h-3" />
-              <span>CSV</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={handlePrint}
-              className="bg-[#DC2626] hover:bg-[#B91C1C] text-white text-xs font-semibold px-2.5 py-1.5 rounded-md flex items-center gap-1 cursor-pointer"
-            >
-              <FileText className="w-3 h-3" />
-              <span>PDF</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={handlePrint}
-              className="bg-[#475569] hover:bg-[#334155] text-white text-xs font-semibold px-2.5 py-1.5 rounded-md flex items-center gap-1 cursor-pointer"
-            >
-              <Printer className="w-3 h-3" />
-              <span>Print</span>
+              Reset
             </button>
           </div>
         </div>
 
-        {/* Table */}
-        <div className="overflow-x-auto">
-          <table className="report-records w-full text-left border-collapse text-xs">
-            <thead>
-              <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
-                <th className="py-3 px-3.5 text-center w-10">#</th>
-                <th className="py-3 px-3.5">SUBMITTED AT ⇅</th>
-                <th className="py-3 px-3.5">STATUS ⇅</th>
-                <th className="py-3 px-3.5 text-right">EXPECTED CASH ⇅</th>
-                <th className="py-3 px-3.5 text-right">COUNTED CASH ⇅</th>
-                <th className="py-3 px-3.5 text-right">DIFFERENCE ⇅</th>
-                <th className="py-3 px-3.5 text-right">CARRIED FORWARD ⇅</th>
-                <th className="py-3 px-3.5">REASON ⇅</th>
-                <th className="py-3 px-3.5">SHIFT PERIOD ⇅</th>
-                {canReview && <th className="py-3 px-3.5 text-center">ACTIONS</th>}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {filteredSettlements.length > 0 ? (
-                filteredSettlements.map((s, idx) => (
-                  <tr key={s.id || idx} className="hover:bg-slate-50/60 transition-colors">
-                    <td className="py-3 px-3.5 text-center text-slate-400 font-medium">{idx + 1}</td>
-                    <td className="py-3 px-3.5 font-medium text-slate-700">
-                      {s.submittedAt
-                        ? new Date(s.submittedAt).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })
-                        : s.date}
-                    </td>
-                    <td className="py-3 px-3.5">
-                      <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold ${
-                          s.status === 'APPROVED'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : s.status === 'REJECTED'
-                            ? 'bg-rose-100 text-rose-800'
-                            : 'bg-amber-100 text-amber-800'
+        {/* History Table Container */}
+        <div className="rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] overflow-hidden">
+          {/* Header Banner */}
+          <div className="bg-gradient-to-r from-slate-800 to-slate-900 text-white px-5 py-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <RotateCw className="w-4 h-4 opacity-90" />
+              <span className="font-bold text-sm tracking-wide">Settlement History</span>
+              <span className="bg-white/20 text-white text-[11px] font-semibold px-2.5 py-0.5 rounded-full backdrop-blur-xs">
+                {filteredSettlements.length} items
+              </span>
+            </div>
+
+            {/* Search & Export Buttons */}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Search settlements..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="text-xs bg-white/10 hover:bg-white/15 focus:bg-white text-white focus:text-slate-800 placeholder-white/60 focus:placeholder-slate-400 pl-8 pr-3 py-1.5 rounded-xl border border-white/20 focus:border-white focus:outline-hidden transition-all w-44"
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={handleExportExcel}
+                className="bg-emerald-600/90 hover:bg-emerald-600 text-white text-xs font-bold px-2.5 py-1.5 rounded-xl flex items-center gap-1 cursor-pointer shadow-2xs"
+              >
+                <FileSpreadsheet className="w-3 h-3" />
+                <span>Excel</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleExportCSV}
+                className="bg-teal-600/90 hover:bg-teal-600 text-white text-xs font-bold px-2.5 py-1.5 rounded-xl flex items-center gap-1 cursor-pointer shadow-2xs"
+              >
+                <FileText className="w-3 h-3" />
+                <span>CSV</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handlePrint}
+                className="bg-rose-600/90 hover:bg-rose-600 text-white text-xs font-bold px-2.5 py-1.5 rounded-xl flex items-center gap-1 cursor-pointer shadow-2xs"
+              >
+                <Printer className="w-3 h-3" />
+                <span>Print</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="bg-slate-50/70 border-b border-slate-200/80 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
+                  <th className="py-3 px-4 text-center w-10">#</th>
+                  <th className="py-3 px-4">Submitted At</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4 text-right">Expected Cash</th>
+                  <th className="py-3 px-4 text-right">Counted Cash</th>
+                  <th className="py-3 px-4 text-right">Difference</th>
+                  <th className="py-3 px-4 text-right">Float Retained</th>
+                  <th className="py-3 px-4">Notes / Variance</th>
+                  <th className="py-3 px-4">Shift Period</th>
+                  {canReview && <th className="py-3 px-4 text-center">Actions</th>}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-dashed divide-slate-100">
+                {filteredSettlements.length > 0 ? (
+                  filteredSettlements.map((s, idx) => (
+                    <tr key={s.id || idx} className="hover:bg-[#B82E69]/[0.02] transition-colors">
+                      <td className="py-3 px-4 text-center text-slate-400 font-medium">{idx + 1}</td>
+                      <td className="py-3 px-4 font-semibold text-slate-700">
+                        {s.submittedAt
+                          ? new Date(s.submittedAt).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })
+                          : s.date}
+                      </td>
+                      <td className="py-3 px-4">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                            s.status === 'APPROVED'
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              : s.status === 'REJECTED'
+                              ? 'bg-rose-50 text-rose-700 border-rose-200'
+                              : 'bg-amber-50 text-amber-700 border-amber-200'
+                          }`}
+                        >
+                          {s.status}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-right font-semibold text-slate-700 font-mono tabular-nums">
+                        PKR {(s.expectedCash || 0).toLocaleString()}
+                      </td>
+                      <td className="py-3 px-4 text-right font-bold text-emerald-600 font-mono tabular-nums">
+                        PKR {(s.countedCash || 0).toLocaleString()}
+                      </td>
+                      <td
+                        className={`py-3 px-4 text-right font-bold font-mono tabular-nums ${
+                          (((s as any).difference ?? s.variance ?? 0) === 0)
+                            ? 'text-slate-400'
+                            : (((s as any).difference ?? s.variance ?? 0) > 0)
+                            ? 'text-[#B82E69]'
+                            : 'text-rose-600'
                         }`}
                       >
-                        {s.status}
-                      </span>
-                    </td>
-                    <td className="py-3 px-3.5 text-right font-semibold text-slate-800 tabular-nums">
-                      PKR {(s.expectedCash || 0).toLocaleString()}
-                    </td>
-                    <td className="py-3 px-3.5 text-right font-bold text-[#15803D] tabular-nums">
-                      PKR {(s.countedCash || 0).toLocaleString()}
-                    </td>
-                    <td
-                      className={`py-3 px-3.5 text-right font-bold tabular-nums ${
-                        (((s as any).difference ?? s.variance ?? 0) === 0)
-                          ? 'text-slate-500'
-                          : (((s as any).difference ?? s.variance ?? 0) > 0)
-                          ? 'text-[#9D2558]'
-                          : 'text-[#DC2626]'
-                      }`}
-                    >
-                      PKR {((s as any).difference ?? s.variance ?? 0).toLocaleString()}
-                    </td>
-                    <td className="py-3 px-3.5 text-right font-medium text-slate-700 tabular-nums">
-                      PKR {(s.retainedFloat || 0).toLocaleString()}
-                    </td>
-                    <td className="py-3 px-3.5 text-slate-600 max-w-[200px] truncate" title={s.notes || s.varianceExplanation}>
-                      {s.notes || s.varianceExplanation || '—'}
-                    </td>
-                    <td className="py-3 px-3.5 text-slate-600 font-medium">
-                      {s.date || 'Current Shift'}
-                    </td>
-                    {canReview && (
-                      <td className="py-3 px-3.5 text-center whitespace-nowrap">
-                        <div className="flex items-center justify-center gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSelectedSettlement(s);
-                              setIsViewModalOpen(true);
-                            }}
-                            className="p-1 hover:bg-slate-100 rounded-sm text-slate-500"
-                            title="View Details"
-                          >
-                            <Eye className="w-3.5 h-3.5" />
-                          </button>
-                          {(s.status === 'SUBMITTED' || s.status === 'PENDING_VERIFICATION') && (
-                            <>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setSelectedSettlement(s);
-                                  setIsApproveModalOpen(true);
-                                }}
-                                className="px-2 py-0.5 bg-emerald-600 text-white rounded-sm text-[11px] font-semibold hover:bg-emerald-700"
-                              >
-                                Approve
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setSelectedSettlement(s);
-                                  setIsRejectModalOpen(true);
-                                }}
-                                className="px-2 py-0.5 bg-rose-600 text-white rounded-sm text-[11px] font-semibold hover:bg-rose-700"
-                              >
-                                Reject
-                              </button>
-                            </>
-                          )}
-                        </div>
+                        PKR {((s as any).difference ?? s.variance ?? 0).toLocaleString()}
                       </td>
-                    )}
+                      <td className="py-3 px-4 text-right font-medium text-slate-600 font-mono tabular-nums">
+                        PKR {(s.retainedFloat || 0).toLocaleString()}
+                      </td>
+                      <td
+                        className="py-3 px-4 text-slate-600 max-w-[200px] truncate"
+                        title={s.notes || s.varianceExplanation}
+                      >
+                        {s.notes || s.varianceExplanation || '—'}
+                      </td>
+                      <td className="py-3 px-4 text-slate-600 font-medium">
+                        {s.date || 'Current Shift'}
+                      </td>
+                      {canReview && (
+                        <td className="py-3 px-4 text-center whitespace-nowrap">
+                          <div className="flex items-center justify-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedSettlement(s);
+                                setIsViewModalOpen(true);
+                              }}
+                              className="p-1 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors"
+                              title="View Details"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                            </button>
+                            {(s.status === 'SUBMITTED' || s.status === 'PENDING_VERIFICATION') && (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedSettlement(s);
+                                    setIsApproveModalOpen(true);
+                                  }}
+                                  className="px-2.5 py-1 bg-emerald-600 text-white rounded-lg text-[10px] font-bold hover:bg-emerald-700 shadow-2xs"
+                                >
+                                  Approve
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedSettlement(s);
+                                    setIsRejectModalOpen(true);
+                                  }}
+                                  className="px-2.5 py-1 bg-rose-600 text-white rounded-lg text-[10px] font-bold hover:bg-rose-700 shadow-2xs"
+                                >
+                                  Reject
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      )}
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={canReview ? 10 : 9} className="py-12 text-center text-slate-400 font-medium">
+                      No settlements recorded yet.
+                    </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={canReview ? 10 : 9} className="py-12 text-center text-slate-400 font-medium">
-                    No settlements yet.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
       {/* Admin Approve Modal */}
       {isApproveModalOpen && selectedSettlement && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-5 shadow-xl max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain">
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white rounded-[24px] max-w-md w-full p-6 shadow-2xl border border-white/90 max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain">
             <h3 className="text-base font-bold text-slate-900 mb-2">Approve Settlement</h3>
             <p className="text-xs text-slate-500 mb-4">
-              Confirm cash handover from {selectedSettlement.submittedByName} for settlement #{selectedSettlement.settlementNumber}.
+              Confirm cash handover from <span className="font-semibold text-slate-800">{selectedSettlement.submittedByName}</span> for settlement #{selectedSettlement.settlementNumber}.
             </p>
-            <div className="bg-slate-50 p-3 rounded-lg mb-4 text-xs space-y-1">
+            <div className="bg-slate-50/80 border border-slate-100 p-4 rounded-xl mb-4 text-xs space-y-2">
               <div className="flex justify-between">
-                <span className="text-slate-500">Handover Amount:</span>
-                <span className="font-bold text-slate-800">PKR {selectedSettlement.handoverAmount?.toLocaleString()}</span>
+                <span className="text-slate-500 font-medium">Handover Amount:</span>
+                <span className="font-bold text-emerald-700 font-mono">PKR {selectedSettlement.handoverAmount?.toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">Difference:</span>
-                <span className="font-bold text-slate-800">PKR {((selectedSettlement as any).difference ?? selectedSettlement.variance ?? 0).toLocaleString()}</span>
+                <span className="text-slate-500 font-medium">Difference / Variance:</span>
+                <span className="font-bold text-slate-800 font-mono">PKR {((selectedSettlement as any).difference ?? selectedSettlement.variance ?? 0).toLocaleString()}</span>
               </div>
             </div>
             <textarea
               placeholder="Approval notes / safe receipt remarks..."
               value={approvalNotes}
               onChange={(e) => setApprovalNotes(e.target.value)}
-              className="w-full text-xs border border-slate-300 rounded-md p-2.5 mb-4"
+              className="w-full text-xs border border-slate-200 rounded-xl p-3 mb-4 shadow-2xs focus:outline-hidden focus:ring-2 focus:ring-[#B82E69]/30"
               rows={2}
             />
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-2.5">
               <button
                 type="button"
                 onClick={() => setIsApproveModalOpen(false)}
-                className="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-md"
+                className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -838,7 +960,7 @@ export const AccountSettlementPage: React.FC = () => {
                 type="button"
                 onClick={handleApproveSettlement}
                 disabled={isSubmitting}
-                className="px-4 py-1.5 text-xs bg-emerald-600 text-white rounded-md font-semibold hover:bg-emerald-700 disabled:opacity-50"
+                className="px-4 py-2 text-xs bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 disabled:opacity-50 shadow-xs cursor-pointer"
               >
                 {isSubmitting ? 'Approving...' : 'Confirm Approval'}
               </button>
@@ -849,8 +971,8 @@ export const AccountSettlementPage: React.FC = () => {
 
       {/* Admin Reject Modal */}
       {isRejectModalOpen && selectedSettlement && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-5 shadow-xl max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain">
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white rounded-[24px] max-w-md w-full p-6 shadow-2xl border border-white/90 max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain">
             <h3 className="text-base font-bold text-rose-700 mb-2">Reject Settlement</h3>
             <p className="text-xs text-slate-500 mb-4">
               Return settlement #{selectedSettlement.settlementNumber} to cashier for recount or correction.
@@ -860,14 +982,14 @@ export const AccountSettlementPage: React.FC = () => {
               value={rejectionReason}
               onChange={(e) => setRejectionReason(e.target.value)}
               required
-              className="w-full text-xs border border-slate-300 rounded-md p-2.5 mb-4"
+              className="w-full text-xs border border-slate-200 rounded-xl p-3 mb-4 shadow-2xs focus:outline-hidden focus:ring-2 focus:ring-rose-500/30"
               rows={3}
             />
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-2.5">
               <button
                 type="button"
                 onClick={() => setIsRejectModalOpen(false)}
-                className="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-md"
+                className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -875,7 +997,7 @@ export const AccountSettlementPage: React.FC = () => {
                 type="button"
                 onClick={handleRejectSettlement}
                 disabled={isSubmitting}
-                className="px-4 py-1.5 text-xs bg-rose-600 text-white rounded-md font-semibold hover:bg-rose-700 disabled:opacity-50"
+                className="px-4 py-2 text-xs bg-rose-600 text-white rounded-xl font-bold hover:bg-rose-700 disabled:opacity-50 shadow-xs cursor-pointer"
               >
                 {isSubmitting ? 'Rejecting...' : 'Reject Settlement'}
               </button>
@@ -886,36 +1008,36 @@ export const AccountSettlementPage: React.FC = () => {
 
       {/* View Settlement Modal */}
       {isViewModalOpen && selectedSettlement && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-5 shadow-xl max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain">
-            <div className="flex items-center justify-between mb-4 border-b pb-2">
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white rounded-[24px] max-w-md w-full p-6 shadow-2xl border border-white/90 max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain">
+            <div className="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
               <h3 className="text-sm font-bold text-slate-900">
                 Settlement Details ({selectedSettlement.settlementNumber})
               </h3>
-              <button onClick={() => setIsViewModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setIsViewModalOpen(false)} className="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <div className="text-xs space-y-2 mb-4">
+            <div className="text-xs space-y-2.5 mb-5">
               <div className="flex justify-between py-1 border-b border-slate-100">
                 <span className="text-slate-500">Submitted By:</span>
                 <span className="font-semibold text-slate-800">{selectedSettlement.submittedByName}</span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-100">
                 <span className="text-slate-500">Expected Cash:</span>
-                <span className="font-semibold text-slate-800">PKR {selectedSettlement.expectedCash?.toLocaleString()}</span>
+                <span className="font-semibold text-slate-800 font-mono">PKR {selectedSettlement.expectedCash?.toLocaleString()}</span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-100">
                 <span className="text-slate-500">Counted Cash:</span>
-                <span className="font-semibold text-emerald-700">PKR {selectedSettlement.countedCash?.toLocaleString()}</span>
+                <span className="font-semibold text-emerald-700 font-mono">PKR {selectedSettlement.countedCash?.toLocaleString()}</span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-100">
                 <span className="text-slate-500">Difference:</span>
-                <span className="font-semibold text-slate-800">PKR {((selectedSettlement as any).difference ?? selectedSettlement.variance ?? 0).toLocaleString()}</span>
+                <span className="font-semibold text-slate-800 font-mono">PKR {((selectedSettlement as any).difference ?? selectedSettlement.variance ?? 0).toLocaleString()}</span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-100">
                 <span className="text-slate-500">Handover to Safe:</span>
-                <span className="font-semibold text-[#851C47]">PKR {selectedSettlement.handoverAmount?.toLocaleString()}</span>
+                <span className="font-semibold text-[#B82E69] font-mono">PKR {selectedSettlement.handoverAmount?.toLocaleString()}</span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-100">
                 <span className="text-slate-500">Status:</span>
@@ -923,8 +1045,8 @@ export const AccountSettlementPage: React.FC = () => {
               </div>
               {selectedSettlement.notes && (
                 <div className="py-1">
-                  <span className="text-slate-500 block mb-0.5">Notes:</span>
-                  <p className="text-slate-700 bg-slate-50 p-2 rounded-sm">{selectedSettlement.notes}</p>
+                  <span className="text-slate-500 block mb-1">Notes:</span>
+                  <p className="text-slate-700 bg-slate-50 p-2.5 rounded-xl border border-slate-100">{selectedSettlement.notes}</p>
                 </div>
               )}
             </div>
@@ -932,7 +1054,7 @@ export const AccountSettlementPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsViewModalOpen(false)}
-                className="px-4 py-1.5 text-xs bg-slate-200 text-slate-700 rounded-md font-semibold hover:bg-slate-300"
+                className="px-5 py-2 text-xs bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-colors cursor-pointer"
               >
                 Close
               </button>

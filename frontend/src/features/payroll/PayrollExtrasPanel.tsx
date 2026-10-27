@@ -27,10 +27,13 @@ interface Props {
 }
 
 const rs = (n: number) => `Rs. ${(n || 0).toLocaleString()}`;
-const input = 'w-full text-sm border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500';
-const card = 'bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden';
-const th = 'py-3 px-3 text-left';
-const primaryBtn = 'inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-medium rounded-xl text-xs';
+const input =
+  'w-full text-xs rounded-xl border border-white/80 bg-white/80 hover:bg-white px-3 py-2 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#B82E69]/20 focus:border-[#B82E69] shadow-2xs font-medium transition-all';
+const card =
+  'rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] overflow-hidden';
+const th = 'py-3.5 px-4 text-left font-medium text-[#475569]';
+const primaryBtn =
+  'h-9 px-4 font-semibold gap-1.5 shadow-xs text-xs sm:text-sm bg-[#B82E69] hover:bg-[#A02358] text-white rounded-xl transition-all inline-flex items-center justify-center cursor-pointer disabled:opacity-50';
 
 const typeBadge: Record<PayrollAdjustmentType, string> = {
   ALLOWANCE: 'bg-sky-100 text-sky-800',

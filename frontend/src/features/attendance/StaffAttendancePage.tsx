@@ -507,28 +507,30 @@ export const StaffAttendancePage: React.FC = () => {
 
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6 font-sans">
-      {/* ── HEADER SECTION ─────────────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-2xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69] shrink-0">
-            <Clock className="w-5 h-5" />
-          </div>
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-[#18191B] tracking-tight truncate">
-              Staff Attendance & Biometric Punches
-            </h1>
-            <p className="text-xs text-[#78616C] mt-0.5 line-clamp-1 xl:line-clamp-none">
-              Daily attendance marking, shift verification, grace lateness penalties & biometric sync.
-            </p>
+      {/* Top Header Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-5 sm:p-6 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#FDF2F5] to-white border border-white/80 shadow-2xs flex items-center justify-center text-[#B82E69] shrink-0">
+              <Clock className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold text-[#18191B] tracking-tight truncate">
+                Staff Attendance & Biometric Punches
+              </h1>
+              <p className="text-xs text-[#78616C] font-medium mt-0.5 line-clamp-1 xl:line-clamp-none">
+                Daily attendance marking, shift verification, grace lateness penalties & biometric sync.
+              </p>
+            </div>
           </div>
         </div>
 
         {/* Secondary tools */}
-        <div className="flex items-center gap-2 flex-wrap shrink-0">
+        <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto flex-wrap sm:flex-nowrap">
           <button
             type="button"
             onClick={() => navigate('/admin/attendance-settings')}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/80 bg-white/80 backdrop-blur-md shadow-2xs hover:bg-white text-slate-700 text-xs font-semibold transition-all cursor-pointer"
+            className="h-9 px-3.5 inline-flex items-center gap-1.5 rounded-xl border border-white/80 bg-white/70 hover:bg-white text-slate-700 text-xs font-semibold shadow-2xs transition-all cursor-pointer"
             title="Configure auto-absent cutoff threshold and shift grace"
           >
             <Sliders className="w-3.5 h-3.5 text-[#B82E69]" />
@@ -537,7 +539,7 @@ export const StaffAttendancePage: React.FC = () => {
           <button
             type="button"
             onClick={() => { setImportBranchId(isSuperAdmin ? '' : user.branchId || ''); setShowImportModal(true); }}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/80 bg-white/80 backdrop-blur-md shadow-2xs hover:bg-white text-slate-700 text-xs font-semibold transition-all cursor-pointer"
+            className="h-9 px-3.5 inline-flex items-center gap-1.5 rounded-xl border border-white/80 bg-white/70 hover:bg-white text-slate-700 text-xs font-semibold shadow-2xs transition-all cursor-pointer"
           >
             <Upload className="w-3.5 h-3.5 text-[#78616C]" />
             <span>Import CSV</span>
@@ -545,7 +547,7 @@ export const StaffAttendancePage: React.FC = () => {
           <button
             type="button"
             onClick={() => setShowFinalizeModal(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer"
+            className="h-9 px-4 inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer"
           >
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>Finalize Day (EOD)</span>

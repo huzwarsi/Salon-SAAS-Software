@@ -61,11 +61,11 @@ import {
 } from 'lucide-react';
 import { downloadReportCsv, downloadReportExcel, printReportWindow } from '@/features/reports/reportUtils';
 
-const labelClass = 'block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5';
+const labelClass = 'block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5';
 const selectClass =
-  'w-full text-xs rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#9D2558]/20 focus:border-[#9D2558] shadow-2xs font-medium cursor-pointer';
+  'w-full text-xs rounded-xl border border-white/80 bg-white/80 hover:bg-white px-3 py-2 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#B82E69]/20 focus:border-[#B82E69] shadow-2xs font-medium cursor-pointer transition-all';
 const inputClass =
-  'w-full text-xs rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#9D2558]/20 focus:border-[#9D2558] shadow-2xs font-medium';
+  'w-full text-xs rounded-xl border border-white/80 bg-white/80 hover:bg-white px-3 py-2 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#B82E69]/20 focus:border-[#B82E69] shadow-2xs font-medium transition-all';
 
 const loadExpenseAction = async (branchId: string) => {
   const [categories, accounts, drawers] = await Promise.all([salonService.getExpenseCategories(branchId), salonService.getPaymentAccounts(branchId), salonService.getCashDrawers(branchId)]);
@@ -775,61 +775,154 @@ export const ExpenseManagementPage: React.FC = () => {
   }, [allBranches, selectedBranchId]);
 
   return (
-    <div className="w-full max-w-full text-slate-800 font-sans">
-      {/* ── 1. TOP HEADER & FILTERS CARD (SALES INVOICES / UNPAID INVOICES STYLE) ── */}
-      <div className="bg-white rounded-xl shadow-xs border border-slate-200/90 p-5 md:p-6 mb-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
-          <div>
-            <h1 className="text-xl font-bold text-[#23151D] tracking-tight">Expense Management</h1>
-            <p className="text-xs text-slate-500 mt-1">
-              Authoritative operating expense vouchers, cash drawer disbursements, and bank payouts
-            </p>
-          </div>
-
-          {/* Action Toolbar */}
-          <div className="flex items-center gap-2 flex-wrap self-start sm:self-center">
-            {canManageCategoriesOrFloat && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => setIsFloatTransferModalOpen(true)}
-                  className="text-xs font-semibold px-3 py-1.5 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50 flex items-center gap-1.5 transition-colors cursor-pointer"
-                >
-                  <ArrowRightLeft className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Fund Cash Float</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsCategoryModalOpen(true)}
-                  className="text-xs font-semibold px-3 py-1.5 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50 flex items-center gap-1.5 transition-colors cursor-pointer"
-                >
-                  <Layers className="w-3.5 h-3.5 text-[#9D2558]" />
-                  <span>Categories</span>
-                </button>
-              </>
-            )}
-
-            <button
-              type="button"
-              onClick={loadData}
-              disabled={isLoading}
-              className="text-xs font-semibold px-3 py-1.5 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50 flex items-center gap-1.5 transition-colors cursor-pointer"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-[#9D2558]' : ''}`} />
-              <span>Refresh</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleOpenAddModal()}
-              className="text-xs font-semibold px-3.5 py-1.5 rounded-md bg-[#9D2558] hover:bg-[#851C47] text-white flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer active:scale-95"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Add Expense</span>
-            </button>
+    <div className="w-full max-w-full space-y-6 text-slate-800 font-sans">
+      {/* ── 1. TOP HEADER BANNER (FROSTED GLASS CONTAINER) ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-5 sm:p-6 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#FDF2F5] to-white border border-white/80 shadow-2xs flex items-center justify-center text-[#B82E69] shrink-0">
+              <Receipt className="w-5 h-5 text-[#B82E69]" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold text-[#18191B] tracking-tight truncate">
+                Expense Management
+              </h1>
+              <p className="text-xs text-[#78616C] font-medium mt-0.5 line-clamp-1 xl:line-clamp-none">
+                Authoritative operating expense vouchers, cash drawer disbursements, and bank payouts
+              </p>
+            </div>
           </div>
         </div>
 
+        {/* Action Toolbar */}
+        <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto flex-wrap sm:flex-nowrap">
+          {canManageCategoriesOrFloat && (
+            <>
+              <button
+                type="button"
+                onClick={() => setIsFloatTransferModalOpen(true)}
+                className="h-9 px-3.5 text-xs font-semibold rounded-xl border border-white/80 bg-white/70 hover:bg-white text-slate-700 shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer"
+              >
+                <ArrowRightLeft className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Fund Cash Float</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsCategoryModalOpen(true)}
+                className="h-9 px-3.5 text-xs font-semibold rounded-xl border border-white/80 bg-white/70 hover:bg-white text-slate-700 shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer"
+              >
+                <Layers className="w-3.5 h-3.5 text-[#B82E69]" />
+                <span>Categories</span>
+              </button>
+            </>
+          )}
+
+          <button
+            type="button"
+            onClick={loadData}
+            disabled={isLoading}
+            className="h-9 px-3.5 text-xs font-semibold rounded-xl border border-white/80 bg-white/70 hover:bg-white text-slate-700 shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-[#B82E69]' : 'text-slate-500'}`} />
+            <span>Refresh</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleOpenAddModal()}
+            className="h-9 px-4 font-semibold gap-1.5 shadow-xs text-xs sm:text-sm bg-[#B82E69] hover:bg-[#A02358] text-white rounded-xl transition-all flex items-center cursor-pointer shrink-0"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Expense</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ── 2. KPI SUMMARY METRICS: PURE WHITE FROSTED GLASS CARDS ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Net Operating Expenses */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+              <Receipt className="w-4 h-4" />
+            </div>
+            <span className="bg-[#FDF2F5] text-[#B82E69] shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Net Total
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {formatCurrency(metrics.netExpenses)}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Net operating disbursements
+            </span>
+          </div>
+        </div>
+
+        {/* Total Posted */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-emerald-600">
+              <CreditCard className="w-4 h-4" />
+            </div>
+            <span className="bg-emerald-50 text-emerald-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              {metrics.postedCount} Posted
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {formatCurrency(metrics.postedTotal)}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Total disbursed from till & bank
+            </span>
+          </div>
+        </div>
+
+        {/* Reversed / Voided */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-rose-600">
+              <RotateCcw className="w-4 h-4" />
+            </div>
+            <span className="bg-rose-50 text-rose-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              {metrics.reversedCount} Reversed
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {formatCurrency(metrics.reversedTotal)}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Voided expense vouchers
+            </span>
+          </div>
+        </div>
+
+        {/* Drafts */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-amber-600">
+              <FileText className="w-4 h-4" />
+            </div>
+            <span className="bg-amber-50 text-amber-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Drafts
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {metrics.draftCount}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Pending review / unposted
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 3. FILTER CONTROLS (FROSTED GLASS CARD) ── */}
+      <div className="p-5 sm:p-6 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] space-y-3">
         {/* Filter Controls Row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-7 gap-3.5 items-end">
           {/* Branch */}
@@ -840,7 +933,7 @@ export const ExpenseManagementPage: React.FC = () => {
               disabled={!isSuperAdmin}
               onValueChange={(val) => setSelectedBranchId(val)}
             >
-              <SelectTrigger className="w-full text-xs h-9 border border-slate-300 rounded-md bg-white text-slate-700 font-medium">
+              <SelectTrigger className="w-full text-xs h-9 rounded-xl border border-white/80 bg-white/80 hover:bg-white px-3 text-slate-800 shadow-2xs font-medium transition-all">
                 <SelectValue placeholder="Branch" />
               </SelectTrigger>
               <SelectContent className="z-[70]">
@@ -876,7 +969,7 @@ export const ExpenseManagementPage: React.FC = () => {
               value={categoryFilter}
               onValueChange={(val) => setCategoryFilter(val)}
             >
-              <SelectTrigger className="w-full text-xs h-9 border border-slate-300 rounded-md bg-white text-slate-700 font-medium">
+              <SelectTrigger className="w-full text-xs h-9 rounded-xl border border-white/80 bg-white/80 hover:bg-white px-3 text-slate-800 shadow-2xs font-medium transition-all">
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent className="z-[70]">
@@ -897,7 +990,7 @@ export const ExpenseManagementPage: React.FC = () => {
               value={statusFilter}
               onValueChange={(val: any) => setStatusFilter(val)}
             >
-              <SelectTrigger className="w-full text-xs h-9 border border-slate-300 rounded-md bg-white text-slate-700 font-medium">
+              <SelectTrigger className="w-full text-xs h-9 rounded-xl border border-white/80 bg-white/80 hover:bg-white px-3 text-slate-800 shadow-2xs font-medium transition-all">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent className="z-[70]">
@@ -916,7 +1009,7 @@ export const ExpenseManagementPage: React.FC = () => {
               value={paymentSourceFilter}
               onValueChange={(val: any) => setPaymentSourceFilter(val)}
             >
-              <SelectTrigger className="w-full text-xs h-9 border border-slate-300 rounded-md bg-white text-slate-700 font-medium">
+              <SelectTrigger className="w-full text-xs h-9 rounded-xl border border-white/80 bg-white/80 hover:bg-white px-3 text-slate-800 shadow-2xs font-medium transition-all">
                 <SelectValue placeholder="Payment Source" />
               </SelectTrigger>
               <SelectContent className="z-[70]">
@@ -985,14 +1078,14 @@ export const ExpenseManagementPage: React.FC = () => {
         </div>
       )}
 
-      {/* ── 2. MAIN TABLE REGISTER CARD (ROYAL BERRY BANNER & CRISP REPORT ROWS) ── */}
-      <div className="shadow-sm rounded-xl overflow-hidden border border-slate-200/90 mb-8 bg-white">
-        {/* Royal Berry Banner Header */}
-        <div className="bg-[#9D2558] text-white px-5 py-3 flex flex-wrap items-center justify-between gap-3 rounded-t-xl">
+      {/* ── 4. MAIN TABLE REGISTER CARD (FROSTED GLASS CONTAINER) ── */}
+      <div className="rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] overflow-hidden">
+        {/* Banner Header */}
+        <div className="bg-gradient-to-r from-[#B82E69] to-[#9D2558] text-white px-5 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 font-bold text-sm tracking-wide text-white">
             <Receipt className="w-4 h-4 stroke-[2.5]" />
             <span>Operating Expenses Register</span>
-            <span className="text-[11px] font-bold bg-white/20 text-white px-2 py-0.5 rounded-full ml-1">
+            <span className="text-[11px] font-bold bg-white/20 text-white px-2.5 py-0.5 rounded-full ml-1">
               {filteredExpenses.length} Vouchers
             </span>
           </div>
@@ -1000,7 +1093,7 @@ export const ExpenseManagementPage: React.FC = () => {
             <button
               type="button"
               onClick={handleExportCSV}
-              className="bg-[#009688] hover:bg-[#00897B] active:bg-[#00796B] text-white text-xs font-semibold px-3.5 py-1.5 rounded-md shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="h-8 px-3 text-xs font-semibold rounded-xl bg-white/15 hover:bg-white/25 text-white backdrop-blur-sm border border-white/20 shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer"
             >
               <FileSpreadsheet className="w-3.5 h-3.5" />
               <span>CSV</span>
@@ -1008,7 +1101,7 @@ export const ExpenseManagementPage: React.FC = () => {
             <button
               type="button"
               onClick={handleExportPDF}
-              className="bg-[#DC2626] hover:bg-[#B91C1C] active:bg-[#991B1B] text-white text-xs font-semibold px-3.5 py-1.5 rounded-md shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="h-8 px-3 text-xs font-semibold rounded-xl bg-white/15 hover:bg-white/25 text-white backdrop-blur-sm border border-white/20 shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer"
             >
               <FileText className="w-3.5 h-3.5" />
               <span>PDF</span>
@@ -1016,7 +1109,7 @@ export const ExpenseManagementPage: React.FC = () => {
             <button
               type="button"
               onClick={handlePrintRegister}
-              className="bg-[#4B5563] hover:bg-[#374151] active:bg-[#1F2937] text-white text-xs font-semibold px-3.5 py-1.5 rounded-md shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="h-8 px-3 text-xs font-semibold rounded-xl bg-white/15 hover:bg-white/25 text-white backdrop-blur-sm border border-white/20 shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer"
             >
               <Printer className="w-3.5 h-3.5" />
               <span>Print</span>
@@ -1025,10 +1118,10 @@ export const ExpenseManagementPage: React.FC = () => {
         </div>
 
         {/* Table Container */}
-        <div className="bg-white overflow-x-auto rounded-b-xl border-t border-[#F1DEE3]/40">
-          <table className="report-records w-full min-w-[1100px] text-left border-collapse font-['Inter',sans-serif] text-[13px] antialiased">
+        <div className="bg-transparent overflow-x-auto">
+          <table className="report-records w-full min-w-[1100px] text-left border-collapse font-sans text-[13px] antialiased">
             <thead>
-              <tr className="bg-[#FDF2F5] border-b border-[#F1DEE3] text-[#475569] font-medium text-[13px]">
+              <tr className="bg-[#FAF8F9]/80 border-b border-white/80 text-[#78616C] font-semibold text-xs tracking-wider">
                 <th className="py-3.5 px-4 text-center w-12 font-medium text-[#475569]">#</th>
                 <th className="py-3.5 px-4 font-medium text-[#475569] whitespace-nowrap">Voucher No</th>
                 <th className="py-3.5 px-4 font-medium text-[#475569] whitespace-nowrap">Expense Date</th>
@@ -1228,23 +1321,23 @@ export const ExpenseManagementPage: React.FC = () => {
             </tbody>
 
             {/* Integrated Table Footer */}
-            <tfoot className="bg-[#F8FAFC] border-t-2 border-slate-200 font-['Inter',sans-serif] text-[13px]">
-              <tr className="border-b border-slate-200/70">
+            <tfoot className="bg-[#FAF8F9]/80 border-t border-white/80 font-sans text-xs">
+              <tr className="border-b border-white/60">
                 <td colSpan={6} className="py-3.5 px-4 text-right font-bold text-slate-800 tracking-wide">
                   TOTALS (PKR)
                 </td>
-                <td className="py-3.5 px-4 text-right tabular-nums font-bold text-slate-800">
+                <td className="py-3.5 px-4 text-right font-mono tabular-nums font-bold text-slate-900">
                   {formatCurrency(metrics.postedTotal)}
                 </td>
-                <td colSpan={3} className="py-3.5 px-4 text-xs text-slate-500">
+                <td colSpan={3} className="py-3.5 px-4 text-xs text-[#78616C]">
                   {metrics.postedCount} posted vouchers {metrics.reversedCount > 0 ? `(${formatCurrency(metrics.reversedTotal)} reversed)` : ''}
                 </td>
               </tr>
               <tr>
-                <td colSpan={6} className="py-3 px-4 text-right font-medium text-slate-700">
+                <td colSpan={6} className="py-3 px-4 text-right font-semibold text-slate-700">
                   Net Operating Expenses
                 </td>
-                <td className="py-3 px-4 text-right tabular-nums font-bold text-[#9D2558] text-sm">
+                <td className="py-3 px-4 text-right font-mono tabular-nums font-extrabold text-[#B82E69] text-sm">
                   {formatCurrency(metrics.netExpenses)}
                 </td>
                 <td colSpan={3} className="py-3 px-4"></td>

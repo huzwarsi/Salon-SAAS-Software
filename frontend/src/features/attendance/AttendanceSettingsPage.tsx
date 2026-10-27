@@ -143,25 +143,29 @@ export const AttendanceSettingsPage: React.FC = () => {
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6 font-sans">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2">
-        <div>
-          <div className="flex items-center gap-2">
-            <div className="p-2 bg-[#FDF2F5] text-[#9D2558] rounded-xl border border-[#F1DEE3]">
+      {/* Top Header Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-5 sm:p-6 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#FDF2F5] to-white border border-white/80 shadow-2xs flex items-center justify-center text-[#B82E69] shrink-0">
               <ClockAlert className="w-5 h-5" />
             </div>
-            <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Attendance Settings</h1>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold text-[#18191B] tracking-tight truncate">
+                Attendance Settings
+              </h1>
+              <p className="text-xs text-[#78616C] font-medium mt-0.5 line-clamp-1 xl:line-clamp-none">
+                Configure shift start cutoffs, auto-marking absent thresholds, and grace periods for staff attendance.
+              </p>
+            </div>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
-            Configure shift start cutoffs, auto-marking absent thresholds, and grace periods for staff attendance.
-          </p>
         </div>
 
         {/* Quick Actions */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto flex-wrap sm:flex-nowrap">
           {isSuperAdmin && (
-            <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-2xs">
-              <Building2 className="w-4 h-4 text-slate-400" />
+            <div className="flex items-center gap-2 bg-white/70 px-3 py-1.5 rounded-xl border border-white/80 shadow-2xs">
+              <Building2 className="w-4 h-4 text-[#B82E69]" />
               <select
                 value={selectedBranchId}
                 onChange={(e) => setSelectedBranchId(e.target.value)}
@@ -180,19 +184,19 @@ export const AttendanceSettingsPage: React.FC = () => {
           <button
             type="button"
             onClick={() => navigate('/operations/attendance')}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-xl text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
+            className="h-9 px-3.5 inline-flex items-center gap-1.5 rounded-xl border border-white/80 bg-white/70 hover:bg-white text-slate-700 text-xs font-semibold shadow-2xs transition-all cursor-pointer"
           >
-            <CalendarCheck className="w-3.5 h-3.5 text-[#9D2558]" />
-            Daily Attendance Sheet
+            <CalendarCheck className="w-3.5 h-3.5 text-[#B82E69]" />
+            <span>Daily Attendance Sheet</span>
           </button>
 
           <button
             type="button"
             onClick={() => navigate('/admin/branch-settings')}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-xl text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
+            className="h-9 px-3.5 inline-flex items-center gap-1.5 rounded-xl border border-white/80 bg-white/70 hover:bg-white text-slate-700 text-xs font-semibold shadow-2xs transition-all cursor-pointer"
           >
             <Sliders className="w-3.5 h-3.5 text-slate-500" />
-            Branch Settings
+            <span>Branch Settings</span>
           </button>
         </div>
       </div>

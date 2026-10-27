@@ -41,75 +41,67 @@ export const InventoryNavHeader: React.FC<InventoryNavHeaderProps> = ({
   const isSuperAdmin = user?.role === 'SUPER_ADMIN';
 
   return (
-    <div className="mb-6">
-      {/* Top Row: Title, Branch Picker & Actions */}
-      <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
-        <div className="flex items-center gap-3.5 min-w-0 flex-1">
-          <div className="w-12 h-12 rounded-2xl bg-white/90 border border-white/80 shadow-[0_8px_20px_rgba(35,21,29,0.04),inset_0_1px_2px_rgba(255,255,255,1)] flex items-center justify-center text-[#B82E69] shrink-0">
-            {icon || <Package className="w-6 h-6 text-[#B82E69]" />}
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-5 sm:p-6 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] mb-6">
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#FDF2F5] to-white border border-white/80 shadow-2xs flex items-center justify-center text-[#B82E69] shrink-0">
+            {icon || <Package className="w-5 h-5 text-[#B82E69]" />}
           </div>
           <div className="min-w-0">
-            <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 mb-0.5 truncate tracking-wide">
-              <span>Operations</span>
-              <span className="text-slate-300">/</span>
-              <span>Inventory Management</span>
-              <span className="text-slate-300">/</span>
-              <span className="text-[#B82E69] font-bold">{title}</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#18191B] tracking-tight truncate">
+            <h1 className="text-xl sm:text-2xl font-bold text-[#18191B] tracking-tight truncate">
               {title}
             </h1>
-            <p className="text-xs sm:text-sm text-slate-500 mt-0.5 line-clamp-1 xl:line-clamp-none font-normal">
+            <p className="text-xs text-[#78616C] font-medium mt-0.5 line-clamp-1 xl:line-clamp-none">
               {subtitle}
             </p>
           </div>
         </div>
+      </div>
 
-        <div className="shrink-0 flex items-center gap-2.5 flex-nowrap self-start xl:self-auto overflow-x-auto max-w-full pb-1 xl:pb-0">
-          {/* Branch Picker for Super Admin */}
-          {isSuperAdmin && onBranchChange && allBranches.length > 0 && (
-            <div className="shrink-0">
-              <Select
-                value={selectedBranchId || allBranches[0]?.id || ''}
-                onValueChange={(val) => onBranchChange(val)}
-              >
-                <SelectTrigger className="h-10 px-3.5 rounded-2xl border border-white/90 bg-white/80 backdrop-blur-xl text-xs font-bold text-[#18191B] shadow-[0_4px_16px_rgba(35,21,29,0.03)] flex items-center gap-2">
-                  <Building2 className="w-4 h-4 text-[#B82E69] shrink-0" />
-                  <SelectValue placeholder="Select branch" />
-                </SelectTrigger>
-                <SelectContent className="z-[70]">
-                  {allBranches.map((b) => (
-                    <SelectItem key={b.id} value={b.id}>
-                      {b.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          {secondaryAction && (
-            <button
-              type="button"
-              onClick={secondaryAction.onClick}
-              className="h-10 px-4 text-xs font-bold text-[#18191B] rounded-2xl border border-white/90 bg-white/80 backdrop-blur-xl hover:bg-white hover:text-[#B82E69] hover:shadow-[0_8px_24px_rgba(35,21,29,0.06)] transition-all flex items-center gap-2 shadow-[0_4px_16px_rgba(35,21,29,0.03)] cursor-pointer shrink-0 whitespace-nowrap active:scale-[0.98]"
+      <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto flex-wrap sm:flex-nowrap">
+        {/* Branch Picker for Super Admin */}
+        {isSuperAdmin && onBranchChange && allBranches.length > 0 && (
+          <div className="shrink-0">
+            <Select
+              value={selectedBranchId || allBranches[0]?.id || ''}
+              onValueChange={(val) => onBranchChange(val)}
             >
-              {secondaryAction.icon || <Plus className="w-4 h-4" />}
-              <span>{secondaryAction.label}</span>
-            </button>
-          )}
+              <SelectTrigger className="h-9 px-3 rounded-xl border border-white/80 bg-white/70 hover:bg-white text-xs font-semibold text-slate-700 shadow-2xs flex items-center gap-2">
+                <Building2 className="w-3.5 h-3.5 text-[#B82E69] shrink-0" />
+                <SelectValue placeholder="Select branch" />
+              </SelectTrigger>
+              <SelectContent className="z-[70]">
+                {allBranches.map((b) => (
+                  <SelectItem key={b.id} value={b.id}>
+                    {b.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
-          {primaryAction && (
-            <button
-              type="button"
-              onClick={primaryAction.onClick}
-              className="h-10 px-4.5 text-xs font-bold text-white bg-gradient-to-r from-[#B82E69] to-[#9D2558] hover:from-[#A02359] hover:to-[#851C47] rounded-2xl shadow-[0_8px_20px_rgba(184,46,105,0.25)] hover:shadow-[0_10px_26px_rgba(184,46,105,0.35)] transition-all flex items-center gap-2 cursor-pointer shrink-0 whitespace-nowrap active:scale-[0.98]"
-            >
-              {primaryAction.icon || <Plus className="w-4 h-4" />}
-              <span>{primaryAction.label}</span>
-            </button>
-          )}
-        </div>
+        {secondaryAction && (
+          <button
+            type="button"
+            onClick={secondaryAction.onClick}
+            className="h-9 px-3.5 text-xs font-semibold rounded-xl border border-white/80 bg-white/70 hover:bg-white text-slate-700 shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer shrink-0 whitespace-nowrap"
+          >
+            {secondaryAction.icon || <Plus className="w-3.5 h-3.5" />}
+            <span>{secondaryAction.label}</span>
+          </button>
+        )}
+
+        {primaryAction && (
+          <button
+            type="button"
+            onClick={primaryAction.onClick}
+            className="h-9 px-4 font-semibold gap-1.5 shadow-xs text-xs sm:text-sm bg-[#B82E69] hover:bg-[#A02358] text-white rounded-xl transition-all flex items-center cursor-pointer shrink-0 whitespace-nowrap"
+          >
+            {primaryAction.icon || <Plus className="w-4 h-4" />}
+            <span>{primaryAction.label}</span>
+          </button>
+        )}
       </div>
     </div>
   );

@@ -88,9 +88,6 @@ export const ManualOvertimePage: React.FC = () => {
     reason: '',
   });
 
-  // Feedback banner
-  const [feedbackMsg, setFeedbackMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-
   const effectiveBranchId = user?.role === 'SUPER_ADMIN' ? selectedBranchId : (user?.branchId || activeBranchId);
 
   // Load data
@@ -110,7 +107,7 @@ export const ManualOvertimePage: React.FC = () => {
         setAddForm((prev) => ({ ...prev, date: sysDate }));
       }
     } catch (err: any) {
-      setFeedbackMsg({ type: 'error', text: err.message || 'Failed to load overtime records.' });
+      console.warn('Initial overtime records load warning:', err);
     } finally {
       setLoading(false);
     }
@@ -185,12 +182,10 @@ export const ManualOvertimePage: React.FC = () => {
     if (!actionScope.validate()) return;
     if (!addForm.staffId) {
       toast.error('Please select an employee.');
-      setFeedbackMsg({ type: 'error', text: 'Please select an employee.' });
       return;
     }
     if (!Number.isInteger(Number(addForm.minutes)) || Number(addForm.minutes) <= 0) {
       toast.error('Overtime minutes must be a positive whole number.');
-      setFeedbackMsg({ type: 'error', text: 'Overtime minutes must be a positive whole number.' });
       return;
     }
 
@@ -220,10 +215,6 @@ export const ManualOvertimePage: React.FC = () => {
 
       const msg = `Overtime record ${res.overtimeNumber || ''} created for ${res.staffName} (${res.minutes} mins).`;
       toast.success(msg);
-      setFeedbackMsg({
-        type: 'success',
-        text: msg,
-      });
       setShowAddModal(false);
       setAddForm({
         staffId: '',
@@ -238,7 +229,6 @@ export const ManualOvertimePage: React.FC = () => {
     } catch (err: any) {
       const errMsg = err.message || 'Failed to create overtime.';
       toast.error(errMsg);
-      setFeedbackMsg({ type: 'error', text: errMsg });
     }
   };
 
@@ -270,13 +260,11 @@ export const ManualOvertimePage: React.FC = () => {
 
       const msg = `Overtime record ${activeRecord.overtimeNumber || ''} updated.`;
       toast.success(msg);
-      setFeedbackMsg({ type: 'success', text: msg });
       setShowEditModal(false);
       loadData();
     } catch (err: any) {
       const errMsg = err.message || 'Failed to update overtime.';
       toast.error(errMsg);
-      setFeedbackMsg({ type: 'error', text: errMsg });
     }
   };
 
@@ -287,16 +275,11 @@ export const ManualOvertimePage: React.FC = () => {
       const res = await salonService.approveOvertime(activeRecord.id, user || undefined);
       const msg = `Overtime record ${res.overtimeNumber || ''} approved: ${res.approvedMinutes} mins @ Rs. ${res.hourlyRate}/hr = Rs. ${(res.amount ?? 0).toLocaleString()}.`;
       toast.success(msg);
-      setFeedbackMsg({
-        type: 'success',
-        text: msg,
-      });
       setShowApproveModal(false);
       loadData();
     } catch (err: any) {
       const errMsg = err.message || 'Failed to approve overtime.';
       toast.error(errMsg);
-      setFeedbackMsg({ type: 'error', text: errMsg });
     }
   };
 
@@ -305,24 +288,18 @@ export const ManualOvertimePage: React.FC = () => {
     if (!activeRecord) return;
     if (!reasonForm.reason.trim()) {
       toast.error('A rejection reason is required.');
-      setFeedbackMsg({ type: 'error', text: 'A rejection reason is required.' });
       return;
     }
     try {
       const res = await salonService.rejectOvertime(activeRecord.id, reasonForm.reason, user || undefined);
       const msg = `Overtime record ${res.overtimeNumber || ''} rejected.`;
       toast.success(msg);
-      setFeedbackMsg({
-        type: 'success',
-        text: msg,
-      });
       setShowRejectModal(false);
       setReasonForm({ reason: '' });
       loadData();
     } catch (err: any) {
       const errMsg = err.message || 'Failed to reject overtime.';
       toast.error(errMsg);
-      setFeedbackMsg({ type: 'error', text: errMsg });
     }
   };
 
@@ -331,24 +308,18 @@ export const ManualOvertimePage: React.FC = () => {
     if (!activeRecord) return;
     if (!reasonForm.reason.trim()) {
       toast.error('A cancellation reason is required.');
-      setFeedbackMsg({ type: 'error', text: 'A cancellation reason is required.' });
       return;
     }
     try {
       const res = await salonService.cancelOvertime(activeRecord.id, reasonForm.reason, user || undefined);
       const msg = `Overtime record ${res.overtimeNumber || ''} cancelled.`;
       toast.success(msg);
-      setFeedbackMsg({
-        type: 'success',
-        text: msg,
-      });
       setShowCancelModal(false);
       setReasonForm({ reason: '' });
       loadData();
     } catch (err: any) {
       const errMsg = err.message || 'Failed to cancel overtime.';
       toast.error(errMsg);
-      setFeedbackMsg({ type: 'error', text: errMsg });
     }
   };
 
@@ -396,72 +367,53 @@ export const ManualOvertimePage: React.FC = () => {
 
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6 font-sans">
-      {/* ── HEADER SECTION ─────────────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-2xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69] shrink-0">
-            <Timer className="w-5 h-5" />
-          </div>
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-[#18191B] tracking-tight truncate">
-              Manual Overtime Management
-            </h1>
-            <p className="text-xs text-[#78616C] mt-0.5 line-clamp-1 xl:line-clamp-none">
-              Manual overtime minute logging, snapshotted hourly rates, and payroll review queue.
-            </p>
+      {/* Top Header Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-5 sm:p-6 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#FDF2F5] to-white border border-white/80 shadow-2xs flex items-center justify-center text-[#B82E69] shrink-0">
+              <Timer className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold text-[#18191B] tracking-tight truncate">
+                Manual Overtime Management
+              </h1>
+              <p className="text-xs text-[#78616C] font-medium mt-0.5 line-clamp-1 xl:line-clamp-none">
+                Manual overtime minute logging, snapshotted hourly rates, and payroll review queue.
+              </p>
+            </div>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-auto flex-wrap sm:flex-nowrap">
+        <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto flex-wrap sm:flex-nowrap">
           <button
-            onClick={() => setShowAddModal(true)}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-[#B82E69] to-[#9D2558] hover:from-[#A02359] hover:to-[#8B1A4B] text-white text-xs font-semibold shadow-xs cursor-pointer transition-all"
+            onClick={handleExportCsv}
+            className="h-9 px-3.5 inline-flex items-center gap-1.5 text-xs font-semibold rounded-xl border border-white/80 bg-white/70 hover:bg-white text-slate-700 shadow-2xs transition-all cursor-pointer"
+            title="Export CSV"
           >
-            <Plus className="w-4 h-4" />
-            <span>New Overtime Entry</span>
+            <FileSpreadsheet className="w-3.5 h-3.5 text-slate-500" />
+            <span>Export CSV</span>
           </button>
 
           <button
             onClick={() => setShowPrintModal(true)}
-            className="p-2 rounded-xl bg-white/80 backdrop-blur-md border border-white/80 text-slate-700 hover:bg-white shadow-2xs transition-all cursor-pointer"
+            className="h-9 px-3.5 inline-flex items-center gap-1.5 text-xs font-semibold rounded-xl border border-white/80 bg-white/70 hover:bg-white text-slate-700 shadow-2xs transition-all cursor-pointer"
             title="Print Overtime Audit"
           >
-            <Printer className="w-4 h-4" />
+            <Printer className="w-3.5 h-3.5 text-slate-500" />
+            <span>Print Report</span>
           </button>
 
           <button
-            onClick={handleExportCsv}
-            className="p-2 rounded-xl bg-white/80 backdrop-blur-md border border-white/80 text-slate-700 hover:bg-white shadow-2xs transition-all cursor-pointer"
-            title="Export CSV"
+            onClick={() => setShowAddModal(true)}
+            className="h-9 px-4 inline-flex items-center gap-1.5 rounded-xl bg-[#B82E69] hover:bg-[#A02358] text-white text-xs font-semibold shadow-xs cursor-pointer transition-all shrink-0"
           >
-            <FileSpreadsheet className="w-4 h-4" />
+            <Plus className="w-4 h-4" />
+            <span>New Overtime Entry</span>
           </button>
         </div>
       </div>
-
-      {/* FEEDBACK BANNER */}
-      {feedbackMsg && (
-        <div
-          className={`p-3.5 rounded-2xl flex items-center justify-between text-xs shadow-2xs ${
-            feedbackMsg.type === 'success'
-              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-              : 'bg-rose-50 text-rose-800 border border-rose-200'
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            {feedbackMsg.type === 'success' ? (
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-            ) : (
-              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-            )}
-            <span>{feedbackMsg.text}</span>
-          </div>
-          <button onClick={() => setFeedbackMsg(null)} className="text-slate-400 hover:text-slate-600">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
 
       {/* SUMMARY KPI CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

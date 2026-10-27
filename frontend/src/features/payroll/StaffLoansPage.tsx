@@ -5,6 +5,7 @@ import { CashDrawer, OnlineAccount, SalaryAdvance, StaffMember } from '../../typ
 import { Building2, Info, Wallet } from 'lucide-react';
 import { AccessDeniedView } from '../scaffold/AccessDeniedView';
 import { PayrollExtrasPanel } from './PayrollExtrasPanel';
+import { toast } from '../../context/ToastContext';
 
 const rs = (n: number) => `Rs. ${(n || 0).toLocaleString()}`;
 
@@ -20,8 +21,16 @@ export const StaffLoansPage: React.FC = () => {
   }
 
   const [selectedBranchId, setSelectedBranchId] = useState<string>(
-    user.role === 'SUPER_ADMIN' ? '' : (user.branchId || '')
+    user.role === 'SUPER_ADMIN' ? (activeBranchId || user.branchId || allBranches[0]?.id || '') : (user.branchId || activeBranchId || '')
   );
+
+  useEffect(() => {
+    if (!selectedBranchId) {
+      const fallback = activeBranchId || user.branchId || allBranches[0]?.id || '';
+      if (fallback) setSelectedBranchId(fallback);
+    }
+  }, [activeBranchId, user.branchId, allBranches, selectedBranchId]);
+
   const branchId = user.role === 'SUPER_ADMIN' ? selectedBranchId : (user.branchId || activeBranchId);
   const month = (demoDate || new Date().toISOString().slice(0, 10)).slice(0, 7);
 
@@ -30,7 +39,6 @@ export const StaffLoansPage: React.FC = () => {
   const [cashDrawers, setCashDrawers] = useState<CashDrawer[]>([]);
   const [advances, setAdvances] = useState<SalaryAdvance[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   useEffect(() => {
     if (!branchId) return;
@@ -46,7 +54,7 @@ export const StaffLoansPage: React.FC = () => {
         setCashDrawers(drawers);
         setAdvances(loans);
       })
-      .catch((e) => setFeedback({ type: 'error', message: e?.message || 'Failed to load staff loans.' }));
+      .catch((e) => console.warn('Initial staff loans load error:', e));
   }, [branchId, refreshKey]);
 
   const myDrawer = cashDrawers.find((d) => d.branchId === branchId && d.custodianUserId === user.id && d.status === 'OPEN');
@@ -62,69 +70,161 @@ export const StaffLoansPage: React.FC = () => {
   }, [advances]);
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-5 font-sans">
-      <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-3 bg-amber-50 text-amber-600 rounded-xl"><Wallet className="w-6 h-6" /></div>
-          <div>
-            <h1 className="text-xl font-bold text-slate-900 tracking-tight">Staff Loans</h1>
-            <p className="text-xs text-slate-500 mt-1">Give a loan (salary advance) and recover it from payroll in monthly installments.</p>
+    <div className="w-full max-w-full space-y-6 text-slate-800 font-sans">
+      {/* ── 1. TOP HEADER BANNER (FROSTED GLASS CONTAINER) ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-5 sm:p-6 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#FDF2F5] to-white border border-white/80 shadow-2xs flex items-center justify-center text-[#B82E69] shrink-0">
+              <Wallet className="w-5 h-5 text-[#B82E69]" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold text-[#18191B] tracking-tight truncate">
+                Staff Loans & Advances
+              </h1>
+              <p className="text-xs text-[#78616C] font-medium mt-0.5 line-clamp-1 xl:line-clamp-none">
+                Issue salary advances from cash drawer or online account, recovered via payroll installments
+              </p>
+            </div>
           </div>
         </div>
+
         {user.role === 'SUPER_ADMIN' && (
-          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5">
-            <Building2 className="w-4 h-4 text-slate-400" />
-            <select className="bg-transparent text-xs font-semibold text-slate-800 outline-none" value={selectedBranchId} onChange={(e) => setSelectedBranchId(e.target.value)}>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Branch:</span>
+            <select
+              className="text-xs rounded-xl border border-white/80 bg-white/80 hover:bg-white px-3 py-1.5 text-slate-800 shadow-2xs font-medium transition-all cursor-pointer"
+              value={selectedBranchId}
+              onChange={(e) => setSelectedBranchId(e.target.value)}
+            >
               <option value="">Select branch</option>
-              {allBranches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+              {allBranches.map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.name}
+                </option>
+              ))}
             </select>
           </div>
         )}
       </div>
 
-      <div className="bg-indigo-50/60 border border-indigo-100 rounded-2xl p-4 flex gap-3 text-xs text-slate-700">
-        <Info className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" />
+      {/* ── 2. INFO ALERT BANNER ── */}
+      <div className="p-4 rounded-2xl border border-[#F1DEE3] bg-[#FDF2F5]/80 text-[#78616C] flex gap-3 text-xs backdrop-blur-sm shadow-2xs">
+        <Info className="w-4 h-4 text-[#B82E69] shrink-0 mt-0.5" />
         <div className="space-y-1">
-          <div><b>Where the money comes from:</b> Cash → your own open cash drawer{myDrawer ? ` (expected ${rs(myDrawer.expectedInDrawer)})` : ' — open a drawer first'}; Online → a branch bank/online account.</div>
-          <div><b>How it is recovered:</b> the monthly installment is deducted on the staff payslip when payroll is finalized, starting from the chosen month.</div>
-          <div>A loan is not an expense — salary expense is recognized once, on payroll finalization. A loan can be reversed only before any recovery.</div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {[
-          { label: 'Active Loans', value: String(totals.active), cls: 'text-slate-900' },
-          { label: 'Total Given', value: rs(totals.given), cls: 'text-slate-900' },
-          { label: 'Recovered', value: rs(totals.recovered), cls: 'text-emerald-600' },
-          { label: 'Outstanding', value: rs(totals.outstanding), cls: 'text-rose-600' },
-        ].map((k) => (
-          <div key={k.label} className="bg-white rounded-xl border border-slate-100 shadow-sm px-4 py-3">
-            <div className="text-[11px] uppercase font-medium text-slate-500">{k.label}</div>
-            <div className={`text-lg font-bold mt-0.5 ${k.cls}`}>{k.value}</div>
+          <div>
+            <strong className="text-slate-800">Funding source:</strong> Cash disbursements come from your open cash drawer{myDrawer ? ` (expected ${rs(myDrawer.expectedInDrawer)})` : ' — open a drawer first'}; Online payouts disburse from an active branch bank account.
           </div>
-        ))}
+          <div>
+            <strong className="text-slate-800">Recovery cycle:</strong> Monthly installments are automatically deducted from the staff payslip upon payroll finalization.
+          </div>
+          <div>
+            A loan is an asset receivable and does not distort operating expenses; salary expense is recognized when payroll is finalized.
+          </div>
+        </div>
       </div>
 
-      {feedback && (
-        <div className={`px-4 py-2.5 rounded-xl text-xs font-medium ${feedback.type === 'success' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
-          {feedback.message}
+      {/* ── 3. KPI SUMMARY CARDS: PURE WHITE FROSTED GLASS ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Active Loans */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+              <Wallet className="w-4 h-4" />
+            </div>
+            <span className="bg-[#FDF2F5] text-[#B82E69] shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Active
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {totals.active}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Currently active loan accounts
+            </span>
+          </div>
         </div>
-      )}
 
+        {/* Total Given */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-blue-600">
+              <Building2 className="w-4 h-4" />
+            </div>
+            <span className="bg-blue-50 text-blue-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Disbursed
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              {rs(totals.given)}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Total cumulative principal given
+            </span>
+          </div>
+        </div>
+
+        {/* Recovered */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-emerald-600">
+              <Wallet className="w-4 h-4" />
+            </div>
+            <span className="bg-emerald-50 text-emerald-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Recovered
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-emerald-700 font-mono tabular-nums tracking-tight block">
+              {rs(totals.recovered)}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Total recovered via payroll deductions
+            </span>
+          </div>
+        </div>
+
+        {/* Outstanding */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-rose-600">
+              <Wallet className="w-4 h-4" />
+            </div>
+            <span className="bg-rose-50 text-rose-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Balance
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-rose-600 font-mono tabular-nums tracking-tight block">
+              {rs(totals.outstanding)}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Remaining staff receivables balance
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 4. LOAN DISBURSEMENT & REGISTER ACTIONS ── */}
       {branchId && (
-        <PayrollExtrasPanel
-          key={`${branchId}-${refreshKey}`}
-          view="ADVANCES"
-          branchId={branchId}
-          month={month}
-          staffList={staffList}
-          onlineAccounts={onlineAccounts}
-          hasOpenDrawer={!!myDrawer}
-          onFeedback={(type, message) => {
-            setFeedback({ type, message });
-            if (type === 'success') setRefreshKey((k) => k + 1);
-          }}
-        />
+        <div className="rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-5 sm:p-6 overflow-hidden">
+          <PayrollExtrasPanel
+            key={`${branchId}-${refreshKey}`}
+            view="ADVANCES"
+            branchId={branchId}
+            month={month}
+            staffList={staffList}
+            onlineAccounts={onlineAccounts}
+            hasOpenDrawer={!!myDrawer}
+            onFeedback={(type, message) => {
+              if (type === 'error') toast.error(message);
+              else toast.success(message);
+              if (type === 'success') setRefreshKey((k) => k + 1);
+            }}
+          />
+        </div>
       )}
     </div>
   );

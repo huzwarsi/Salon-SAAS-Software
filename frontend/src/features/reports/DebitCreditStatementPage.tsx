@@ -35,10 +35,10 @@ import {
 } from 'lucide-react';
 
 const selectClass =
-  'w-full text-xs border border-slate-300 rounded-md px-3 py-2 bg-white text-slate-700 focus:outline-hidden focus:ring-1 focus:ring-[#9D2558] focus:border-[#9D2558] transition-colors';
+  'w-full text-xs font-semibold border border-slate-200 rounded-xl px-3.5 py-2.5 bg-white text-slate-700 shadow-2xs focus:outline-hidden focus:ring-2 focus:ring-[#B82E69]/30 transition-all';
 const inputClass =
-  'w-full text-xs border border-slate-300 rounded-md px-3 py-2 bg-white text-slate-700 focus:outline-hidden focus:ring-1 focus:ring-[#9D2558] focus:border-[#9D2558] transition-colors';
-const labelClass = 'block text-[11px] font-semibold text-[#23151D] mb-1.5';
+  'w-full text-xs font-semibold border border-slate-200 rounded-xl px-3.5 py-2.5 bg-white text-slate-700 shadow-2xs focus:outline-hidden focus:ring-2 focus:ring-[#B82E69]/30 transition-all';
+const labelClass = 'block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5';
 
 const formatPKR = (amt: number, withSign = false) => {
   const num = Number(amt) || 0;
@@ -359,52 +359,63 @@ export const DebitCreditStatementPage: React.FC<{ initialTab?: 'PAYMENT_ACCOUNTS
   };
 
   return (
-    <div className="space-y-6 min-w-0">
-      {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-5">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-[#9D2558]/10 text-[#9D2558] rounded-lg">
-              <ArrowRightLeft className="w-5 h-5" />
-            </div>
-            <h1 className="text-xl font-bold text-slate-900 tracking-tight">Debit / Credit Statement</h1>
-          </div>
-          <p className="text-xs text-slate-500 mt-1">
-            Universal Double-Entry Ledger: <span className="font-semibold text-slate-700">Debit = In (+), Credit = Out (−)</span> · <span className="font-semibold text-[#9D2558]">Closing Balance = Opening + Debit − Credit</span>
-          </p>
-        </div>
+    <div className="w-full max-w-full space-y-6 text-slate-800 font-sans">
+      {/* 1. Top Header Banner */}
+      <div className="relative overflow-hidden rounded-[24px] border border-white/90 bg-white/75 p-6 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-gradient-to-br from-[#B82E69]/10 via-[#D94883]/5 to-transparent blur-3xl" />
 
-        {/* Master Tab Switcher */}
-        <div className="inline-flex p-1 bg-slate-100 rounded-lg border border-slate-200">
-          <button
-            type="button"
-            onClick={() => handleTabChange('PAYMENT_ACCOUNTS')}
-            className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-md transition-all cursor-pointer ${
-              activeTab === 'PAYMENT_ACCOUNTS'
-                ? 'bg-white text-[#9D2558] shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Landmark className="w-4 h-4" />
-            <span>1. Payment Accounts</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleTabChange('CASH_DRAWER')}
-            className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-md transition-all cursor-pointer ${
-              activeTab === 'CASH_DRAWER'
-                ? 'bg-white text-[#9D2558] shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Wallet className="w-4 h-4" />
-            <span>2. Cash Drawer</span>
-          </button>
+        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#B82E69] to-[#9D2558] text-white shadow-lg shadow-[#B82E69]/25">
+              <ArrowRightLeft className="h-6 w-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold tracking-tight text-[#23151D]">
+                  Debit / Credit Financial Statement
+                </h1>
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#B82E69]/10 text-[#B82E69] border border-[#B82E69]/20">
+                  Double-Entry
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">
+                Universal Double-Entry Ledger: <span className="font-semibold text-emerald-700">Debit = In (+)</span>, <span className="font-semibold text-rose-700">Credit = Out (−)</span> · <span className="font-mono text-[#B82E69] font-bold">Closing = Opening + Debit − Credit</span>
+              </p>
+            </div>
+          </div>
+
+          {/* Master Tab Switcher */}
+          <div className="inline-flex p-1.5 bg-white/80 rounded-2xl border border-slate-200/80 shadow-2xs gap-1">
+            <button
+              type="button"
+              onClick={() => handleTabChange('PAYMENT_ACCOUNTS')}
+              className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                activeTab === 'PAYMENT_ACCOUNTS'
+                  ? 'bg-gradient-to-r from-[#B82E69] to-[#9D2558] text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Landmark className="w-4 h-4" />
+              <span>1. Payment Accounts</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleTabChange('CASH_DRAWER')}
+              className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                activeTab === 'CASH_DRAWER'
+                  ? 'bg-gradient-to-r from-[#B82E69] to-[#9D2558] text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Wallet className="w-4 h-4" />
+              <span>2. Cash Drawer</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Filter Card */}
-      <div className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-xs">
+      {/* 2. Filter Card */}
+      <div className="rounded-[20px] border border-white/90 bg-white/75 p-5 backdrop-blur-xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
         <form onSubmit={handleApplyFilters} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Branch */}
@@ -497,26 +508,26 @@ export const DebitCreditStatementPage: React.FC<{ initialTab?: 'PAYMENT_ACCOUNTS
                     <button
                       type="button"
                       onClick={() => setCashSubView('TRANSACTIONS')}
-                      className={`flex-1 py-1.5 px-3 rounded-md text-xs font-semibold flex items-center justify-center gap-1.5 border transition-all cursor-pointer ${
+                      className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border transition-all cursor-pointer ${
                         cashSubView === 'TRANSACTIONS'
-                          ? 'bg-[#9D2558] text-white border-[#9D2558]'
-                          : 'bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100'
+                          ? 'bg-gradient-to-r from-[#B82E69] to-[#9D2558] text-white border-transparent shadow-xs'
+                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                       }`}
                     >
                       <ListOrdered className="w-3.5 h-3.5" />
-                      <span>Cash Transactions (Debit/Credit Ledger)</span>
+                      <span>Cash Transactions (Debit/Credit)</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => setCashSubView('SHIFTS')}
-                      className={`flex-1 py-1.5 px-3 rounded-md text-xs font-semibold flex items-center justify-center gap-1.5 border transition-all cursor-pointer ${
+                      className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border transition-all cursor-pointer ${
                         cashSubView === 'SHIFTS'
-                          ? 'bg-[#9D2558] text-white border-[#9D2558]'
-                          : 'bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100'
+                          ? 'bg-gradient-to-r from-[#B82E69] to-[#9D2558] text-white border-transparent shadow-xs'
+                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                       }`}
                     >
                       <Layers className="w-3.5 h-3.5" />
-                      <span>Shift Reconciliation & Custody</span>
+                      <span>Shift Reconciliation</span>
                     </button>
                   </div>
                 </div>
@@ -549,13 +560,13 @@ export const DebitCreditStatementPage: React.FC<{ initialTab?: 'PAYMENT_ACCOUNTS
             <div className="sm:col-span-2">
               <label className={labelClass}>Search Statement</label>
               <div className="relative">
-                <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400" />
+                <Search className="w-3.5 h-3.5 absolute left-3.5 top-3.5 text-slate-400" />
                 <input
                   type="text"
                   placeholder="Filter by account, reference, user, or description..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className={`${inputClass} pl-8`}
+                  className={`${inputClass} pl-9`}
                 />
               </div>
             </div>
@@ -566,7 +577,7 @@ export const DebitCreditStatementPage: React.FC<{ initialTab?: 'PAYMENT_ACCOUNTS
             <button
               type="submit"
               disabled={isLoading}
-              className="px-6 h-[36px] bg-[#9D2558] hover:bg-[#851C47] active:bg-[#002b66] text-white font-semibold text-xs rounded-md shadow-xs flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-70"
+              className="rounded-xl bg-gradient-to-r from-[#B82E69] to-[#9D2558] px-6 py-2.5 text-xs font-bold text-white shadow-xs hover:opacity-95 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-70"
             >
               {isLoading ? (
                 <>
@@ -575,7 +586,7 @@ export const DebitCreditStatementPage: React.FC<{ initialTab?: 'PAYMENT_ACCOUNTS
                 </>
               ) : (
                 <>
-                  <Filter className="w-4 h-4 fill-current" />
+                  <Filter className="w-3.5 h-3.5 fill-current" />
                   <span>Filter Statement</span>
                 </>
               )}
@@ -586,93 +597,103 @@ export const DebitCreditStatementPage: React.FC<{ initialTab?: 'PAYMENT_ACCOUNTS
 
       {/* Main Content Area */}
       {!hasFiltered ? (
-        <div className="bg-white rounded-xl border border-slate-200/90 p-16 flex flex-col items-center justify-center min-h-[360px] shadow-xs text-center">
-          <Filter className="w-12 h-12 stroke-[1.25] text-slate-300 mb-3" />
-          <p className="text-slate-500 text-sm font-medium">Please apply filters above to generate live Debit / Credit Statement</p>
-          <p className="text-slate-400 text-xs mt-1">Select branch or date range and click 'Filter Statement'</p>
+        <div className="rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl p-16 flex flex-col items-center justify-center min-h-[360px] shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] text-center">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#FDF2F5] to-[#F8D7E3] border border-[#F1DEE3] flex items-center justify-center text-[#B82E69] mb-4 shadow-sm">
+            <Filter className="w-7 h-7" />
+          </div>
+          <p className="text-slate-800 text-base font-bold">Apply Filters to Generate Statement</p>
+          <p className="text-slate-500 text-xs mt-1 max-w-sm">Select your desired branch, payment account, or date window and click 'Filter Statement' to compile live double-entry records.</p>
         </div>
       ) : isLoading ? (
-        <div className="bg-white rounded-xl border border-slate-200/90 p-16 flex flex-col items-center justify-center min-h-[360px] shadow-xs text-center">
-          <div className="w-10 h-10 rounded-full border-3 border-[#F1DEE3] border-t-[#9D2558] animate-spin mb-3" />
-          <p className="text-slate-600 text-sm font-medium">Loading live double-entry ledger...</p>
+        <div className="rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl p-16 flex flex-col items-center justify-center min-h-[360px] shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] text-center">
+          <div className="w-10 h-10 rounded-full border-3 border-[#F1DEE3] border-t-[#B82E69] animate-spin mb-4" />
+          <p className="text-slate-700 text-sm font-semibold">Compiling Double-Entry Records...</p>
+          <p className="text-slate-400 text-xs mt-1">Reconciling ledger entries and running balances</p>
         </div>
       ) : errorMessage ? (
-        <div className="bg-white rounded-xl border border-rose-200 p-8 shadow-xs text-center">
-          <p className="text-rose-600 text-sm font-medium mb-3">{errorMessage}</p>
+        <div className="rounded-[24px] border border-rose-200/80 bg-white/80 backdrop-blur-xl p-8 shadow-sm text-center">
+          <p className="text-rose-600 text-sm font-semibold mb-3">{errorMessage}</p>
           <button
             onClick={() => handleApplyFilters()}
-            className="px-4 py-1.5 bg-[#9D2558] text-white text-xs font-semibold rounded-md shadow-xs hover:bg-[#851C47]"
+            className="px-5 py-2 bg-gradient-to-r from-[#B82E69] to-[#9D2558] text-white text-xs font-semibold rounded-xl shadow-sm hover:opacity-95 cursor-pointer"
           >
             Retry
           </button>
         </div>
       ) : activeTab === 'PAYMENT_ACCOUNTS' && accountsReport ? (
         /* ═══════════ TAB 1: PAYMENT ACCOUNTS ═══════════ */
-        <div className="space-y-5">
+        <div className="space-y-6">
           {/* KPI Summary Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3.5">
-            <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+            <div className="rounded-[20px] border border-white/90 bg-white/75 backdrop-blur-xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-4 transition-all duration-200 hover:-translate-y-0.5">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Opening Balance</span>
-              <span className="text-base font-extrabold text-slate-800 tabular-nums block mt-1">
+              <span className="text-lg font-extrabold text-slate-800 font-mono tabular-nums block mt-1.5">
                 PKR {formatPKR(accountsReport.kpis.totalOpeningBalance)}
               </span>
-              <span className="text-[10px] text-slate-400 mt-0.5 block">Start of period</span>
+              <span className="text-[11px] text-slate-400 mt-1 block">Start of period</span>
             </div>
 
-            <div className="p-4 bg-white rounded-xl border border-emerald-200/80 bg-emerald-50/20 shadow-2xs">
+            <div className="rounded-[20px] border border-emerald-200/80 bg-emerald-50/25 backdrop-blur-xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-4 transition-all duration-200 hover:-translate-y-0.5">
               <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider flex items-center gap-1">
                 <ArrowDownLeft className="w-3.5 h-3.5" />
                 <span>Debit (Money In)</span>
               </span>
-              <span className="text-base font-extrabold text-emerald-700 tabular-nums block mt-1">
+              <span className="text-lg font-extrabold text-emerald-700 font-mono tabular-nums block mt-1.5">
                 +PKR {formatPKR(accountsReport.kpis.totalMoneyIn)}
               </span>
-              <span className="text-[10px] text-emerald-600/80 mt-0.5 block">Client Collections & Transfers</span>
+              <span className="text-[11px] text-emerald-600/80 mt-1 block">Client Collections & Transfers</span>
             </div>
 
-            <div className="p-4 bg-white rounded-xl border border-rose-200/80 bg-rose-50/20 shadow-2xs">
+            <div className="rounded-[20px] border border-rose-200/80 bg-rose-50/25 backdrop-blur-xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-4 transition-all duration-200 hover:-translate-y-0.5">
               <span className="text-[10px] font-bold text-rose-700 uppercase tracking-wider flex items-center gap-1">
                 <ArrowUpRight className="w-3.5 h-3.5" />
                 <span>Credit (Money Out)</span>
               </span>
-              <span className="text-base font-extrabold text-rose-700 tabular-nums block mt-1">
+              <span className="text-lg font-extrabold text-rose-700 font-mono tabular-nums block mt-1.5">
                 -PKR {formatPKR(accountsReport.kpis.totalMoneyOut)}
               </span>
-              <span className="text-[10px] text-rose-600/80 mt-0.5 block">Expenses & Supplier Payouts</span>
+              <span className="text-[11px] text-rose-600/80 mt-1 block">Expenses & Supplier Payouts</span>
             </div>
 
-            <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-2xs">
+            <div className="rounded-[20px] border border-white/90 bg-white/75 backdrop-blur-xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-4 transition-all duration-200 hover:-translate-y-0.5">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Net Flow (In − Out)</span>
-              <span className={`text-base font-extrabold tabular-nums block mt-1 ${accountsReport.kpis.netMovement >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
+              <span className={`text-lg font-extrabold font-mono tabular-nums block mt-1.5 ${accountsReport.kpis.netMovement >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
                 {accountsReport.kpis.netMovement >= 0 ? '+' : '-'}PKR {formatPKR(Math.abs(accountsReport.kpis.netMovement))}
               </span>
-              <span className="text-[10px] text-slate-400 mt-0.5 block">Net period movement</span>
+              <span className="text-[11px] text-slate-400 mt-1 block">Net period movement</span>
             </div>
 
-            <div className="p-4 bg-[#FDF2F5]/60 rounded-xl border border-[#F1DEE3] shadow-2xs col-span-2 sm:col-span-1">
-              <span className="text-[10px] font-bold text-[#9D2558] uppercase tracking-wider block">Closing Balance</span>
-              <span className="text-base font-extrabold text-[#9D2558] tabular-nums block mt-1">
+            <div className="rounded-[20px] border border-[#F1DEE3] bg-[#FDF2F5]/70 backdrop-blur-xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-4 col-span-2 sm:col-span-1 transition-all duration-200 hover:-translate-y-0.5">
+              <span className="text-[10px] font-bold text-[#B82E69] uppercase tracking-wider block">Closing Balance</span>
+              <span className="text-lg font-extrabold text-[#B82E69] font-mono tabular-nums block mt-1.5">
                 PKR {formatPKR(accountsReport.kpis.totalClosingBalance)}
               </span>
-              <span className="text-[10px] text-[#9D2558]/80 mt-0.5 block font-mono">Opening + Debit − Credit</span>
+              <span className="text-[11px] text-[#B82E69]/80 mt-1 block font-mono">Opening + Debit − Credit</span>
             </div>
           </div>
 
           {/* Table Container */}
-          <div className="bg-white rounded-xl border border-slate-200/90 shadow-sm overflow-hidden">
+          <div className="rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] overflow-hidden">
             {/* Banner */}
-            <div className="bg-[#9D2558] text-white px-5 py-3 flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <Landmark className="w-4 h-4 text-white/90" />
-                <span className="font-semibold text-xs tracking-wide">
-                  Payment Accounts Ledger ({filteredAccountRows.length} transactions)
-                </span>
+            <div className="bg-gradient-to-r from-[#B82E69] via-[#A8285F] to-[#8F1D4E] text-white px-6 py-4 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center border border-white/20">
+                  <Landmark className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <span className="font-bold text-sm tracking-wide block">
+                    Payment Accounts Ledger
+                  </span>
+                  <span className="text-[11px] text-white/80">
+                    {filteredAccountRows.length} recorded movement entries
+                  </span>
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={handleExportAccountsCsv}
-                  className="bg-[#009688] hover:bg-[#00897B] text-white text-xs font-semibold px-3 py-1.5 rounded-md flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+                  className="bg-white/15 hover:bg-white/25 text-white text-xs font-semibold px-3 py-1.5 rounded-xl border border-white/20 flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
                 >
                   <FileSpreadsheet className="w-3.5 h-3.5" />
                   CSV
@@ -680,7 +701,7 @@ export const DebitCreditStatementPage: React.FC<{ initialTab?: 'PAYMENT_ACCOUNTS
                 <button
                   type="button"
                   onClick={handleExportAccountsExcel}
-                  className="bg-[#DC2626] hover:bg-[#B91C1C] text-white text-xs font-semibold px-3 py-1.5 rounded-md flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+                  className="bg-white/15 hover:bg-white/25 text-white text-xs font-semibold px-3 py-1.5 rounded-xl border border-white/20 flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
                 >
                   <FileText className="w-3.5 h-3.5" />
                   PDF
@@ -688,7 +709,7 @@ export const DebitCreditStatementPage: React.FC<{ initialTab?: 'PAYMENT_ACCOUNTS
                 <button
                   type="button"
                   onClick={handlePrintAccounts}
-                  className="bg-[#4B5563] hover:bg-[#374151] text-white text-xs font-semibold px-3 py-1.5 rounded-md flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+                  className="bg-white/15 hover:bg-white/25 text-white text-xs font-semibold px-3 py-1.5 rounded-xl border border-white/20 flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   Print
@@ -700,50 +721,50 @@ export const DebitCreditStatementPage: React.FC<{ initialTab?: 'PAYMENT_ACCOUNTS
             <div className="overflow-x-auto">
               <table className="report-records w-full min-w-[1250px] text-left border-collapse text-[13px]">
                 <thead>
-                  <tr className="bg-[#FDF2F5] border-b border-[#F1DEE3] text-[#475569] font-medium text-[12px]">
-                    <th className="py-3 px-3 text-center w-8">#</th>
-                    <th className="py-3 px-3.5 whitespace-nowrap">Date / Time</th>
-                    <th className="py-3 px-3.5">Account</th>
-                    <th className="py-3 px-3.5">Type</th>
-                    <th className="py-3 px-3.5">Branch</th>
-                    <th className="py-3 px-3.5">Source</th>
-                    <th className="py-3 px-3.5">Reference</th>
-                    <th className="py-3 px-3.5">Actual User</th>
-                    <th className="py-3 px-3.5">Description</th>
-                    <th className="py-3 px-3.5 text-right whitespace-nowrap text-emerald-800">Debit (+In)</th>
-                    <th className="py-3 px-3.5 text-right whitespace-nowrap text-rose-800">Credit (−Out)</th>
-                    <th className="py-3 px-3.5 text-right whitespace-nowrap text-slate-900 font-bold">Running Balance</th>
+                  <tr className="bg-[#FDF2F5]/80 border-b border-[#F1DEE3] text-[#5C3B4B] font-semibold text-[11px] uppercase tracking-wider">
+                    <th className="py-3.5 px-3 text-center w-8">#</th>
+                    <th className="py-3.5 px-3.5 whitespace-nowrap">Date / Time</th>
+                    <th className="py-3.5 px-3.5">Account</th>
+                    <th className="py-3.5 px-3.5">Type</th>
+                    <th className="py-3.5 px-3.5">Branch</th>
+                    <th className="py-3.5 px-3.5">Source</th>
+                    <th className="py-3.5 px-3.5">Reference</th>
+                    <th className="py-3.5 px-3.5">Actual User</th>
+                    <th className="py-3.5 px-3.5">Description</th>
+                    <th className="py-3.5 px-3.5 text-right whitespace-nowrap text-emerald-800">Debit (+In)</th>
+                    <th className="py-3.5 px-3.5 text-right whitespace-nowrap text-rose-800">Credit (−Out)</th>
+                    <th className="py-3.5 px-3.5 text-right whitespace-nowrap text-slate-900 font-bold">Running Balance</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-dashed divide-slate-200 text-[#334155]">
+                <tbody className="divide-y divide-dashed divide-slate-200/90 text-[#334155]">
                   {filteredAccountRows.length > 0 ? (
                     filteredAccountRows.map((row: PaymentAccountMovementRow, idx: number) => (
-                      <tr key={row.id || idx} className="hover:bg-[#FDF2F5]/20 transition-colors">
-                        <td className="py-3 px-3 text-center text-slate-400 font-mono text-xs">{idx + 1}</td>
-                        <td className="py-3 px-3.5 whitespace-nowrap">
-                          <span className="font-medium text-slate-800">{formatDateDisplay(row.date)}</span>
+                      <tr key={row.id || idx} className="hover:bg-[#FDF2F5]/35 transition-colors">
+                        <td className="py-3.5 px-3 text-center text-slate-400 font-mono text-xs">{idx + 1}</td>
+                        <td className="py-3.5 px-3.5 whitespace-nowrap">
+                          <span className="font-semibold text-slate-800">{formatDateDisplay(row.date)}</span>
                           {row.time && <span className="block text-[11px] text-slate-400">{row.time}</span>}
                         </td>
-                        <td className="py-3 px-3.5 font-semibold text-slate-900 whitespace-nowrap">{row.accountName}</td>
-                        <td className="py-3 px-3.5 whitespace-nowrap">
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                        <td className="py-3.5 px-3.5 font-bold text-slate-900 whitespace-nowrap">{row.accountName}</td>
+                        <td className="py-3.5 px-3.5 whitespace-nowrap">
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
                             {row.accountType}
                           </span>
                         </td>
-                        <td className="py-3 px-3.5 text-slate-600 whitespace-nowrap">{row.branchName}</td>
-                        <td className="py-3 px-3.5 whitespace-nowrap text-slate-600">{row.sourceModule}</td>
-                        <td className="py-3 px-3.5 font-mono text-xs text-slate-700 whitespace-nowrap">{row.reference || '—'}</td>
-                        <td className="py-3 px-3.5 font-medium text-slate-800 whitespace-nowrap">{row.userName || 'Staff'}</td>
-                        <td className="py-3 px-3.5 text-slate-600 max-w-[240px] truncate" title={row.description}>
+                        <td className="py-3.5 px-3.5 text-slate-600 whitespace-nowrap">{row.branchName}</td>
+                        <td className="py-3.5 px-3.5 whitespace-nowrap text-slate-600">{row.sourceModule}</td>
+                        <td className="py-3.5 px-3.5 font-mono text-xs text-slate-700 whitespace-nowrap">{row.reference || '—'}</td>
+                        <td className="py-3.5 px-3.5 font-semibold text-slate-800 whitespace-nowrap">{row.userName || 'Staff'}</td>
+                        <td className="py-3.5 px-3.5 text-slate-600 max-w-[240px] truncate" title={row.description}>
                           {row.description || '—'}
                         </td>
-                        <td className="py-3 px-3.5 text-right font-mono font-semibold text-emerald-700 tabular-nums">
+                        <td className="py-3.5 px-3.5 text-right font-mono font-bold text-emerald-700 tabular-nums">
                           {row.moneyIn > 0 ? `+${formatPKR(row.moneyIn)}` : '—'}
                         </td>
-                        <td className="py-3 px-3.5 text-right font-mono font-semibold text-rose-700 tabular-nums">
+                        <td className="py-3.5 px-3.5 text-right font-mono font-bold text-rose-700 tabular-nums">
                           {row.moneyOut > 0 ? `-${formatPKR(row.moneyOut)}` : '—'}
                         </td>
-                        <td className="py-3 px-3.5 text-right font-mono font-bold text-slate-900 tabular-nums">
+                        <td className="py-3.5 px-3.5 text-right font-mono font-extrabold text-slate-900 tabular-nums">
                           PKR {formatPKR(row.runningBalance)}
                         </td>
                       </tr>
@@ -762,66 +783,66 @@ export const DebitCreditStatementPage: React.FC<{ initialTab?: 'PAYMENT_ACCOUNTS
         </div>
       ) : activeTab === 'CASH_DRAWER' && drawerReport ? (
         /* ═══════════ TAB 2: CASH DRAWER ═══════════ */
-        <div className="space-y-5">
+        <div className="space-y-6">
           {/* KPI Summary Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-            <div className="p-3.5 bg-white rounded-xl border border-slate-200 shadow-2xs">
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3.5">
+            <div className="rounded-[20px] border border-white/90 bg-white/75 backdrop-blur-xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-3.5 transition-all duration-200 hover:-translate-y-0.5">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Opening Float</span>
-              <span className="text-sm font-extrabold text-slate-800 tabular-nums block mt-1">
+              <span className="text-sm font-extrabold text-slate-800 font-mono tabular-nums block mt-1">
                 PKR {formatPKR(drawerReport.kpis.totalOpeningFloat)}
               </span>
               <span className="text-[10px] text-slate-400 mt-0.5 block">Carry forward float</span>
             </div>
 
-            <div className="p-3.5 bg-emerald-50/20 rounded-xl border border-emerald-200 shadow-2xs">
+            <div className="rounded-[20px] border border-emerald-200/80 bg-emerald-50/25 backdrop-blur-xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-3.5 transition-all duration-200 hover:-translate-y-0.5">
               <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider flex items-center gap-1">
                 <ArrowDownLeft className="w-3.5 h-3.5" />
                 <span>Debit (Cash In)</span>
               </span>
-              <span className="text-sm font-extrabold text-emerald-700 tabular-nums block mt-1">
+              <span className="text-sm font-extrabold text-emerald-700 font-mono tabular-nums block mt-1">
                 +PKR {formatPKR(drawerReport.kpis.totalCashIn)}
               </span>
               <span className="text-[10px] text-emerald-600 mt-0.5 block">Sales, Dues & Tips In</span>
             </div>
 
-            <div className="p-3.5 bg-rose-50/20 rounded-xl border border-rose-200 shadow-2xs">
+            <div className="rounded-[20px] border border-rose-200/80 bg-rose-50/25 backdrop-blur-xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-3.5 transition-all duration-200 hover:-translate-y-0.5">
               <span className="text-[10px] font-bold text-rose-700 uppercase tracking-wider flex items-center gap-1">
                 <ArrowUpRight className="w-3.5 h-3.5" />
                 <span>Credit (Cash Out)</span>
               </span>
-              <span className="text-sm font-extrabold text-rose-700 tabular-nums block mt-1">
+              <span className="text-sm font-extrabold text-rose-700 font-mono tabular-nums block mt-1">
                 -PKR {formatPKR(drawerReport.kpis.totalCashOut)}
               </span>
               <span className="text-[10px] text-rose-600 mt-0.5 block">Expenses & Tip Payouts</span>
             </div>
 
-            <div className="p-3.5 bg-[#FDF2F5]/40 rounded-xl border border-[#F1DEE3] shadow-2xs">
-              <span className="text-[10px] font-bold text-[#9D2558] uppercase tracking-wider block">Expected Cash</span>
-              <span className="text-sm font-extrabold text-[#9D2558] tabular-nums block mt-1">
+            <div className="rounded-[20px] border border-[#F1DEE3] bg-[#FDF2F5]/70 backdrop-blur-xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-3.5 transition-all duration-200 hover:-translate-y-0.5">
+              <span className="text-[10px] font-bold text-[#B82E69] uppercase tracking-wider block">Expected Cash</span>
+              <span className="text-sm font-extrabold text-[#B82E69] font-mono tabular-nums block mt-1">
                 PKR {formatPKR(drawerReport.kpis.totalExpectedCash)}
               </span>
-              <span className="text-[10px] text-[#9D2558] mt-0.5 block">Opening + In − Out</span>
+              <span className="text-[10px] text-[#B82E69] mt-0.5 block">Opening + In − Out</span>
             </div>
 
-            <div className="p-3.5 bg-white rounded-xl border border-slate-200 shadow-2xs">
+            <div className="rounded-[20px] border border-white/90 bg-white/75 backdrop-blur-xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-3.5 transition-all duration-200 hover:-translate-y-0.5">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Counted Cash</span>
-              <span className="text-sm font-extrabold text-slate-800 tabular-nums block mt-1">
+              <span className="text-sm font-extrabold text-slate-800 font-mono tabular-nums block mt-1">
                 PKR {formatPKR(drawerReport.kpis.totalCountedCash)}
               </span>
               <span className="text-[10px] text-slate-400 mt-0.5 block">Physical drawer audit</span>
             </div>
 
-            <div className="p-3.5 bg-white rounded-xl border border-slate-200 shadow-2xs">
+            <div className="rounded-[20px] border border-white/90 bg-white/75 backdrop-blur-xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-3.5 transition-all duration-200 hover:-translate-y-0.5">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Variance</span>
-              <span className={`text-sm font-extrabold tabular-nums block mt-1 ${Math.abs(drawerReport.kpis.totalVariance) < 0.01 ? 'text-emerald-700' : 'text-amber-600'}`}>
+              <span className={`text-sm font-extrabold font-mono tabular-nums block mt-1 ${Math.abs(drawerReport.kpis.totalVariance) < 0.01 ? 'text-emerald-700' : 'text-amber-600'}`}>
                 {formatPKR(drawerReport.kpis.totalVariance, true)}
               </span>
               <span className="text-[10px] text-slate-400 mt-0.5 block">Counted − Expected</span>
             </div>
 
-            <div className="p-3.5 bg-indigo-50/30 rounded-xl border border-indigo-200 shadow-2xs">
+            <div className="rounded-[20px] border border-indigo-200/80 bg-indigo-50/30 backdrop-blur-xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-3.5 transition-all duration-200 hover:-translate-y-0.5">
               <span className="text-[10px] font-bold text-indigo-700 uppercase tracking-wider block">Settlement Handover</span>
-              <span className="text-sm font-extrabold text-indigo-700 tabular-nums block mt-1">
+              <span className="text-sm font-extrabold text-indigo-700 font-mono tabular-nums block mt-1">
                 PKR {formatPKR(drawerReport.kpis.totalSettlementsOut)}
               </span>
               <span className="text-[10px] text-indigo-600 mt-0.5 block">Accepted handovers</span>
@@ -829,32 +850,54 @@ export const DebitCreditStatementPage: React.FC<{ initialTab?: 'PAYMENT_ACCOUNTS
           </div>
 
           {/* Table Container */}
-          <div className="bg-white rounded-xl border border-slate-200/90 shadow-sm overflow-hidden">
+          <div className="rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] overflow-hidden">
             {/* Banner */}
-            <div className="bg-[#9D2558] text-white px-5 py-3 flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <Wallet className="w-4 h-4 text-white/90" />
-                <span className="font-semibold text-xs tracking-wide">
-                  {cashSubView === 'TRANSACTIONS' ? 'Cash Transactions Ledger (Double-Entry Debit/Credit)' : 'Shift Reconciliation & Custody Sessions'}
-                </span>
+            <div className="bg-gradient-to-r from-[#B82E69] via-[#A8285F] to-[#8F1D4E] text-white px-6 py-4 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center border border-white/20">
+                  <Wallet className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <span className="font-bold text-sm tracking-wide block">
+                    {cashSubView === 'TRANSACTIONS' ? 'Cash Transactions Ledger (Double-Entry Debit/Credit)' : 'Shift Reconciliation & Custody Sessions'}
+                  </span>
+                  <span className="text-[11px] text-white/80">
+                    Live cash custody records and vault audits
+                  </span>
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={handleExportCashCsv}
-                  className="bg-[#009688] hover:bg-[#00897B] text-white text-xs font-semibold px-3 py-1.5 rounded-md flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+                  className="bg-white/15 hover:bg-white/25 text-white text-xs font-semibold px-3 py-1.5 rounded-xl border border-white/20 flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
                 >
                   <FileSpreadsheet className="w-3.5 h-3.5" />
                   CSV
                 </button>
-                <button type="button" onClick={handleExportCashExcel} className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold px-3 py-1.5 rounded-md flex items-center gap-1.5">
-                  <FileSpreadsheet className="w-3.5 h-3.5" /> Excel
+                <button
+                  type="button"
+                  onClick={handleExportCashExcel}
+                  className="bg-white/15 hover:bg-white/25 text-white text-xs font-semibold px-3 py-1.5 rounded-xl border border-white/20 flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                >
+                  <FileSpreadsheet className="w-3.5 h-3.5" />
+                  Excel
                 </button>
-                <button type="button" onClick={handlePrintCash} className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-3 py-1.5 rounded-md flex items-center gap-1.5">
-                  <FileText className="w-3.5 h-3.5" /> PDF
+                <button
+                  type="button"
+                  onClick={handlePrintCash}
+                  className="bg-white/15 hover:bg-white/25 text-white text-xs font-semibold px-3 py-1.5 rounded-xl border border-white/20 flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  PDF
                 </button>
-                <button type="button" onClick={handlePrintCash} className="bg-slate-600 hover:bg-slate-700 text-white text-xs font-semibold px-3 py-1.5 rounded-md flex items-center gap-1.5">
-                  <Printer className="w-3.5 h-3.5" /> Print
+                <button
+                  type="button"
+                  onClick={handlePrintCash}
+                  className="bg-white/15 hover:bg-white/25 text-white text-xs font-semibold px-3 py-1.5 rounded-xl border border-white/20 flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  Print
                 </button>
               </div>
             </div>
@@ -865,18 +908,18 @@ export const DebitCreditStatementPage: React.FC<{ initialTab?: 'PAYMENT_ACCOUNTS
               <div className="overflow-x-auto">
                 <table className="report-records w-full min-w-[1100px] text-left border-collapse text-[13px]">
                   <thead>
-                    <tr className="bg-[#FDF2F5] border-b border-[#F1DEE3] text-[#475569] font-medium text-[12px]">
-                      <th className="py-3 px-3 text-center w-8">#</th>
-                      <th className="py-3 px-3.5 whitespace-nowrap">Date / Time</th>
-                      <th className="py-3 px-3.5">Type / Source</th>
-                      <th className="py-3 px-3.5">Reference</th>
-                      <th className="py-3 px-3.5">Actual User</th>
-                      <th className="py-3 px-3.5">Description</th>
-                      <th className="py-3 px-3.5 text-right whitespace-nowrap text-emerald-800">Debit (+Cash In)</th>
-                      <th className="py-3 px-3.5 text-right whitespace-nowrap text-rose-800">Credit (−Cash Out)</th>
+                    <tr className="bg-[#FDF2F5]/80 border-b border-[#F1DEE3] text-[#5C3B4B] font-semibold text-[11px] uppercase tracking-wider">
+                      <th className="py-3.5 px-3 text-center w-8">#</th>
+                      <th className="py-3.5 px-3.5 whitespace-nowrap">Date / Time</th>
+                      <th className="py-3.5 px-3.5">Type / Source</th>
+                      <th className="py-3.5 px-3.5">Reference</th>
+                      <th className="py-3.5 px-3.5">Actual User</th>
+                      <th className="py-3.5 px-3.5">Description</th>
+                      <th className="py-3.5 px-3.5 text-right whitespace-nowrap text-emerald-800">Debit (+Cash In)</th>
+                      <th className="py-3.5 px-3.5 text-right whitespace-nowrap text-rose-800">Credit (−Cash Out)</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-dashed divide-slate-200 text-[#334155]">
+                  <tbody className="divide-y divide-dashed divide-slate-200/90 text-[#334155]">
                     {filteredCashTransactions.length > 0 ? (
                       filteredCashTransactions.map((tx, idx: number) => {
                         const isDebit = tx.direction === 'IN';
@@ -884,28 +927,28 @@ export const DebitCreditStatementPage: React.FC<{ initialTab?: 'PAYMENT_ACCOUNTS
                         const creditAmt = !isDebit ? tx.amount : 0;
 
                         return (
-                          <tr key={tx.id || idx} className="hover:bg-[#FDF2F5]/20 transition-colors">
-                            <td className="py-3 px-3 text-center text-slate-400 font-mono text-xs">{idx + 1}</td>
-                            <td className="py-3 px-3.5 whitespace-nowrap">
-                              <span className="font-medium text-slate-800">{formatDateDisplay(tx.date)}</span>
+                          <tr key={tx.id || idx} className="hover:bg-[#FDF2F5]/35 transition-colors">
+                            <td className="py-3.5 px-3 text-center text-slate-400 font-mono text-xs">{idx + 1}</td>
+                            <td className="py-3.5 px-3.5 whitespace-nowrap">
+                              <span className="font-semibold text-slate-800">{formatDateDisplay(tx.date)}</span>
                               {tx.time && <span className="block text-[11px] text-slate-400">{tx.time}</span>}
                             </td>
-                            <td className="py-3 px-3.5 whitespace-nowrap">
-                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
+                            <td className="py-3.5 px-3.5 whitespace-nowrap">
+                              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold border ${
                                 isDebit ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'
                               }`}>
                                 {tx.type || (isDebit ? 'Cash In' : 'Cash Out')}
                               </span>
                             </td>
-                            <td className="py-3 px-3.5 font-mono text-xs text-slate-700 whitespace-nowrap">{tx.reference || '—'}</td>
-                            <td className="py-3 px-3.5 font-medium text-slate-800 whitespace-nowrap">{tx.actor || 'Custodian'}</td>
-                            <td className="py-3 px-3.5 text-slate-600 max-w-[240px] truncate" title={tx.description}>
+                            <td className="py-3.5 px-3.5 font-mono text-xs text-slate-700 whitespace-nowrap">{tx.reference || '—'}</td>
+                            <td className="py-3.5 px-3.5 font-semibold text-slate-800 whitespace-nowrap">{tx.actor || 'Custodian'}</td>
+                            <td className="py-3.5 px-3.5 text-slate-600 max-w-[240px] truncate" title={tx.description}>
                               {tx.description || '—'}
                             </td>
-                            <td className="py-3 px-3.5 text-right font-mono font-semibold text-emerald-700 tabular-nums">
+                            <td className="py-3.5 px-3.5 text-right font-mono font-bold text-emerald-700 tabular-nums">
                               {debitAmt > 0 ? `+${formatPKR(debitAmt)}` : '—'}
                             </td>
-                            <td className="py-3 px-3.5 text-right font-mono font-semibold text-rose-700 tabular-nums">
+                            <td className="py-3.5 px-3.5 text-right font-mono font-bold text-rose-700 tabular-nums">
                               {creditAmt > 0 ? `-${formatPKR(creditAmt)}` : '—'}
                             </td>
                           </tr>
@@ -926,33 +969,33 @@ export const DebitCreditStatementPage: React.FC<{ initialTab?: 'PAYMENT_ACCOUNTS
               <div className="overflow-x-auto">
                 <table className="report-records w-full min-w-[1250px] text-left border-collapse text-[13px]">
                   <thead>
-                    <tr className="bg-[#FDF2F5] border-b border-[#F1DEE3] text-[#475569] font-medium text-[12px]">
-                      <th className="py-3 px-3 text-center w-8">#</th>
-                      <th className="py-3 px-3.5 whitespace-nowrap">Session Date</th>
-                      <th className="py-3 px-3.5">Custodian</th>
-                      <th className="py-3 px-3.5">Branch</th>
-                      <th className="py-3 px-3.5 text-center">Status</th>
-                      <th className="py-3 px-3.5 text-right">Opening Float</th>
-                      <th className="py-3 px-3.5 text-right text-emerald-800">Debits (+In)</th>
-                      <th className="py-3 px-3.5 text-right text-rose-800">Credits (−Out)</th>
-                      <th className="py-3 px-3.5 text-right font-bold text-[#9D2558]">Expected Cash</th>
-                      <th className="py-3 px-3.5 text-right">Counted Cash</th>
-                      <th className="py-3 px-3.5 text-right">Variance</th>
-                      <th className="py-3 px-3.5 text-center">Accepted Settlement</th>
+                    <tr className="bg-[#FDF2F5]/80 border-b border-[#F1DEE3] text-[#5C3B4B] font-semibold text-[11px] uppercase tracking-wider">
+                      <th className="py-3.5 px-3 text-center w-8">#</th>
+                      <th className="py-3.5 px-3.5 whitespace-nowrap">Session Date</th>
+                      <th className="py-3.5 px-3.5">Custodian</th>
+                      <th className="py-3.5 px-3.5">Branch</th>
+                      <th className="py-3.5 px-3.5 text-center">Status</th>
+                      <th className="py-3.5 px-3.5 text-right">Opening Float</th>
+                      <th className="py-3.5 px-3.5 text-right text-emerald-800">Debits (+In)</th>
+                      <th className="py-3.5 px-3.5 text-right text-rose-800">Credits (−Out)</th>
+                      <th className="py-3.5 px-3.5 text-right font-bold text-[#B82E69]">Expected Cash</th>
+                      <th className="py-3.5 px-3.5 text-right">Counted Cash</th>
+                      <th className="py-3.5 px-3.5 text-right">Variance</th>
+                      <th className="py-3.5 px-3.5 text-center">Accepted Settlement</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-dashed divide-slate-200 text-[#334155]">
+                  <tbody className="divide-y divide-dashed divide-slate-200/90 text-[#334155]">
                     {drawerReport.rows.length > 0 ? (
                       drawerReport.rows.map((row: CashDrawerReportRow, idx: number) => {
                         const hasVariance = Math.abs(row.variance ?? 0) > 0.01;
                         return (
-                          <tr key={row.id || idx} className="hover:bg-[#FDF2F5]/20 transition-colors">
-                            <td className="py-3 px-3 text-center text-slate-400 font-mono text-xs">{idx + 1}</td>
-                            <td className="py-3 px-3.5 whitespace-nowrap font-medium text-slate-800">{formatDateDisplay(row.date)}</td>
-                            <td className="py-3 px-3.5 font-semibold text-slate-900 whitespace-nowrap">{row.custodianName}</td>
-                            <td className="py-3 px-3.5 text-slate-600 whitespace-nowrap">{row.branchName}</td>
-                            <td className="py-3 px-3.5 text-center whitespace-nowrap">
-                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                          <tr key={row.id || idx} className="hover:bg-[#FDF2F5]/35 transition-colors">
+                            <td className="py-3.5 px-3 text-center text-slate-400 font-mono text-xs">{idx + 1}</td>
+                            <td className="py-3.5 px-3.5 whitespace-nowrap font-semibold text-slate-800">{formatDateDisplay(row.date)}</td>
+                            <td className="py-3.5 px-3.5 font-bold text-slate-900 whitespace-nowrap">{row.custodianName}</td>
+                            <td className="py-3.5 px-3.5 text-slate-600 whitespace-nowrap">{row.branchName}</td>
+                            <td className="py-3.5 px-3.5 text-center whitespace-nowrap">
+                              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${
                                 row.status === 'SETTLED'
                                   ? 'bg-emerald-100 text-emerald-800'
                                   : row.status === 'OPEN'
@@ -962,19 +1005,19 @@ export const DebitCreditStatementPage: React.FC<{ initialTab?: 'PAYMENT_ACCOUNTS
                                 {row.status}
                               </span>
                             </td>
-                            <td className="py-3 px-3.5 text-right font-mono tabular-nums">{formatPKR(row.openingFloat)}</td>
-                            <td className="py-3 px-3.5 text-right font-mono font-semibold text-emerald-700 tabular-nums">{drawerMoney(drawerDebits(row), true)}</td>
-                            <td className="py-3 px-3.5 text-right font-mono font-semibold text-rose-700 tabular-nums">{drawerMoney(-row.totalCashOut, true)}</td>
-                            <td className="py-3 px-3.5 text-right font-mono font-bold text-[#9D2558] tabular-nums">PKR {formatPKR(row.expectedCash)}</td>
-                            <td className="py-3 px-3.5 text-right font-mono tabular-nums">
+                            <td className="py-3.5 px-3.5 text-right font-mono tabular-nums">{formatPKR(row.openingFloat)}</td>
+                            <td className="py-3.5 px-3.5 text-right font-mono font-bold text-emerald-700 tabular-nums">{drawerMoney(drawerDebits(row), true)}</td>
+                            <td className="py-3.5 px-3.5 text-right font-mono font-bold text-rose-700 tabular-nums">{drawerMoney(-row.totalCashOut, true)}</td>
+                            <td className="py-3.5 px-3.5 text-right font-mono font-extrabold text-[#B82E69] tabular-nums">PKR {formatPKR(row.expectedCash)}</td>
+                            <td className="py-3.5 px-3.5 text-right font-mono tabular-nums">
                               {row.countedCash !== null ? `PKR ${formatPKR(row.countedCash)}` : '—'}
                             </td>
-                            <td className="py-3 px-3.5 text-right font-mono font-semibold tabular-nums">
+                            <td className="py-3.5 px-3.5 text-right font-mono font-bold tabular-nums">
                               <span className={hasVariance ? 'text-amber-600' : 'text-slate-500'}>
                                 {drawerMoney(row.variance, true)}
                               </span>
                             </td>
-                            <td className="py-3 px-3.5 text-center whitespace-nowrap text-xs">
+                            <td className="py-3.5 px-3.5 text-center whitespace-nowrap text-xs">
                               {row.latestSettlement ? (
                                 <span className={`inline-flex items-center gap-1 font-semibold ${
                                   row.latestSettlement.status === 'ACCEPTED' ? 'text-emerald-700' : 'text-amber-700'

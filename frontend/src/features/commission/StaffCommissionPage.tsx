@@ -97,14 +97,17 @@ export const StaffCommissionPage: React.FC = () => {
   const [paymentToReverse, setPaymentToReverse] = useState<{ id: string; amount: number; staffName: string } | null>(null);
   const [reverseReason, setReverseReason] = useState<string>('');
 
-  // Action feedback
-  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  // Action loading
   const [actionLoading, setActionLoading] = useState<boolean>(false);
 
   const effectiveBranchId = user.role === 'SUPER_ADMIN' ? selectedBranchId : (user.branchId || activeBranchId);
 
   // Fetch all initial data
   const loadData = async () => {
+    if (!effectiveBranchId) {
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       const [runs, staff, accounts, drawers] = await Promise.all([
@@ -119,9 +122,7 @@ export const StaffCommissionPage: React.FC = () => {
       setOnlineAccounts(accounts);
       setCashDrawers(drawers);
     } catch (err: any) {
-      const msg = err.message || 'Failed to load commission data.';
-      setFeedback({ type: 'error', message: msg });
-      toast.error(msg);
+      console.warn('Initial commission load warning:', err);
     } finally {
       setLoading(false);
     }
@@ -397,126 +398,135 @@ export const StaffCommissionPage: React.FC = () => {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6 font-sans">
-      {/* Top Banner / Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-        <div>
+    <div className="w-full max-w-full space-y-6 text-slate-800 font-sans">
+      {/* ── 1. TOP HEADER BANNER (FROSTED GLASS CONTAINER) ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-5 sm:p-6 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-purple-50 text-purple-600 rounded-xl">
-              <Award className="w-6 h-6" />
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#FDF2F5] to-white border border-white/80 shadow-2xs flex items-center justify-center text-[#B82E69] shrink-0">
+              <Award className="w-5 h-5 text-[#B82E69]" />
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Staff Commission Management</h1>
-              <p className="text-sm text-slate-500">
-                Service attributions, package component revenue shares, and auditable disbursements.
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold text-[#18191B] tracking-tight truncate">
+                Staff Commission Management
+              </h1>
+              <p className="text-xs text-[#78616C] font-medium mt-0.5 line-clamp-1 xl:line-clamp-none">
+                Service attributions, package component revenue shares, and auditable disbursements
               </p>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3 shrink-0 self-start sm:self-auto">
           <button
-            onClick={() => user.role === 'SUPER_ADMIN' ? setShowGenerateForm(true) : handleGeneratePreview()}
+            onClick={() => (user.role === 'SUPER_ADMIN' ? setShowGenerateForm(true) : handleGeneratePreview())}
             disabled={actionLoading}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-xl text-sm shadow-sm transition-all hover:shadow"
+            className="h-9 px-4 font-semibold gap-1.5 shadow-xs text-xs sm:text-sm bg-[#B82E69] hover:bg-[#A02358] text-white rounded-xl transition-all flex items-center cursor-pointer"
           >
             <Calendar className="w-4 h-4" />
-            Generate Commission Preview
+            <span>Generate Commission Preview</span>
           </button>
         </div>
       </div>
 
-      {/* Feedback Alerts */}
-      {feedback && (
-        <div
-          className={`p-4 rounded-xl flex items-center justify-between text-sm ${
-            feedback.type === 'success'
-              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-              : 'bg-rose-50 text-rose-800 border border-rose-200'
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            {feedback.type === 'success' ? (
-              <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-            ) : (
-              <AlertCircle className="w-5 h-5 text-rose-600" />
-            )}
-            <p className="font-medium">{feedback.message}</p>
-          </div>
-          <button onClick={() => setFeedback(null)} className="text-slate-400 hover:text-slate-600">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
-
-      {/* Summary Stat Cards */}
+      {/* ── 2. KPI SUMMARY METRICS: PURE WHITE FROSTED GLASS CARDS ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Eligible Net Sales</span>
-          <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-2xl font-bold text-slate-900">
+        {/* Eligible Net Sales */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-blue-600">
+              <TrendingUp className="w-4 h-4" />
+            </div>
+            <span className="bg-blue-50 text-blue-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Net Sales
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
               Rs. {summaryStats.eligibleNetSales.toLocaleString()}
             </span>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 font-medium">
-              After Discounts
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              After invoice discounts
             </span>
           </div>
-          <p className="mt-1 text-xs text-slate-500">Excludes sales taxes, tips & product sales</p>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Finalized Commission</span>
-          <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-2xl font-bold text-purple-600">
-              Rs. {summaryStats.finalizedCommission.toLocaleString()}
-            </span>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 font-medium">
+        {/* Finalized Commission */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+              <Award className="w-4 h-4" />
+            </div>
+            <span className="bg-[#FDF2F5] text-[#B82E69] shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
               Earned
             </span>
           </div>
-          <p className="mt-1 text-xs text-slate-500">Net payable after void/refund adjustments</p>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+              Rs. {summaryStats.finalizedCommission.toLocaleString()}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Net commission liability
+            </span>
+          </div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Commission Paid</span>
-          <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-2xl font-bold text-emerald-600">Rs. {summaryStats.paid.toLocaleString()}</span>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-medium">
+        {/* Total Commission Paid */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-emerald-600">
+              <CreditCard className="w-4 h-4" />
+            </div>
+            <span className="bg-emerald-50 text-emerald-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
               Disbursed
             </span>
           </div>
-          <p className="mt-1 text-xs text-slate-500">Audited disbursements via Drawer/Bank</p>
-        </div>
-
-        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Outstanding Commission</span>
-          <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-2xl font-bold text-amber-600">
-              Rs. {summaryStats.outstanding.toLocaleString()}
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-emerald-700 font-mono tabular-nums tracking-tight block">
+              Rs. {summaryStats.paid.toLocaleString()}
             </span>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 font-medium">
-              Pending Payout
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Disbursed via drawer or bank
             </span>
           </div>
-          <p className="mt-1 text-xs text-slate-500">Balance awaiting staff payout</p>
+        </div>
+
+        {/* Outstanding Commission */}
+        <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-amber-600">
+              <Clock className="w-4 h-4" />
+            </div>
+            <span className="bg-amber-50 text-amber-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+              Outstanding
+            </span>
+          </div>
+          <div className="mt-3 relative z-10">
+            <span className="text-2xl sm:text-3xl font-extrabold text-amber-700 font-mono tabular-nums tracking-tight block">
+              Rs. {summaryStats.outstanding.toLocaleString()}
+            </span>
+            <span className="text-xs text-[#78616C] font-medium mt-1 block">
+              Pending staff settlement
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Filter Toolbar */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
-        <div className="flex items-center gap-2 text-slate-700 font-semibold text-sm">
-          <Filter className="w-4 h-4 text-purple-600" />
+      {/* ── 3. FILTER TOOLBAR (FROSTED GLASS CARD) ── */}
+      <div className="p-5 sm:p-6 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] space-y-4">
+        <div className="flex items-center gap-2 text-slate-800 font-bold text-sm tracking-wide">
+          <Filter className="w-4 h-4 text-[#B82E69]" />
           <span>Commission Run Filters & Date Range</span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-3.5 items-end">
           {user.role === 'SUPER_ADMIN' && (
-            <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Branch</label>
+            <div className="min-w-0">
+              <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Branch</label>
               <select
                 value={selectedBranchId}
                 onChange={(e) => setSelectedBranchId(e.target.value)}
-                className="w-full text-sm border-slate-200 rounded-xl px-3 py-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-purple-500"
+                className="w-full text-xs rounded-xl border border-white/80 bg-white/80 hover:bg-white px-3 py-2 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#B82E69]/20 focus:border-[#B82E69] shadow-2xs font-medium transition-all cursor-pointer"
               >
                 {allBranches.map((b) => (
                   <option key={b.id} value={b.id}>
@@ -527,49 +537,48 @@ export const StaffCommissionPage: React.FC = () => {
             </div>
           )}
 
-          <div>
-            <label className="block text-xs font-medium text-slate-600 mb-1">Commission Month</label>
+          <div className="min-w-0">
+            <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Commission Month</label>
             <input
               type="month"
               value={startDate.slice(0, 7) === endDate.slice(0, 7) ? startDate.slice(0, 7) : ''}
               onChange={(e) => {
-                // Monthly commission run: 1st .. last day of the chosen month.
                 const m = e.target.value;
                 if (!m) return;
                 const [y, mo] = m.split('-').map(Number);
                 setStartDate(`${m}-01`);
                 setEndDate(`${m}-${String(new Date(y, mo, 0).getDate()).padStart(2, '0')}`);
               }}
-              className="w-full text-sm border-slate-200 rounded-xl px-3 py-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-purple-500"
+              className="w-full text-xs rounded-xl border border-white/80 bg-white/80 hover:bg-white px-3 py-2 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#B82E69]/20 focus:border-[#B82E69] shadow-2xs font-medium transition-all"
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-medium text-slate-600 mb-1">Start Date</label>
+          <div className="min-w-0">
+            <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Start Date</label>
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full text-sm border-slate-200 rounded-xl px-3 py-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-purple-500"
+              className="w-full text-xs rounded-xl border border-white/80 bg-white/80 hover:bg-white px-3 py-2 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#B82E69]/20 focus:border-[#B82E69] shadow-2xs font-medium transition-all"
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-medium text-slate-600 mb-1">End Date</label>
+          <div className="min-w-0">
+            <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">End Date</label>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full text-sm border-slate-200 rounded-xl px-3 py-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-purple-500"
+              className="w-full text-xs rounded-xl border border-white/80 bg-white/80 hover:bg-white px-3 py-2 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#B82E69]/20 focus:border-[#B82E69] shadow-2xs font-medium transition-all"
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-medium text-slate-600 mb-1">Employee</label>
+          <div className="min-w-0">
+            <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Employee</label>
             <select
               value={staffFilter}
               onChange={(e) => setStaffFilter(e.target.value)}
-              className="w-full text-sm border-slate-200 rounded-xl px-3 py-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-purple-500"
+              className="w-full text-xs rounded-xl border border-white/80 bg-white/80 hover:bg-white px-3 py-2 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#B82E69]/20 focus:border-[#B82E69] shadow-2xs font-medium transition-all cursor-pointer"
             >
               <option value="ALL">All Eligible Staff</option>
               {staffList
@@ -587,12 +596,12 @@ export const StaffCommissionPage: React.FC = () => {
             </select>
           </div>
 
-          <div>
-            <label className="block text-xs font-medium text-slate-600 mb-1">Run Status</label>
+          <div className="min-w-0">
+            <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Run Status</label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full text-sm border-slate-200 rounded-xl px-3 py-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-purple-500"
+              className="w-full text-xs rounded-xl border border-white/80 bg-white/80 hover:bg-white px-3 py-2 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#B82E69]/20 focus:border-[#B82E69] shadow-2xs font-medium transition-all cursor-pointer"
             >
               <option value="ALL">All Statuses</option>
               <option value="FINALIZED">Finalized</option>
@@ -607,56 +616,56 @@ export const StaffCommissionPage: React.FC = () => {
       {/* Main Commission Runs List */}
       <div className="space-y-6">
         {displayRuns.length === 0 ? (
-          <div className="bg-white p-12 text-center rounded-2xl border border-slate-100 shadow-sm space-y-3">
-            <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center mx-auto">
-              <Award className="w-6 h-6" />
+          <div className="border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-12 text-center rounded-[24px] space-y-4">
+            <div className="w-14 h-14 bg-gradient-to-br from-[#FDF2F5] to-white border border-rose-100/80 text-[#B82E69] rounded-2xl flex items-center justify-center mx-auto shadow-2xs">
+              <Award className="w-7 h-7" />
             </div>
             <h3 className="text-lg font-bold text-slate-800">No Finalized Commission Runs Found</h3>
-            <p className="text-sm text-slate-500 max-w-md mx-auto">
+            <p className="text-sm text-slate-500 max-w-md mx-auto leading-relaxed">
               Generate a commission preview to calculate net service sales, multi-staff package allocations, and lock
               sales attributions into an auditable run.
             </p>
             <button
               onClick={() => user.role === 'SUPER_ADMIN' ? setShowGenerateForm(true) : handleGeneratePreview()}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-xl text-sm"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#B82E69] to-[#9D2558] hover:from-[#9D2558] hover:to-[#831F4A] text-white font-semibold rounded-xl text-xs shadow-md shadow-[#B82E69]/20 transition-all cursor-pointer"
             >
               Generate Preview for Date Range
             </button>
           </div>
         ) : (
           displayRuns.map((run) => (
-            <div key={run.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div key={run.id} className="border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] rounded-[24px] overflow-hidden transition-all duration-300">
               {/* Run Header */}
-              <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="p-5 border-b border-rose-100/60 bg-gradient-to-r from-[#B82E69]/5 via-white/50 to-transparent flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-3">
-                    <span className="text-base font-bold text-slate-900">{run.commissionNumber}</span>
+                    <span className="text-base font-bold text-slate-900 font-mono tracking-tight">{run.commissionNumber}</span>
                     <span
-                      className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${
+                      className={`text-[11px] px-2.5 py-0.5 rounded-full font-semibold border ${
                         run.status === 'PAID'
-                          ? 'bg-emerald-100 text-emerald-800'
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                           : run.status === 'PARTIALLY_PAID'
-                          ? 'bg-amber-100 text-amber-800'
+                          ? 'bg-amber-50 text-amber-700 border-amber-200'
                           : run.status === 'FINALIZED'
-                          ? 'bg-purple-100 text-purple-800'
-                          : 'bg-rose-100 text-rose-800'
+                          ? 'bg-purple-50 text-purple-700 border-purple-200'
+                          : 'bg-rose-50 text-rose-700 border-rose-200'
                       }`}
                     >
                       {run.status}
                     </span>
-                    <span className="text-xs text-slate-500">
-                      Period: {run.startDate} to {run.endDate} ({run.branchName})
+                    <span className="text-xs text-slate-500 font-medium">
+                      Period: <strong className="text-slate-700">{run.startDate}</strong> to <strong className="text-slate-700">{run.endDate}</strong> ({run.branchName})
                     </span>
                   </div>
                   <p className="text-xs text-slate-500">
-                    Finalized by {run.finalizedByName} on {new Date(run.finalizedAt || '').toLocaleDateString()} • Basis: Completed Service Invoices
+                    Finalized by <span className="font-semibold text-slate-700">{run.finalizedByName}</span> on {new Date(run.finalizedAt || '').toLocaleDateString()} • Basis: Completed Service Invoices
                   </p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
                   <button
                     onClick={() => handleExportCSV(run)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-lg text-xs font-medium shadow-sm"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/90 border border-white/90 text-slate-700 hover:bg-white rounded-xl text-xs font-semibold shadow-2xs transition-all cursor-pointer"
                   >
                     <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
                     CSV Export
@@ -665,7 +674,7 @@ export const StaffCommissionPage: React.FC = () => {
                   <button
                     onClick={() => openPaymentModal(run)}
                     disabled={run.status === 'PAID' || run.status === 'CANCELLED'}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-lg text-xs font-medium shadow-sm"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-gradient-to-r from-[#B82E69] to-[#9D2558] hover:from-[#9D2558] hover:to-[#831F4A] disabled:opacity-40 text-white rounded-xl text-xs font-semibold shadow-sm shadow-[#B82E69]/20 transition-all cursor-pointer"
                   >
                     <CreditCard className="w-3.5 h-3.5" />
                     Record Payout
@@ -677,7 +686,7 @@ export const StaffCommissionPage: React.FC = () => {
                         setRunToCancel(run);
                         setShowCancelModal(true);
                       }}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-medium"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-50/80 hover:bg-rose-100/80 text-rose-700 border border-rose-200/60 rounded-xl text-xs font-semibold transition-all cursor-pointer"
                     >
                       <Ban className="w-3.5 h-3.5" />
                       Cancel Run
@@ -689,64 +698,64 @@ export const StaffCommissionPage: React.FC = () => {
               {/* Table of Commission Statements */}
               <div className="overflow-x-auto">
                 <table className="report-records w-full text-left text-xs">
-                  <thead className="bg-slate-100/70 text-slate-600 font-semibold border-b border-slate-100">
+                  <thead className="bg-gradient-to-r from-[#B82E69] to-[#9D2558] text-white text-[11px] font-bold uppercase tracking-wider">
                     <tr>
-                      <th className="py-3 px-4">Employee</th>
-                      <th className="py-3 px-3">Comp Type</th>
-                      <th className="py-3 px-3 text-center">Comm. Rate</th>
-                      <th className="py-3 px-3 text-right">Attributed Net Sales</th>
-                      <th className="py-3 px-3 text-right">Gross Earned</th>
-                      <th className="py-3 px-3 text-right">Refund Adj.</th>
-                      <th className="py-3 px-3 text-right font-bold text-purple-700">Net Payable</th>
-                      <th className="py-3 px-3 text-right text-emerald-600">Paid</th>
-                      <th className="py-3 px-3 text-right text-amber-600">Outstanding</th>
-                      <th className="py-3 px-3 text-center">Status</th>
-                      <th className="py-3 px-4 text-right">Actions</th>
+                      <th className="py-3 px-4 text-white">Employee</th>
+                      <th className="py-3 px-3 text-white">Comp Type</th>
+                      <th className="py-3 px-3 text-center text-white">Comm. Rate</th>
+                      <th className="py-3 px-3 text-right text-white">Attributed Net Sales</th>
+                      <th className="py-3 px-3 text-right text-white">Gross Earned</th>
+                      <th className="py-3 px-3 text-right text-white">Refund Adj.</th>
+                      <th className="py-3 px-3 text-right text-white font-bold">Net Payable</th>
+                      <th className="py-3 px-3 text-right text-white">Paid</th>
+                      <th className="py-3 px-3 text-right text-white">Outstanding</th>
+                      <th className="py-3 px-3 text-center text-white">Status</th>
+                      <th className="py-3 px-4 text-right text-white">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-rose-100/60">
                     {run.statements
                       .filter((s) => (staffFilter === 'ALL' ? true : s.staffId === staffFilter))
                       .map((st) => (
-                        <tr key={st.id} className="hover:bg-slate-50/50 transition-colors">
+                        <tr key={st.id} className="hover:bg-[#B82E69]/[0.02] transition-colors border-b border-dashed border-rose-100/60">
                           <td className="py-3 px-4">
                             <div className="font-semibold text-slate-900">{st.staffName}</div>
-                            <div className="text-[11px] text-slate-400">{st.employeeCode} • {st.designation}</div>
+                            <div className="text-[11px] text-slate-400 font-mono">{st.employeeCode} • {st.designation}</div>
                           </td>
                           <td className="py-3 px-3">
-                            <span className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded text-[11px] font-medium">
+                            <span className="px-2 py-0.5 bg-rose-50/70 border border-rose-100/60 text-[#B82E69] rounded-lg text-[11px] font-medium">
                               {st.compensationType.replace(/_/g, ' ')}
                             </span>
                           </td>
-                          <td className="py-3 px-3 text-center font-semibold text-slate-800">
+                          <td className="py-3 px-3 text-center font-mono tabular-nums font-bold text-slate-800">
                             {st.commissionRatePercent}%
                           </td>
-                          <td className="py-3 px-3 text-right text-slate-800 font-medium">
+                          <td className="py-3 px-3 text-right text-slate-800 font-mono tabular-nums font-medium">
                             Rs. {st.attributedNetSales.toLocaleString()}
                           </td>
-                          <td className="py-3 px-3 text-right text-purple-600 font-medium">
+                          <td className="py-3 px-3 text-right text-[#B82E69] font-mono tabular-nums font-semibold">
                             Rs. {st.grossCommissionEarned.toLocaleString()}
                           </td>
-                          <td className="py-3 px-3 text-right text-rose-600">
+                          <td className="py-3 px-3 text-right text-rose-600 font-mono tabular-nums">
                             {st.refundAdjustments !== 0 ? `Rs. ${st.refundAdjustments.toLocaleString()}` : '0'}
                           </td>
-                          <td className="py-3 px-3 text-right font-bold text-slate-900">
+                          <td className="py-3 px-3 text-right font-bold text-slate-900 font-mono tabular-nums">
                             Rs. {st.netCommissionPayable.toLocaleString()}
                           </td>
-                          <td className="py-3 px-3 text-right font-semibold text-emerald-600">
+                          <td className="py-3 px-3 text-right font-semibold text-emerald-600 font-mono tabular-nums">
                             Rs. {st.paidAmount.toLocaleString()}
                           </td>
-                          <td className="py-3 px-3 text-right font-semibold text-amber-600">
+                          <td className="py-3 px-3 text-right font-semibold text-amber-600 font-mono tabular-nums">
                             Rs. {st.outstandingAmount.toLocaleString()}
                           </td>
                           <td className="py-3 px-3 text-center">
                             <span
-                              className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
                                 st.status === 'PAID'
-                                  ? 'bg-emerald-100 text-emerald-800'
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                                   : st.status === 'PARTIALLY_PAID'
-                                  ? 'bg-amber-100 text-amber-800'
-                                  : 'bg-purple-100 text-purple-800'
+                                  ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                  : 'bg-purple-50 text-purple-700 border-purple-200'
                               }`}
                             >
                               {st.status}
@@ -760,7 +769,7 @@ export const StaffCommissionPage: React.FC = () => {
                                   setShowBreakdownModal(true);
                                 }}
                                 title="View Attributed Sales Breakdown"
-                                className="p-1.5 text-slate-500 hover:text-purple-600 hover:bg-slate-100 rounded-lg"
+                                className="p-1.5 text-slate-500 hover:text-[#B82E69] hover:bg-rose-50/70 rounded-lg transition-colors cursor-pointer"
                               >
                                 <Eye className="w-4 h-4" />
                               </button>
@@ -771,17 +780,17 @@ export const StaffCommissionPage: React.FC = () => {
                                   setShowPrintModal(true);
                                 }}
                                 title="Print Commission Statement"
-                                className="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg"
+                                className="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
                               >
                                 <Printer className="w-4 h-4" />
                               </button>
 
-                              {st.payrollPayslipId && <span className="text-[10px] text-indigo-600">Included in Payroll</span>}
+                              {st.payrollPayslipId && <span className="text-[10px] text-[#B82E69] font-medium bg-rose-50 px-1.5 py-0.5 rounded">Payroll Linked</span>}
                               {st.outstandingAmount > 0 && !st.payrollPayslipId && run.status !== 'CANCELLED' && (
                                 <button
                                   onClick={() => openPaymentModal(run, st)}
                                   title="Pay Commission"
-                                  className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg"
+                                  className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer"
                                 >
                                   <CreditCard className="w-4 h-4" />
                                 </button>
@@ -795,7 +804,7 @@ export const StaffCommissionPage: React.FC = () => {
                                     setShowHistoryModal(true);
                                   }}
                                   title="Payout History & Reversals"
-                                  className="p-1.5 text-slate-500 hover:text-amber-600 hover:bg-slate-100 rounded-lg"
+                                  className="p-1.5 text-slate-500 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer"
                                 >
                                   <History className="w-4 h-4" />
                                 </button>

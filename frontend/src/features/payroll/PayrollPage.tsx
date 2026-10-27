@@ -38,6 +38,7 @@ import {
   Trash2,
   MapPin,
   Briefcase,
+  Banknote,
 } from 'lucide-react';
 import { roundCurrency } from '../../lib/taxCalculations';
 import { AccessDeniedView } from '../scaffold/AccessDeniedView';
@@ -104,7 +105,7 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
 
   // Filters
   const [selectedBranchId, setSelectedBranchId] = useState<string>(
-    user.role === 'SUPER_ADMIN' ? '' : (user.branchId || '')
+    user.role === 'SUPER_ADMIN' ? (activeBranchId || user.branchId || allBranches[0]?.id || '') : (user.branchId || activeBranchId || '')
   );
   const [selectedMonth, setSelectedMonth] = useState<string>(initialMonth);
   const [selectedMonthNum, setSelectedMonthNum] = useState<string>(initialMonth.slice(5, 7) || '10');
@@ -118,6 +119,13 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
   const [staffFilter, setStaffFilter] = useState<string>('ALL');
   const [compTypeFilter, setCompTypeFilter] = useState<string>('ALL');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
+
+  useEffect(() => {
+    if (!selectedBranchId) {
+      const fallback = activeBranchId || user.branchId || allBranches[0]?.id || '';
+      if (fallback) setSelectedBranchId(fallback);
+    }
+  }, [activeBranchId, user.branchId, allBranches, selectedBranchId]);
 
   // Active Draft Run (preview currently being inspected / generated)
   const [activeDraft, setActiveDraft] = useState<PayrollRun | null>(null);
@@ -166,13 +174,16 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
   });
 
   // Action feedback
-  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [actionLoading, setActionLoading] = useState<boolean>(false);
 
   const effectiveBranchId = user.role === 'SUPER_ADMIN' ? selectedBranchId : (user.branchId || activeBranchId);
 
   // Fetch all initial data
   const loadData = async () => {
+    if (!effectiveBranchId) {
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       const [runs, staff, accounts, drawers, policy, advances] = await Promise.all([
@@ -195,7 +206,7 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
       setSelectedStaffIds([]);
       setHasFiltered(false);
     } catch (err: any) {
-      setFeedback({ type: 'error', message: err.message || 'Failed to load payroll data.' });
+      console.warn('Initial payroll data load warning:', err);
     } finally {
       setLoading(false);
     }
@@ -368,7 +379,6 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
     if (!effectiveBranchId || effectiveBranchId === 'ALL') { toast.error('Please select a branch for this action.'); return; }
     try {
       setActionLoading(true);
-      setFeedback(null);
       const targetMonth = runType === 'MONTHLY' ? `${selectedYear}-${selectedMonthNum}` : startDate.slice(0, 7);
       setSelectedMonth(targetMonth);
       if (runType !== 'MONTHLY') {
@@ -398,7 +408,7 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
         });
       setSelectedStaffIds([]);
     } catch (err: any) {
-      setFeedback({ type: 'error', message: err.message || 'Failed to filter payroll data.' });
+      toast.error(err.message || 'Failed to filter payroll data.');
     } finally {
       setActionLoading(false);
     }
@@ -407,12 +417,11 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
   const handleGenerateSalary = async () => {
     if (!effectiveBranchId || effectiveBranchId === 'ALL') { toast.error('Please select a branch for this action.'); return; }
     if (!hasFiltered) {
-      setFeedback({ type: 'error', message: 'Please click Filter first to view and select eligible staff.' });
+      toast.error('Please click Filter first to view and select eligible staff.');
       return;
     }
     try {
       setActionLoading(true);
-      setFeedback(null);
       const targetMonth = runType === 'MONTHLY' ? `${selectedYear}-${selectedMonthNum}` : startDate.slice(0, 7);
       const effStartDate = runType === 'MONTHLY' ? undefined : startDate;
       const effEndDate = runType === 'MONTHLY' ? undefined : (runType === 'DAILY' ? startDate : endDate);
@@ -440,7 +449,6 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
       // Immediately navigate to Manage Salaries page
       navigate('/accounts/salary/manage');
     } catch (err: any) {
-      setFeedback({ type: 'error', message: err.message || 'Failed to generate salary.' });
       toast.error(err.message || 'Failed to generate salary.');
     } finally {
       setActionLoading(false);
@@ -459,7 +467,6 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
     if (!effectiveBranchId || effectiveBranchId === 'ALL') { toast.error('Please select a branch for this action.'); return; }
     try {
       setActionLoading(true);
-      setFeedback(null);
       const preview = await salonService.generatePayrollPreview(
         effectiveBranchId,
         selectedMonth,
@@ -474,7 +481,7 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
       setActiveDraft(preview);
       setShowPreviewModal(true);
     } catch (err: any) {
-      setFeedback({ type: 'error', message: err.message || 'Failed to generate payroll preview.' });
+      toast.error(err.message || 'Failed to generate payroll preview.');
     } finally {
       setActionLoading(false);
     }
@@ -485,19 +492,17 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
     if (!activeDraft) return;
     try {
       setActionLoading(true);
-      setFeedback(null);
       const finalized = await salonService.finalizePayroll(activeDraft.id, user);
       setPayrollRuns((runs) => [finalized, ...runs.filter((run) => run.id !== finalized.id)]);
-      setFeedback({
-        type: 'success',
-        message: `Payroll ${finalized.payrollNumber} successfully finalized! Total payable: Rs. ${finalized.totalPayable.toLocaleString()}. Inputs are now locked.`,
-      });
+      toast.success(
+        `Payroll ${finalized.payrollNumber} successfully finalized! Total payable: Rs. ${finalized.totalPayable.toLocaleString()}. Inputs are now locked.`
+      );
       setShowPreviewModal(false);
       setActiveDraft(null);
       navigate('/accounts/salary/manage');
       await loadData();
     } catch (err: any) {
-      setFeedback({ type: 'error', message: err.message || 'Failed to finalize payroll.' });
+      toast.error(err.message || 'Failed to finalize payroll.');
     } finally {
       setActionLoading(false);
     }
@@ -523,16 +528,12 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
     if (!paymentTargetRun || !paymentTargetPayslip) return;
 
     if (paymentForm.amount <= 0 || paymentForm.amount > paymentTargetPayslip.outstandingAmount) {
-      setFeedback({
-        type: 'error',
-        message: `Payment amount must be between 1 and ${paymentTargetPayslip.outstandingAmount.toLocaleString()}`,
-      });
+      toast.error(`Payment amount must be between 1 and ${paymentTargetPayslip.outstandingAmount.toLocaleString()}`);
       return;
     }
 
     try {
       setActionLoading(true);
-      setFeedback(null);
       await salonService.recordPayrollPayment(
         {
           payrollRunId: paymentTargetRun.id,
@@ -545,14 +546,11 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
         user
       );
 
-      setFeedback({
-        type: 'success',
-        message: `Successfully paid Rs. ${paymentForm.amount.toLocaleString()} to ${paymentTargetPayslip.staffName}!`,
-      });
+      toast.success(`Successfully paid Rs. ${paymentForm.amount.toLocaleString()} to ${paymentTargetPayslip.staffName}!`);
       setShowPaymentModal(false);
       await loadData();
     } catch (err: any) {
-      setFeedback({ type: 'error', message: err.message || 'Payment failed.' });
+      toast.error(err.message || 'Payment failed.');
     } finally {
       setActionLoading(false);
     }
@@ -576,32 +574,22 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
     if (!deductionTargetPayslip || !deductionTargetRun) return;
 
     if (deductionForm.amount <= 0) {
-      setFeedback({
-        type: 'error',
-        message: 'Deduction amount must be greater than zero.',
-      });
+      toast.error('Deduction amount must be greater than zero.');
       return;
     }
 
     if (deductionForm.amount > deductionTargetPayslip.outstandingAmount) {
-      setFeedback({
-        type: 'error',
-        message: `Deduction amount cannot exceed unpaid salary balance of Rs. ${deductionTargetPayslip.outstandingAmount.toLocaleString()}`,
-      });
+      toast.error(`Deduction amount cannot exceed unpaid salary balance of Rs. ${deductionTargetPayslip.outstandingAmount.toLocaleString()}`);
       return;
     }
 
     if (!deductionForm.title.trim()) {
-      setFeedback({
-        type: 'error',
-        message: 'Deduction title or reason is required.',
-      });
+      toast.error('Deduction title or reason is required.');
       return;
     }
 
     try {
       setActionLoading(true);
-      setFeedback(null);
       await salonService.addManualDeduction(
         deductionTargetPayslip.id,
         {
@@ -612,14 +600,11 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
         user
       );
 
-      setFeedback({
-        type: 'success',
-        message: `Successfully applied deduction of Rs. ${deductionForm.amount.toLocaleString()} for ${deductionTargetPayslip.staffName}!`,
-      });
+      toast.success(`Successfully applied deduction of Rs. ${deductionForm.amount.toLocaleString()} for ${deductionTargetPayslip.staffName}!`);
       setShowDeductionModal(false);
       await loadData();
     } catch (err: any) {
-      setFeedback({ type: 'error', message: err.message || 'Failed to apply deduction.' });
+      toast.error(err.message || 'Failed to apply deduction.');
     } finally {
       setActionLoading(false);
     }
@@ -631,16 +616,13 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
     try {
       setActionLoading(true);
       await salonService.cancelPayrollRun(runToCancel.id, cancelReason, user);
-      setFeedback({
-        type: 'success',
-        message: `Payroll run ${runToCancel.payrollNumber} cancelled and attendance/overtime released.`,
-      });
+      toast.success(`Payroll run ${runToCancel.payrollNumber} cancelled and attendance/overtime released.`);
       setShowCancelModal(false);
       setRunToCancel(null);
       setCancelReason('');
       await loadData();
     } catch (err: any) {
-      setFeedback({ type: 'error', message: err.message || 'Failed to cancel payroll run.' });
+      toast.error(err.message || 'Failed to cancel payroll run.');
     } finally {
       setActionLoading(false);
     }
@@ -652,15 +634,12 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
     try {
       setActionLoading(true);
       await salonService.reversePayrollPayment(paymentToReverse.id, reverseReason, user);
-      setFeedback({
-        type: 'success',
-        message: `Payment of Rs. ${paymentToReverse.amount.toLocaleString()} reversed. Funds restored to source balance.`,
-      });
+      toast.success(`Payment of Rs. ${paymentToReverse.amount.toLocaleString()} reversed. Funds restored to source balance.`);
       setPaymentToReverse(null);
       setReverseReason('');
       await loadData();
     } catch (err: any) {
-      setFeedback({ type: 'error', message: err.message || 'Failed to reverse payment.' });
+      toast.error(err.message || 'Failed to reverse payment.');
     } finally {
       setActionLoading(false);
     }
@@ -673,10 +652,10 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
       setActionLoading(true);
       const updated = await salonService.updatePayrollPolicy(effectiveBranchId, policyForm, user);
       setPayrollPolicy(updated);
-      setFeedback({ type: 'success', message: 'Payroll policy settings successfully updated.' });
+      toast.success('Payroll policy settings successfully updated.');
       setShowPolicyModal(false);
     } catch (err: any) {
-      setFeedback({ type: 'error', message: err.message || 'Failed to update payroll policy.' });
+      toast.error(err.message || 'Failed to update payroll policy.');
     } finally {
       setActionLoading(false);
     }
@@ -751,30 +730,37 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6 font-sans">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800 tracking-tight">
-            {mode === 'MANAGE'
-              ? 'Manage Salaries'
-              : mode === 'ALLOWANCES'
-              ? 'Allowances & Adjustments'
-              : 'Generate Salary'}
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            {mode === 'MANAGE'
-              ? 'Review finalized salary disbursements, payslips, and payment records.'
-              : mode === 'ALLOWANCES'
-              ? 'Staff bonuses, allowances, and compensation adjustments.'
-              : 'Select branch, month and year to filter and generate staff salaries.'}
-          </p>
+    <div className="w-full max-w-full space-y-6 text-slate-800 font-sans">
+      {/* ── 1. TOP HEADER BANNER (FROSTED GLASS CONTAINER) ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-5 sm:p-6 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#FDF2F5] to-white border border-white/80 shadow-2xs flex items-center justify-center text-[#B82E69] shrink-0">
+              <Banknote className="w-5 h-5 text-[#B82E69]" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold text-[#18191B] tracking-tight truncate">
+                {mode === 'MANAGE'
+                  ? 'Manage Salaries'
+                  : mode === 'ALLOWANCES'
+                  ? 'Allowances & Adjustments'
+                  : 'Generate Salary'}
+              </h1>
+              <p className="text-xs text-[#78616C] font-medium mt-0.5 line-clamp-1 xl:line-clamp-none">
+                {mode === 'MANAGE'
+                  ? 'Review finalized salary disbursements, payslips, and payment records'
+                  : mode === 'ALLOWANCES'
+                  ? 'Staff bonuses, allowances, and compensation adjustments'
+                  : 'Select branch, month and year to filter and generate staff salaries'}
+              </p>
+            </div>
+          </div>
         </div>
         {mode === 'MANAGE' && (
           <button
             type="button"
             onClick={() => navigate('/accounts/salary/generate')}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-[#9D2558] hover:bg-[#851C47] text-white font-medium rounded-xl text-xs transition-colors cursor-pointer shadow-xs"
+            className="h-9 px-4 font-semibold gap-1.5 shadow-xs text-xs sm:text-sm bg-[#B82E69] hover:bg-[#A02358] text-white rounded-xl transition-all flex items-center cursor-pointer shrink-0"
           >
             <Briefcase className="w-4 h-4" />
             <span>Generate Salary</span>
@@ -782,46 +768,26 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
         )}
       </div>
 
-      {/* Feedback Alerts */}
-      {feedback && (
-        <div
-          className={`p-4 rounded-xl flex items-center justify-between text-sm ${
-            feedback.type === 'success'
-              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-              : 'bg-rose-50 text-rose-800 border border-rose-200'
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            {feedback.type === 'success' ? (
-              <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-            ) : (
-              <AlertCircle className="w-5 h-5 text-rose-600" />
-            )}
-            <p className="font-medium">{feedback.message}</p>
-          </div>
-          <button onClick={() => setFeedback(null)} className="text-slate-400 hover:text-slate-600">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
-
       {/* GENERATE SALARY VIEW */}
       {mode === 'GENERATE' && (
         <div className="space-y-6">
           {/* Top Form & Staff Selection */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             {/* Left Filter Card */}
-            <div className="lg:col-span-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-              <h2 className="text-lg font-bold text-slate-900 pb-2 border-b border-slate-100">Generate Salary</h2>
+            <div className="lg:col-span-4 p-5 sm:p-6 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] space-y-4">
+              <h2 className="text-base font-bold text-[#18191B] pb-2 border-b border-white/80 flex items-center gap-2">
+                <Settings className="w-4 h-4 text-[#B82E69]" />
+                <span>Payroll Run Settings</span>
+              </h2>
 
               {/* Branch */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
                   Branch <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                    <MapPin className="w-4 h-4 text-[#9D2558]" />
+                    <MapPin className="w-4 h-4 text-[#B82E69]" />
                   </div>
                   <select
                     value={effectiveBranchId}
@@ -830,7 +796,7 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
                       setHasFiltered(false);
                     }}
                     disabled={user.role !== 'SUPER_ADMIN'}
-                    className="w-full text-sm pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#9D2558]/20 transition-all font-medium text-slate-800 disabled:opacity-75 disabled:cursor-not-allowed"
+                    className="w-full text-xs pl-9 pr-3 py-2.5 rounded-xl border border-white/80 bg-white/80 hover:bg-white text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#B82E69]/20 focus:border-[#B82E69] shadow-2xs font-medium transition-all disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
                   >
                     {user.role === 'SUPER_ADMIN' && <option value="">Select branch for this action</option>}
                     {allBranches.map((b) => (
@@ -844,23 +810,23 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
 
               {/* Payroll Type */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
                   Payroll Type <span className="text-rose-500">*</span>
                 </label>
-                <div className="grid grid-cols-3 gap-1 p-1 bg-slate-100 rounded-xl">
+                <div className="grid grid-cols-3 gap-1 p-1 bg-white/80 border border-white/80 rounded-xl shadow-2xs">
                   <button
                     type="button"
                     onClick={() => {
                       setRunType('MONTHLY');
                       setHasFiltered(false);
                     }}
-                    className={`py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                    className={`py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                       runType === 'MONTHLY'
-                        ? 'bg-white text-[#851C47] shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900'
+                        ? 'bg-[#B82E69] text-white shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
                     }`}
                   >
-                    Monthly / To Date
+                    Monthly
                   </button>
                   <button
                     type="button"
@@ -868,10 +834,10 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
                       setRunType('DAILY');
                       setHasFiltered(false);
                     }}
-                    className={`py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                    className={`py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                       runType === 'DAILY'
-                        ? 'bg-white text-[#851C47] shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900'
+                        ? 'bg-[#B82E69] text-white shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
                     }`}
                   >
                     Daily
@@ -882,10 +848,10 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
                       setRunType('CUSTOM_RANGE');
                       setHasFiltered(false);
                     }}
-                    className={`py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                    className={`py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                       runType === 'CUSTOM_RANGE'
-                        ? 'bg-white text-[#851C47] shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900'
+                        ? 'bg-[#B82E69] text-white shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
                     }`}
                   >
                     Custom
@@ -897,12 +863,12 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
               {runType === 'MONTHLY' && (
                 <>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
                       Month <span className="text-rose-500">*</span>
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                        <Calendar className="w-4 h-4 text-[#9D2558]" />
+                        <Calendar className="w-4 h-4 text-[#B82E69]" />
                       </div>
                       <select
                         value={selectedMonthNum}
@@ -911,7 +877,7 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
                           setSelectedMonth(`${selectedYear}-${e.target.value}`);
                           setHasFiltered(false);
                         }}
-                        className="w-full text-sm pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#9D2558]/20 transition-all font-medium text-slate-800"
+                        className="w-full text-xs pl-9 pr-3 py-2.5 rounded-xl border border-white/80 bg-white/80 hover:bg-white text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#B82E69]/20 focus:border-[#B82E69] shadow-2xs font-medium transition-all cursor-pointer"
                       >
                         {MONTHS.map((m) => (
                           <option key={m.value} value={m.value}>
@@ -923,12 +889,12 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
                       Year <span className="text-rose-500">*</span>
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                        <Calendar className="w-4 h-4 text-[#9D2558]" />
+                        <Calendar className="w-4 h-4 text-[#B82E69]" />
                       </div>
                       <select
                         value={selectedYear}
@@ -937,7 +903,7 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
                           setSelectedMonth(`${e.target.value}-${selectedMonthNum}`);
                           setHasFiltered(false);
                         }}
-                        className="w-full text-sm pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#9D2558]/20 transition-all font-medium text-slate-800"
+                        className="w-full text-xs pl-9 pr-3 py-2.5 rounded-xl border border-white/80 bg-white/80 hover:bg-white text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#B82E69]/20 focus:border-[#B82E69] shadow-2xs font-medium transition-all cursor-pointer"
                       >
                         {YEARS.map((y) => (
                           <option key={y} value={y}>
@@ -953,12 +919,12 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
               {/* Daily Date Controls */}
               {runType === 'DAILY' && (
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
                     Date <span className="text-rose-500">*</span>
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                      <Calendar className="w-4 h-4 text-[#9D2558]" />
+                      <Calendar className="w-4 h-4 text-[#B82E69]" />
                     </div>
                     <input
                       type="date"
@@ -968,7 +934,7 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
                         setEndDate(e.target.value);
                         setHasFiltered(false);
                       }}
-                      className="w-full text-sm pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#9D2558]/20 transition-all font-medium text-slate-800"
+                      className="w-full text-xs pl-9 pr-3 py-2.5 rounded-xl border border-white/80 bg-white/80 hover:bg-white text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#B82E69]/20 focus:border-[#B82E69] shadow-2xs font-medium transition-all"
                     />
                   </div>
                 </div>
@@ -978,7 +944,7 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
               {runType === 'CUSTOM_RANGE' && (
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
                       Start Date <span className="text-rose-500">*</span>
                     </label>
                     <input
@@ -988,11 +954,11 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
                         setStartDate(e.target.value);
                         setHasFiltered(false);
                       }}
-                      className="w-full text-sm px-2.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#9D2558]/20 transition-all font-medium text-slate-800"
+                      className="w-full text-xs px-2.5 py-2.5 rounded-xl border border-white/80 bg-white/80 hover:bg-white text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#B82E69]/20 focus:border-[#B82E69] shadow-2xs font-medium transition-all"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
                       End Date <span className="text-rose-500">*</span>
                     </label>
                     <input
@@ -1002,7 +968,7 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
                         setEndDate(e.target.value);
                         setHasFiltered(false);
                       }}
-                      className="w-full text-sm px-2.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#9D2558]/20 transition-all font-medium text-slate-800"
+                      className="w-full text-xs px-2.5 py-2.5 rounded-xl border border-white/80 bg-white/80 hover:bg-white text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#B82E69]/20 focus:border-[#B82E69] shadow-2xs font-medium transition-all"
                     />
                   </div>
                 </div>
@@ -1014,16 +980,16 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
                   type="button"
                   onClick={handleFilter}
                   disabled={actionLoading}
-                  className="w-full py-2.5 px-4 bg-[#0a3871] hover:bg-[#082d5b] text-white font-semibold rounded-xl text-sm flex items-center justify-center gap-2 shadow-sm transition-all"
+                  className="w-full py-2.5 px-4 bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
                 >
-                  <Filter className="w-4 h-4" /> Filter
+                  <Filter className="w-4 h-4" /> Filter Staff
                 </button>
 
                 <button
                   type="button"
                   onClick={handleGenerateSalary}
                   disabled={actionLoading}
-                  className="w-full py-2.5 px-4 bg-[#0a3871] hover:bg-[#082d5b] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-xl text-sm flex items-center justify-center gap-2 shadow-sm transition-all"
+                  className="w-full py-2.5 px-4 bg-[#B82E69] hover:bg-[#A02358] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
                 >
                   <Briefcase className="w-4 h-4" /> Generate Salary
                 </button>
@@ -1031,37 +997,37 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
             </div>
 
             {/* Right Eligible Staff Card */}
-            <div className="lg:col-span-8 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col min-h-[380px]">
+            <div className="lg:col-span-8 p-5 sm:p-6 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] flex flex-col min-h-[420px]">
               {!hasFiltered ? (
                 <div className="flex-1 flex flex-col items-center justify-center p-12 text-center">
-                  <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center justify-center text-slate-400 mb-3 shadow-2xs">
-                    <Filter className="w-6 h-6 stroke-[1.5]" />
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#FDF2F5] to-white border border-white/80 shadow-2xs flex items-center justify-center text-[#B82E69] mb-4">
+                    <Filter className="w-7 h-7 stroke-[1.5]" />
                   </div>
-                  <p className="text-slate-700 text-sm font-semibold mb-1">
+                  <p className="text-slate-800 text-sm font-bold mb-1">
                     Please apply filters to view staff
                   </p>
-                  <p className="text-slate-400 text-xs max-w-sm">
-                    Select branch, payroll type, month and year on the left, then click <strong>Filter</strong> to load eligible staff members.
+                  <p className="text-slate-500 text-xs max-w-sm">
+                    Select branch, payroll type, month and year on the left, then click <strong>Filter Staff</strong> to load eligible employees.
                   </p>
                 </div>
               ) : (
                 <>
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 border-b border-slate-100 gap-3">
-                    <div className="text-sm font-bold text-slate-700">
-                      Staff Code | <span className="text-rose-600">Name</span> | Designation ({branchStaff.length})
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 border-b border-white/80 gap-3">
+                    <div className="text-xs sm:text-sm font-bold text-slate-800">
+                      Staff Code | <span className="text-[#B82E69]">Name</span> | Designation ({branchStaff.length})
                     </div>
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
                         onClick={handleSelectAll}
-                        className="px-3.5 py-1.5 bg-[#00bcd4] hover:bg-[#00acc1] text-white text-xs font-semibold rounded-md shadow-xs transition-colors cursor-pointer"
+                        className="h-8 px-3 text-xs font-semibold rounded-xl border border-white/80 bg-white/80 hover:bg-white text-slate-700 shadow-2xs transition-all cursor-pointer"
                       >
                         Select All
                       </button>
                       <button
                         type="button"
                         onClick={handleSelectNone}
-                        className="px-3.5 py-1.5 bg-[#e53935] hover:bg-[#d32f2f] text-white text-xs font-semibold rounded-md shadow-xs transition-colors cursor-pointer"
+                        className="h-8 px-3 text-xs font-semibold rounded-xl border border-white/80 bg-white/80 hover:bg-white text-slate-700 shadow-2xs transition-all cursor-pointer"
                       >
                         Select None
                       </button>
@@ -1069,7 +1035,7 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
                   </div>
 
                   {/* Staff List */}
-                  <div className="mt-4 flex-1 overflow-y-auto max-h-[330px] space-y-2.5 pr-1">
+                  <div className="mt-4 flex-1 overflow-y-auto max-h-[360px] space-y-2.5 pr-1">
                     {branchStaff.length === 0 ? (
                       <div className="p-12 text-center text-slate-400 text-sm">
                         No active staff found for this branch.
@@ -1084,26 +1050,26 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
                           <div
                             key={s.id}
                             onClick={() => toggleStaffSelection(s.id)}
-                            className="p-3 rounded-xl bg-[#fffde7] border border-[#fff59d] hover:border-[#fbc02d] flex items-center justify-between text-xs sm:text-sm cursor-pointer transition-all select-none"
+                            className="p-3.5 rounded-2xl border border-white/80 bg-white/70 hover:bg-white transition-all shadow-2xs flex items-center justify-between text-xs sm:text-sm cursor-pointer select-none"
                           >
                             <div className="flex items-center gap-2.5 flex-wrap">
                               <input
                                 type="checkbox"
                                 checked={isSelected}
                                 onChange={() => {}} // row onClick handles toggle
-                                className="w-4 h-4 rounded text-[#9D2558] focus:ring-[#9D2558]/20 cursor-pointer pointer-events-none"
+                                className="w-4 h-4 rounded text-[#B82E69] focus:ring-[#B82E69]/20 cursor-pointer pointer-events-none"
                               />
-                              <span className="text-slate-600 font-medium">
+                              <span className="text-slate-600 font-mono font-medium">
                                 {s.employeeCode || `EMP-${s.id.slice(-3).toUpperCase()}`}
                               </span>
                               <span className="text-slate-300">|</span>
-                              <span className="text-rose-600 font-semibold">{s.name}</span>
+                              <span className="text-[#B82E69] font-bold">{s.name}</span>
                               <span className="text-slate-300">|</span>
                               <span className="text-slate-600 capitalize">
                                 {s.designation || s.roleTitle || 'Staff'}
                               </span>
                               {loan && (
-                                <span className="ml-1 px-2.5 py-0.5 bg-[#ff9800] text-white text-[11px] font-bold rounded-full shadow-xs">
+                                <span className="ml-1 px-2.5 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold rounded-full shadow-2xs font-mono tabular-nums">
                                   Loan: {roundCurrency(loan.recoveryPerMonth || loan.balance)}.00/instalment
                                 </span>
                               )}
@@ -1111,11 +1077,11 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
 
                             <div className="pl-3">
                               {isGenerated ? (
-                                <span className="px-3 py-1 bg-[#2e7d32] text-white text-xs font-bold rounded-md shadow-xs">
+                                <span className="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold rounded-full shadow-2xs">
                                   Generated
                                 </span>
                               ) : (
-                                <span className="px-3 py-1 bg-slate-200 text-slate-600 text-xs font-medium rounded-md">
+                                <span className="px-3 py-1 bg-slate-100 text-slate-600 text-xs font-medium rounded-full">
                                   Not Generated
                                 </span>
                               )}
@@ -1147,17 +1113,17 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
 
       {/* MANAGE SALARIES VIEW */}
       {mode === 'MANAGE' && (
-        <div className="space-y-4">
+        <div className="space-y-6">
           {/* Top Bar for Manage Salaries */}
-          <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="p-4 sm:p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex flex-wrap items-center gap-3">
               {user.role === 'SUPER_ADMIN' && (
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold text-slate-500">Branch:</span>
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Branch:</span>
                   <select
                     value={effectiveBranchId}
                     onChange={(e) => setSelectedBranchId(e.target.value)}
-                    className="text-xs border border-slate-200 rounded-lg px-2.5 py-1.5 bg-slate-50 focus:bg-white font-medium text-slate-800"
+                    className="text-xs rounded-xl border border-white/80 bg-white/80 hover:bg-white px-3 py-1.5 text-slate-800 shadow-2xs font-medium transition-all cursor-pointer"
                   >
                     {allBranches.map((b) => (
                       <option key={b.id} value={b.id}>
@@ -1169,14 +1135,14 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
               )}
 
               <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-slate-500">Month:</span>
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Month:</span>
                 <select
                   value={selectedMonthNum}
                   onChange={(e) => {
                     setSelectedMonthNum(e.target.value);
                     setSelectedMonth(`${selectedYear}-${e.target.value}`);
                   }}
-                  className="text-xs border border-slate-200 rounded-lg px-2.5 py-1.5 bg-slate-50 focus:bg-white font-medium text-slate-800"
+                  className="text-xs rounded-xl border border-white/80 bg-white/80 hover:bg-white px-3 py-1.5 text-slate-800 shadow-2xs font-medium transition-all cursor-pointer"
                 >
                   {MONTHS.map((m) => (
                     <option key={m.value} value={m.value}>
@@ -1190,7 +1156,7 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
                     setSelectedYear(e.target.value);
                     setSelectedMonth(`${e.target.value}-${selectedMonthNum}`);
                   }}
-                  className="text-xs border border-slate-200 rounded-lg px-2.5 py-1.5 bg-slate-50 focus:bg-white font-medium text-slate-800"
+                  className="text-xs rounded-xl border border-white/80 bg-white/80 hover:bg-white px-3 py-1.5 text-slate-800 shadow-2xs font-medium transition-all cursor-pointer"
                 >
                   {YEARS.map((y) => (
                     <option key={y} value={y}>
@@ -1200,45 +1166,56 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
                 </select>
               </div>
 
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#FDF2F5] text-[#9D2558] border border-[#F1DEE3] text-xs font-semibold rounded-lg">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#FDF2F5] text-[#B82E69] border border-white/80 text-xs font-bold rounded-xl shadow-2xs">
                 {effectiveBranchName} • {periodLabel}
               </span>
             </div>
 
             <button
               onClick={() => navigate('/accounts/salary/generate')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#9D2558] hover:bg-[#851C47] text-white rounded-lg text-xs font-medium shadow-xs transition-colors self-start md:self-auto cursor-pointer"
+              className="h-9 px-4 font-semibold gap-1.5 shadow-xs text-xs sm:text-sm bg-[#B82E69] hover:bg-[#A02358] text-white rounded-xl transition-all flex items-center cursor-pointer shrink-0 self-start md:self-auto"
             >
-              <Briefcase className="w-3.5 h-3.5" />
-              Generate Salary
+              <Briefcase className="w-4 h-4" />
+              <span>Generate Salary</span>
             </button>
           </div>
 
           {/* Generated Salaries Table - Only displayed if salaries have been generated */}
           {generatedPayslipRows.length > 0 ? (
-            <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="report-records w-full text-left border-collapse min-w-[1100px] text-xs">
+            <div className="rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] overflow-hidden">
+              {/* Gradient Banner */}
+              <div className="bg-gradient-to-r from-[#B82E69] to-[#9D2558] text-white px-5 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5 font-bold text-sm tracking-wide text-white">
+                  <Banknote className="w-4 h-4 stroke-[2.5]" />
+                  <span>Finalized Salary Register</span>
+                  <span className="text-[11px] font-bold bg-white/20 text-white px-2.5 py-0.5 rounded-full ml-1">
+                    {generatedPayslipRows.length} Payslips
+                  </span>
+                </div>
+              </div>
+
+              <div className="bg-transparent overflow-x-auto">
+                <table className="report-records w-full text-left border-collapse min-w-[1100px] text-xs font-sans">
                   <thead>
-                    <tr className="bg-[#FDF2F5] text-[#475569] text-[11px] font-semibold border-b border-[#F1DEE3] uppercase tracking-wider">
-                      <th className="py-3 px-4 text-left whitespace-nowrap">Staff</th>
-                      <th className="py-3 px-3 text-center whitespace-nowrap">{runType === 'MONTHLY' ? 'Salary Month' : 'Period'}</th>
-                      <th className="py-3 px-2 text-center whitespace-nowrap" title="Paid attendance days; each completed half day counts as 0.5">Present</th>
-                      <th className="py-3 px-2 text-center whitespace-nowrap">Half Day</th>
-                      <th className="py-3 px-2 text-center whitespace-nowrap">Paid Leave</th>
-                      <th className="py-3 px-2 text-center whitespace-nowrap">Unpaid Leave</th>
-                      <th className="py-3 px-2 text-center whitespace-nowrap">Absent</th>
-                      <th className="py-3 px-2 text-center whitespace-nowrap">Late</th>
-                      <th className="py-3 px-2 text-center whitespace-nowrap">Early Exit</th>
-                      <th className="py-3 px-4 text-right whitespace-nowrap">Basic</th>
-                      <th className="py-3 px-4 text-right whitespace-nowrap">Salary Generated</th>
-                      <th className="py-3 px-4 text-right whitespace-nowrap">Amount Paid</th>
-                      <th className="py-3 px-4 text-right whitespace-nowrap">Loan Repayment</th>
-                      <th className="py-3 px-3 text-center whitespace-nowrap">Status</th>
-                      <th className="py-3 px-4 text-center whitespace-nowrap">Actions</th>
+                    <tr className="bg-[#FAF8F9]/80 text-[#78616C] text-[11px] font-semibold border-b border-white/80 tracking-wider">
+                      <th className="py-3.5 px-4 text-left whitespace-nowrap">Staff</th>
+                      <th className="py-3.5 px-3 text-center whitespace-nowrap">{runType === 'MONTHLY' ? 'Salary Month' : 'Period'}</th>
+                      <th className="py-3.5 px-2 text-center whitespace-nowrap" title="Paid attendance days; each completed half day counts as 0.5">Present</th>
+                      <th className="py-3.5 px-2 text-center whitespace-nowrap">Half Day</th>
+                      <th className="py-3.5 px-2 text-center whitespace-nowrap">Paid Leave</th>
+                      <th className="py-3.5 px-2 text-center whitespace-nowrap">Unpaid Leave</th>
+                      <th className="py-3.5 px-2 text-center whitespace-nowrap">Absent</th>
+                      <th className="py-3.5 px-2 text-center whitespace-nowrap">Late</th>
+                      <th className="py-3.5 px-2 text-center whitespace-nowrap">Early Exit</th>
+                      <th className="py-3.5 px-4 text-right whitespace-nowrap">Basic</th>
+                      <th className="py-3.5 px-4 text-right whitespace-nowrap">Salary Generated</th>
+                      <th className="py-3.5 px-4 text-right whitespace-nowrap">Amount Paid</th>
+                      <th className="py-3.5 px-4 text-right whitespace-nowrap">Loan Repayment</th>
+                      <th className="py-3.5 px-3 text-center whitespace-nowrap">Status</th>
+                      <th className="py-3.5 px-4 text-center whitespace-nowrap">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 text-xs">
+                  <tbody className="divide-y divide-dashed divide-slate-200 text-xs">
                     {generatedPayslipRows.map(({ run, payslip: p }) => {
                       const isPaid = p.outstandingAmount <= 0 && p.paidAmount > 0;
                       const compLabel =
@@ -1260,52 +1237,52 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
                           : `${run.startDate || `${run.month}-01`} to ${run.endDate || run.month}`;
 
                       return (
-                        <tr key={`${run.id}_${p.id}`} className="hover:bg-slate-50/70 transition-colors">
-                          <td className="py-3 px-4 whitespace-nowrap">
+                        <tr key={`${run.id}_${p.id}`} className="hover:bg-[#FDF2F5]/20 transition-colors border-b border-dashed border-slate-200">
+                          <td className="py-3.5 px-4 whitespace-nowrap">
                             <div className="font-semibold text-slate-800">{p.staffName}</div>
                             <div className="text-[11px] text-slate-400">
                               {p.employeeCode || p.staffId} • {p.designation || compLabel}
                             </div>
                           </td>
-                          <td className="py-3 px-3 text-center whitespace-nowrap font-medium text-slate-600">
+                          <td className="py-3.5 px-3 text-center whitespace-nowrap font-medium text-slate-600">
                             {periodDisplay}
                           </td>
-                          <td className="py-3 px-2 text-center tabular-nums text-slate-700">
+                          <td className="py-3.5 px-2 text-center font-mono tabular-nums text-slate-700">
                             {p.presentDays ?? (p as any).attendanceStats?.presentDays ?? 0}
                           </td>
-                          <td className="py-3 px-2 text-center tabular-nums text-slate-700">
+                          <td className="py-3.5 px-2 text-center font-mono tabular-nums text-slate-700">
                             {p.halfDayDays ?? (p as any).attendanceStats?.halfDays ?? 0}
                           </td>
-                          <td className="py-3 px-2 text-center tabular-nums text-slate-700">
+                          <td className="py-3.5 px-2 text-center font-mono tabular-nums text-slate-700">
                             {p.paidLeaveDays ?? (p as any).attendanceStats?.paidLeaveDays ?? 0}
                           </td>
-                          <td className="py-3 px-2 text-center tabular-nums text-slate-700">
+                          <td className="py-3.5 px-2 text-center font-mono tabular-nums text-slate-700">
                             {p.unpaidLeaveDays ?? (p as any).attendanceStats?.unpaidLeaveDays ?? 0}
                           </td>
-                          <td className="py-3 px-2 text-center tabular-nums text-slate-700">
+                          <td className="py-3.5 px-2 text-center font-mono tabular-nums text-slate-700">
                             {p.absentDays ?? (p as any).attendanceStats?.absentDays ?? 0}
                           </td>
-                          <td className="py-3 px-2 text-center tabular-nums text-slate-700">
+                          <td className="py-3.5 px-2 text-center font-mono tabular-nums text-slate-700">
                             {p.lateDays ?? (p as any).attendanceStats?.lateDays ?? 0}
                           </td>
-                          <td className="py-3 px-2 text-center tabular-nums text-slate-700">
+                          <td className="py-3.5 px-2 text-center font-mono tabular-nums text-slate-700">
                             {p.earlyExitDays ?? (p as any).attendanceStats?.earlyExitDays ?? 0}
                           </td>
-                          <td className="py-3 px-4 text-right tabular-nums text-slate-700">
+                          <td className="py-3.5 px-4 text-right font-mono tabular-nums text-slate-700">
                             {((p.effectiveBaseSalary ?? p.baseEarnings) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
-                          <td className="py-3 px-4 text-right tabular-nums text-[#9D2558] font-bold">
+                          <td className="py-3.5 px-4 text-right font-mono tabular-nums text-[#B82E69] font-bold">
                             {(p.netPayable || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
-                          <td className="py-3 px-4 text-right tabular-nums text-emerald-700 font-medium">
+                          <td className="py-3.5 px-4 text-right font-mono tabular-nums text-emerald-700 font-medium">
                             {(p.paidAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
-                          <td className="py-3 px-4 text-right tabular-nums text-slate-600">
+                          <td className="py-3.5 px-4 text-right font-mono tabular-nums text-slate-600">
                             {(p.advanceRecoveryAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
-                          <td className="py-3 px-3 text-center whitespace-nowrap">
+                          <td className="py-3.5 px-3 text-center whitespace-nowrap">
                             <span
-                              className={`px-2 py-0.5 text-[11px] font-semibold rounded-md ${
+                              className={`px-2.5 py-0.5 text-[10px] font-bold rounded-full ${
                                 isPaid
                                   ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                                   : p.paidAmount > 0
@@ -1313,16 +1290,16 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
                                   : 'bg-rose-50 text-rose-700 border border-rose-200'
                               }`}
                             >
-                              {isPaid ? 'Paid' : p.paidAmount > 0 ? 'Partially Paid' : 'Unpaid'}
+                              {isPaid ? 'PAID' : p.paidAmount > 0 ? 'PARTIAL' : 'UNPAID'}
                             </span>
                           </td>
-                          <td className="py-3 px-4 text-center whitespace-nowrap">
+                          <td className="py-3.5 px-4 text-center whitespace-nowrap">
                             <div className="flex items-center justify-center gap-1.5">
                               <button
                                 type="button"
                                 onClick={() => openPaymentModal(run, p)}
                                 disabled={isPaid}
-                                className="px-2.5 py-1 bg-[#9D2558] hover:bg-[#851C47] disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-semibold rounded shadow-2xs transition-colors whitespace-nowrap cursor-pointer"
+                                className="px-3 py-1 bg-[#B82E69] hover:bg-[#A02358] disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-xl shadow-2xs transition-all whitespace-nowrap cursor-pointer"
                               >
                                 Make Payment
                               </button>
@@ -1331,7 +1308,7 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
                                 onClick={() => openDeductionModal(run, p)}
                                 disabled={run.status !== 'DRAFT' || p.outstandingAmount <= 0}
                                 title="Deductions must be entered before finalization"
-                                className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 disabled:opacity-40 disabled:cursor-not-allowed text-xs font-semibold rounded shadow-2xs transition-colors whitespace-nowrap flex items-center gap-1 cursor-pointer"
+                                className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 disabled:opacity-40 disabled:cursor-not-allowed text-xs font-semibold rounded-xl shadow-2xs transition-all whitespace-nowrap flex items-center gap-1 cursor-pointer"
                               >
                                 <MinusCircle className="w-3.5 h-3.5" />
                                 Deduct
@@ -1343,7 +1320,7 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
                                   setShowCancelModal(true);
                                 }}
                                 title="Cancel Payroll Run"
-                                className="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors cursor-pointer"
+                                className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>
@@ -1354,21 +1331,21 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
                     })}
                   </tbody>
 
-                  <tfoot>
-                    <tr className="bg-slate-50 font-bold border-t border-slate-200 text-xs text-slate-800">
-                      <td colSpan={9} className="py-3 px-4 text-right uppercase tracking-wider text-[11px]">
+                  <tfoot className="bg-[#FAF8F9]/80 border-t border-white/80 font-sans text-xs">
+                    <tr className="font-bold text-slate-800">
+                      <td colSpan={9} className="py-3.5 px-4 text-right uppercase tracking-wider text-[11px] font-bold">
                         Total:
                       </td>
-                      <td className="py-3 px-4 text-right tabular-nums text-slate-800">
+                      <td className="py-3.5 px-4 text-right font-mono tabular-nums text-slate-800">
                         {generatedTotals.basic.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
-                      <td className="py-3 px-4 text-right tabular-nums text-[#9D2558] font-bold">
+                      <td className="py-3.5 px-4 text-right font-mono tabular-nums text-[#B82E69] font-extrabold text-sm">
                         {generatedTotals.salaryGenerated.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
-                      <td className="py-3 px-4 text-right tabular-nums text-emerald-700">
+                      <td className="py-3.5 px-4 text-right font-mono tabular-nums text-emerald-700 font-bold">
                         {generatedTotals.amountPaid.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
-                      <td className="py-3 px-4 text-right tabular-nums text-slate-600">
+                      <td className="py-3.5 px-4 text-right font-mono tabular-nums text-slate-600">
                         {generatedTotals.loanRepayment.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
                       <td colSpan={2}></td>
@@ -1378,21 +1355,22 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
               </div>
             </div>
           ) : (
-            <div className="bg-white p-12 text-center rounded-2xl border border-slate-100 shadow-sm space-y-3">
-              <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto">
-                <Calendar className="w-6 h-6" />
+            <div className="rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-12 text-center space-y-3">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#FDF2F5] to-white border border-white/80 shadow-2xs flex items-center justify-center text-[#B82E69] mx-auto mb-2">
+                <Calendar className="w-7 h-7 stroke-[1.5]" />
               </div>
-              <h3 className="text-base font-bold text-slate-800">
+              <h3 className="text-base font-bold text-[#18191B]">
                 No Salaries Generated for {effectiveBranchName} ({periodLabel})
               </h3>
-              <p className="text-xs text-slate-500 max-w-md mx-auto">
+              <p className="text-xs text-[#78616C] font-medium max-w-md mx-auto">
                 Salary has not been generated for this period yet. Click below to select staff and generate salaries.
               </p>
               <button
                 onClick={() => navigate('/accounts/salary/generate')}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-[#9D2558] hover:bg-[#851C47] text-white font-medium rounded-xl text-xs transition-colors cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#B82E69] hover:bg-[#A02358] text-white font-semibold rounded-xl text-xs sm:text-sm shadow-xs transition-all cursor-pointer"
               >
-                Go to Generate Salary
+                <Briefcase className="w-4 h-4" />
+                <span>Go to Generate Salary</span>
               </button>
             </div>
           )}

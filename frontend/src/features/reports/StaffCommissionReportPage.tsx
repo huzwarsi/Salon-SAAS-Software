@@ -28,10 +28,10 @@ import {
 } from './reportUtils';
 
 const selectClass =
-  'w-full text-xs border border-slate-300 rounded-md px-3 py-2 bg-white text-slate-700 focus:outline-hidden focus:ring-1 focus:ring-[#9D2558] focus:border-[#9D2558] transition-colors';
+  'w-full text-xs rounded-xl border border-white/80 bg-white/80 hover:bg-white px-3 py-2 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#B82E69]/20 focus:border-[#B82E69] shadow-2xs font-medium transition-all cursor-pointer';
 const inputClass =
-  'w-full text-xs border border-slate-300 rounded-md px-3 py-2 bg-white text-slate-700 focus:outline-hidden focus:ring-1 focus:ring-[#9D2558] focus:border-[#9D2558] transition-colors';
-const labelClass = 'block text-[11px] font-semibold text-[#23151D] mb-1.5';
+  'w-full text-xs rounded-xl border border-white/80 bg-white/80 hover:bg-white px-3 py-2 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#B82E69]/20 focus:border-[#B82E69] shadow-2xs font-medium transition-all';
+const labelClass = 'block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5';
 
 const formatPKR = (amt: number) => {
   const num = Number(amt) || 0;
@@ -402,30 +402,34 @@ export const StaffCommissionReportPage: React.FC = () => {
   const t = reportData?.totals;
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9] px-4 py-5 md:px-8 md:py-6 text-slate-800 font-sans">
-      {/* Top Header & Filters Card */}
-      <div className="bg-white rounded-xl shadow-xs border border-slate-200/90 p-5 md:p-6 mb-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+    <div className="w-full max-w-full space-y-6 text-slate-800 font-sans">
+      {/* Top Header Card */}
+      <div className="border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-6 rounded-[24px] flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#FDF2F5] to-white border border-white/80 shadow-2xs flex items-center justify-center text-[#B82E69]">
+            <BadgePercent className="w-6 h-6" />
+          </div>
           <div>
-            <h1 className="text-xl font-bold text-[#23151D] tracking-tight">
-              Staff Commission Reports
-            </h1>
-            <p className="text-xs text-slate-500 mt-1">
+            <h1 className="text-xl font-bold text-slate-900 tracking-tight">Staff Commission Reports</h1>
+            <p className="text-xs text-slate-500 mt-0.5">
               Attributed net sales, commission earned, reversals, paid amounts, and outstanding liability.
             </p>
           </div>
-          <div className="flex items-center gap-2 print:hidden">
-            <button
-              type="button"
-              onClick={() => navigate('/accounts/commission')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 bg-white rounded-md text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-2xs"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-              Open Commission Runs
-            </button>
-          </div>
         </div>
+        <div className="flex items-center gap-2 print:hidden">
+          <button
+            type="button"
+            onClick={() => navigate('/accounts/commission')}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 border border-white/90 bg-white/80 hover:bg-white rounded-xl text-xs font-semibold text-slate-700 shadow-2xs transition-all cursor-pointer"
+          >
+            <ExternalLink className="w-3.5 h-3.5 text-[#B82E69]" />
+            Open Commission Runs
+          </button>
+        </div>
+      </div>
 
+      {/* Filter Card */}
+      <div className="border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-5 rounded-[24px]">
         <form onSubmit={handleApplyFilters}>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 items-end">
             {/* Branch */}
@@ -542,11 +546,11 @@ export const StaffCommissionReportPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-[35px] bg-[#9D2558] hover:bg-[#851C47] active:bg-[#002d6b] text-white text-xs font-semibold rounded-md shadow-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-60"
+                className="w-full h-[38px] bg-gradient-to-r from-[#B82E69] to-[#9D2558] hover:from-[#9D2558] hover:to-[#831F4A] text-white font-semibold text-xs rounded-xl shadow-md shadow-[#B82E69]/20 flex items-center justify-center gap-1.5 transition-all cursor-pointer disabled:opacity-60"
               >
                 {isLoading ? (
                   <>
-                    <span className="w-3.5 h-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin inline-block" />
+                    <Loader2 className="w-4 h-4 animate-spin" />
                     <span>Loading...</span>
                   </>
                 ) : (
@@ -564,262 +568,308 @@ export const StaffCommissionReportPage: React.FC = () => {
       {/* Main Content Area */}
       {!hasFiltered ? (
         /* Empty State before Filter clicked */
-        <div className="bg-white rounded-xl border border-slate-200/90 p-16 md:p-24 flex flex-col items-center justify-center min-h-[380px] shadow-xs text-center">
-          <div className="text-slate-400 mb-3">
-            <Filter className="w-14 h-14 stroke-[1.25] text-slate-400" />
+        <div className="border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-16 md:p-24 flex flex-col items-center justify-center min-h-[380px] rounded-[24px] text-center">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#FDF2F5] to-white border border-rose-100/80 text-[#B82E69] flex items-center justify-center mx-auto mb-3 shadow-2xs">
+            <Filter className="w-7 h-7 stroke-[1.5]" />
           </div>
-          <p className="text-slate-400 text-sm font-medium">
-            Please apply filters to view reports
-          </p>
+          <p className="text-slate-500 text-sm font-semibold">Please apply filters to view commission reports</p>
+          <p className="text-slate-400 text-xs mt-1">Select date ranges or staff members above to generate commission records</p>
         </div>
       ) : isLoading ? (
         /* Loading Skeleton */
-        <div className="bg-white rounded-xl border border-slate-200/90 p-16 flex flex-col items-center justify-center min-h-[380px] shadow-xs text-center">
-          <div className="w-10 h-10 rounded-full border-3 border-[#F1DEE3] border-t-[#9D2558] animate-spin mb-3" />
-          <p className="text-slate-600 text-sm font-medium">
-            Loading Staff Commission Reports...
-          </p>
+        <div className="border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-16 flex flex-col items-center justify-center min-h-[380px] rounded-[24px] text-center">
+          <div className="w-10 h-10 rounded-full border-3 border-rose-100 border-t-[#B82E69] animate-spin mb-3" />
+          <p className="text-slate-600 text-sm font-medium">Loading Staff Commission Reports...</p>
         </div>
       ) : errorMessage ? (
         /* Error Message */
-        <div className="bg-white rounded-xl border border-rose-200 p-8 shadow-xs text-center">
+        <div className="border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-8 rounded-[24px] text-center">
           <p className="text-rose-600 text-sm font-medium mb-3">{errorMessage}</p>
           <button
             onClick={() => handleApplyFilters()}
-            className="px-4 py-1.5 bg-[#9D2558] text-white text-xs font-semibold rounded-md shadow-xs hover:bg-[#851C47]"
+            className="px-5 py-2 bg-gradient-to-r from-[#B82E69] to-[#9D2558] hover:from-[#9D2558] text-white text-xs font-semibold rounded-xl shadow-sm transition-all cursor-pointer"
           >
             Retry
           </button>
         </div>
       ) : (
         /* Filtered Data Layout */
-        <div className="mb-8">
-          {/* Royal Blue Banner Header */}
-          <div className="bg-[#9D2558] text-white px-5 py-3 rounded-t-xl flex flex-wrap items-center justify-between gap-3 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <BadgePercent className="w-5 h-5 text-white/90" />
-                <span className="font-semibold text-sm tracking-wide">
-                  Staff Commission Reports
-                </span>
+        <div className="space-y-6 mb-8">
+          {/* 4 Pure White Frosted KPI Cards */}
+          {t && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-5 rounded-[24px] flex items-center justify-between">
+                <div>
+                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Attributed Net Sales</p>
+                  <p className="text-xl font-bold text-slate-900 mt-1 font-mono tabular-nums">PKR {formatPKR(t.attributedNetSales)}</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Completed services baseline</p>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+                  <BadgePercent className="w-5 h-5" />
+                </div>
               </div>
-              <div className="flex items-center bg-black/15 p-0.5 rounded-lg border border-white/10">
-                <button
-                  type="button"
-                  onClick={() => setTab('STAFF')}
-                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${
-                    tab === 'STAFF'
-                      ? 'bg-white text-[#9D2558] shadow-xs'
-                      : 'text-white/80 hover:text-white'
-                  }`}
-                >
-                  By Staff
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTab('LINES')}
-                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${
-                    tab === 'LINES'
-                      ? 'bg-white text-[#9D2558] shadow-xs'
-                      : 'text-white/80 hover:text-white'
-                  }`}
-                >
-                  Commission Events ({reportData?.rows.length ?? 0})
-                </button>
-              </div>
-            </div>
 
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleExportExcel}
-                className="bg-[#009688] hover:bg-[#00897B] text-white text-xs font-semibold px-3.5 py-1.5 rounded-md flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
-              >
-                <FileSpreadsheet className="w-3.5 h-3.5" />
-                CSV
-              </button>
-              <button
-                type="button"
-                onClick={handleExportCsv}
-                className="bg-[#DC2626] hover:bg-[#B91C1C] text-white text-xs font-semibold px-3.5 py-1.5 rounded-md flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
-              >
-                <FileText className="w-3.5 h-3.5" />
-                PDF
-              </button>
-              <button
-                type="button"
-                onClick={handlePrint}
-                className="bg-[#4B5563] hover:bg-[#374151] text-white text-xs font-semibold px-3.5 py-1.5 rounded-md flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
-              >
-                <Printer className="w-3.5 h-3.5" />
-                Print
-              </button>
+              <div className="border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-5 rounded-[24px] flex items-center justify-between">
+                <div>
+                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Gross Commission</p>
+                  <p className="text-xl font-bold text-[#B82E69] mt-1 font-mono tabular-nums">PKR {formatPKR(t.earned)}</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Net payable: PKR {formatPKR(t.net)}</p>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-rose-50 text-[#B82E69] flex items-center justify-center">
+                  <BadgePercent className="w-5 h-5" />
+                </div>
+              </div>
+
+              <div className="border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-5 rounded-[24px] flex items-center justify-between">
+                <div>
+                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Commission Paid</p>
+                  <p className="text-xl font-bold text-emerald-600 mt-1 font-mono tabular-nums">PKR {formatPKR(t.paid)}</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Disbursed to date</p>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <BadgePercent className="w-5 h-5" />
+                </div>
+              </div>
+
+              <div className="border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] p-5 rounded-[24px] flex items-center justify-between">
+                <div>
+                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Outstanding Liability</p>
+                  <p className="text-xl font-bold text-amber-600 mt-1 font-mono tabular-nums">PKR {formatPKR(t.outstanding)}</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Pending settlement</p>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                  <BadgePercent className="w-5 h-5" />
+                </div>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Table Container with Horizontal Scroll */}
-          <div className="bg-white overflow-x-auto rounded-b-xl border border-t-0 border-slate-200/90 shadow-sm">
-            {tab === 'STAFF' ? (
-              <table className="report-records w-full min-w-[1250px] text-left border-collapse font-['Inter',sans-serif] text-[13px] antialiased">
-                <thead>
-                  <tr className="bg-[#FDF2F5] border-b border-[#F1DEE3] text-[#475569] font-medium text-[13px]">
-                    <th className="py-3.5 px-4">Staff</th>
-                    <th className="py-3.5 px-4">Employee Code</th>
-                    <th className="py-3.5 px-4 text-right">Attributed Net Sales</th>
-                    <th className="py-3.5 px-4 text-right">Opening Liability</th>
-                    <th className="py-3.5 px-4 text-right">Earned</th>
-                    <th className="py-3.5 px-4 text-right">Reversed</th>
-                    <th className="py-3.5 px-4 text-right">Net Commission</th>
-                    <th className="py-3.5 px-4 text-right">Paid</th>
-                    <th className="py-3.5 px-4 text-right">Outstanding</th>
-                  </tr>
-                </thead>
-                <tbody className="text-[#334155]">
-                  {(!reportData || reportData.byStaff.length === 0) ? (
-                    <tr>
-                      <td colSpan={9} className="py-12 text-center text-slate-400 font-medium">
-                        No staff commission records found for the selected criteria.
-                      </td>
+          <div className="border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] rounded-[24px] overflow-hidden">
+            {/* Banner Header */}
+            <div className="bg-gradient-to-r from-[#B82E69] to-[#9D2558] text-white px-6 py-4 flex flex-wrap items-center justify-between gap-3 shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <BadgePercent className="w-5 h-5 text-white/90" />
+                  <span className="font-semibold text-sm tracking-wide">
+                    Staff Commission Reports
+                  </span>
+                </div>
+                <div className="flex items-center bg-black/15 p-0.5 rounded-xl border border-white/10">
+                  <button
+                    type="button"
+                    onClick={() => setTab('STAFF')}
+                    className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                      tab === 'STAFF'
+                        ? 'bg-white text-[#B82E69] shadow-xs'
+                        : 'text-white/80 hover:text-white'
+                    }`}
+                  >
+                    By Staff
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTab('LINES')}
+                    className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                      tab === 'LINES'
+                        ? 'bg-white text-[#B82E69] shadow-xs'
+                        : 'text-white/80 hover:text-white'
+                    }`}
+                  >
+                    Commission Events ({reportData?.rows.length ?? 0})
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleExportExcel}
+                  className="bg-white/20 hover:bg-white/30 text-white text-xs font-semibold px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 backdrop-blur-sm transition-all cursor-pointer"
+                >
+                  <FileSpreadsheet className="w-3.5 h-3.5" />
+                  CSV Export
+                </button>
+                <button
+                  type="button"
+                  onClick={handleExportCsv}
+                  className="bg-white/20 hover:bg-white/30 text-white text-xs font-semibold px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 backdrop-blur-sm transition-all cursor-pointer"
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  PDF Export
+                </button>
+                <button
+                  type="button"
+                  onClick={handlePrint}
+                  className="bg-white/20 hover:bg-white/30 text-white text-xs font-semibold px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 backdrop-blur-sm transition-all cursor-pointer"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  Print
+                </button>
+              </div>
+            </div>
+
+            {/* Table */}
+            <div className="overflow-x-auto">
+              {tab === 'STAFF' ? (
+                <table className="report-records w-full min-w-[1100px] text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="bg-[#FAF8F9] border-b border-rose-100/60 text-[#B82E69] font-bold text-[11px] uppercase tracking-wider">
+                      <th className="py-3.5 px-4">Staff</th>
+                      <th className="py-3.5 px-4">Employee Code</th>
+                      <th className="py-3.5 px-4 text-right">Attributed Net Sales</th>
+                      <th className="py-3.5 px-4 text-right">Opening Liability</th>
+                      <th className="py-3.5 px-4 text-right">Earned</th>
+                      <th className="py-3.5 px-4 text-right">Reversed</th>
+                      <th className="py-3.5 px-4 text-right">Net Commission</th>
+                      <th className="py-3.5 px-4 text-right">Paid</th>
+                      <th className="py-3.5 px-4 text-right">Outstanding</th>
                     </tr>
-                  ) : (
-                    reportData.byStaff.map((s) => (
-                      <tr key={s.staffId} className="hover:bg-[#FDF2F5]/20 transition-colors border-b border-dashed border-slate-200">
-                        <td className="py-3.5 px-4 font-semibold text-slate-800">
-                          {s.staffName}
-                        </td>
-                        <td className="py-3.5 px-4 text-slate-500">
-                          {s.employeeCode || '—'}
-                        </td>
-                        <td className="py-3.5 px-4 text-right tabular-nums font-semibold text-slate-800">
-                          {formatPKR(s.attributedNetSales)}
-                        </td>
-                        <td className="py-3.5 px-4 text-right tabular-nums text-slate-600">
-                          {formatPKR(s.openingLiability)}
-                        </td>
-                        <td className="py-3.5 px-4 text-right tabular-nums font-semibold text-[#10B981]">
-                          {formatPKR(s.earned)}
-                        </td>
-                        <td className="py-3.5 px-4 text-right tabular-nums text-[#EF4444]">
-                          {s.reversed ? formatPKR(s.reversed) : '—'}
-                        </td>
-                        <td className="py-3.5 px-4 text-right tabular-nums font-bold text-slate-800">
-                          {formatPKR(s.net)}
-                        </td>
-                        <td className="py-3.5 px-4 text-right tabular-nums text-slate-600">
-                          {formatPKR(s.paid)}
-                        </td>
-                        <td className="py-3.5 px-4 text-right tabular-nums font-bold text-[#9D2558]">
-                          {formatPKR(s.outstanding)}
+                  </thead>
+                  <tbody className="text-slate-700 divide-y divide-rose-100/50">
+                    {(!reportData || reportData.byStaff.length === 0) ? (
+                      <tr>
+                        <td colSpan={9} className="py-12 text-center text-slate-400 font-medium">
+                          No staff commission records found for the selected criteria.
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-                {t && reportData && reportData.byStaff.length > 0 && (
-                  <tfoot className="bg-[#F8FAFC] border-t-2 border-slate-200 font-['Inter',sans-serif] text-[13px] text-[#334155]">
-                    <tr>
-                      <td className="py-3.5 px-4 text-left font-bold text-slate-800">Totals</td>
-                      <td className="py-3.5 px-4 text-left text-slate-400">—</td>
-                      <td className="py-3.5 px-4 text-right tabular-nums font-bold text-slate-800">{formatPKR(t.attributedNetSales)}</td>
-                      <td className="py-3.5 px-4 text-right tabular-nums font-semibold text-slate-600">{formatPKR(t.openingLiability)}</td>
-                      <td className="py-3.5 px-4 text-right tabular-nums font-bold text-[#10B981]">{formatPKR(t.earned)}</td>
-                      <td className="py-3.5 px-4 text-right tabular-nums font-semibold text-[#EF4444]">{formatPKR(t.reversed)}</td>
-                      <td className="py-3.5 px-4 text-right tabular-nums font-bold text-slate-800">{formatPKR(t.net)}</td>
-                      <td className="py-3.5 px-4 text-right tabular-nums text-slate-600">{formatPKR(t.paid)}</td>
-                      <td className="py-3.5 px-4 text-right tabular-nums font-bold text-[#9D2558]">{formatPKR(t.outstanding)}</td>
-                    </tr>
-                  </tfoot>
-                )}
-              </table>
-            ) : (
-              <table className="report-records w-full min-w-[1300px] text-left border-collapse font-['Inter',sans-serif] text-[13px] antialiased">
-                <thead>
-                  <tr className="bg-[#FDF2F5] border-b border-[#F1DEE3] text-[#475569] font-medium text-[13px]">
-                    <th className="py-3.5 px-4 whitespace-nowrap">Date</th>
-                    <th className="py-3.5 px-4">Staff</th>
-                    <th className="py-3.5 px-4">Invoice #</th>
-                    <th className="py-3.5 px-4">Customer</th>
-                    <th className="py-3.5 px-4">Item Name</th>
-                    <th className="py-3.5 px-4">Source</th>
-                    <th className="py-3.5 px-4 text-right">Attributed Net</th>
-                    <th className="py-3.5 px-4 text-right">Rate %</th>
-                    <th className="py-3.5 px-4 text-right">Earned</th>
-                    <th className="py-3.5 px-4 text-right">Reversed</th>
-                    <th className="py-3.5 px-4 text-right">Net</th>
-                    <th className="py-3.5 px-4 text-center">Run Status</th>
-                  </tr>
-                </thead>
-                <tbody className="text-[#334155]">
-                  {(!reportData || reportData.rows.length === 0) ? (
-                    <tr>
-                      <td colSpan={12} className="py-12 text-center text-slate-400 font-medium">
-                        No commission events found for the selected criteria.
-                      </td>
-                    </tr>
-                  ) : (
-                    reportData.rows.map((r) => {
-                      const dateParts = formatDateParts(r.date);
-                      return (
-                        <tr key={r.eventId} className="hover:bg-[#FDF2F5]/20 transition-colors border-b border-dashed border-slate-200">
-                          <td className="py-3.5 px-4 whitespace-nowrap leading-tight">
-                            <div className="font-medium text-slate-800">{dateParts.dayMonth}</div>
-                            <div className="text-[11px] text-slate-400">{dateParts.year}</div>
+                    ) : (
+                      reportData.byStaff.map((s) => (
+                        <tr key={s.staffId} className="hover:bg-[#B82E69]/[0.02] transition-colors border-b border-dashed border-rose-100/60">
+                          <td className="py-3.5 px-4 font-semibold text-slate-900">
+                            {s.staffName}
                           </td>
-                          <td className="py-3.5 px-4 font-semibold text-slate-800">
-                            {r.staffName}
+                          <td className="py-3.5 px-4 text-slate-400 font-mono text-[11px]">
+                            {s.employeeCode || '—'}
                           </td>
-                          <td className="py-3.5 px-4 text-slate-700 font-medium whitespace-nowrap">
-                            <span className="font-semibold text-[#9D2558]">{r.invoiceNumber}</span>
-                            {r.eventType === 'REVERSAL' && (
-                              <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#EF4444] text-white">
-                                REVERSAL
-                              </span>
-                            )}
+                          <td className="py-3.5 px-4 text-right font-mono tabular-nums font-semibold text-slate-800">
+                            {formatPKR(s.attributedNetSales)}
                           </td>
-                          <td className="py-3.5 px-4 text-slate-700">{r.customer}</td>
-                          <td className="py-3.5 px-4 text-slate-800 font-medium">{r.itemName}</td>
-                          <td className="py-3.5 px-4 text-slate-500 capitalize">{r.source.toLowerCase()}</td>
-                          <td className="py-3.5 px-4 text-right tabular-nums font-semibold text-slate-800">
-                            {formatPKR(r.attributedNetSales)}
+                          <td className="py-3.5 px-4 text-right font-mono tabular-nums text-slate-600">
+                            {formatPKR(s.openingLiability)}
                           </td>
-                          <td className="py-3.5 px-4 text-right tabular-nums text-slate-600">
-                            {r.rateSnapshot}%
+                          <td className="py-3.5 px-4 text-right font-mono tabular-nums font-semibold text-[#B82E69]">
+                            {formatPKR(s.earned)}
                           </td>
-                          <td className="py-3.5 px-4 text-right tabular-nums font-semibold text-[#10B981]">
-                            {r.earned ? formatPKR(r.earned) : '—'}
+                          <td className="py-3.5 px-4 text-right font-mono tabular-nums text-rose-600">
+                            {s.reversed ? formatPKR(s.reversed) : '—'}
                           </td>
-                          <td className="py-3.5 px-4 text-right tabular-nums text-[#EF4444]">
-                            {r.reversed ? formatPKR(r.reversed) : '—'}
+                          <td className="py-3.5 px-4 text-right font-mono tabular-nums font-bold text-slate-900">
+                            {formatPKR(s.net)}
                           </td>
-                          <td className="py-3.5 px-4 text-right tabular-nums font-bold text-slate-800">
-                            {formatPKR(r.net)}
+                          <td className="py-3.5 px-4 text-right font-mono tabular-nums font-semibold text-emerald-600">
+                            {formatPKR(s.paid)}
                           </td>
-                          <td className="py-3.5 px-4 text-center">
-                            <span
-                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
-                                r.runStatus === 'IN_RUN'
-                                  ? 'bg-[#9D2558] text-white shadow-2xs'
-                                  : 'bg-slate-100 text-slate-600'
-                              }`}
-                            >
-                              {r.runStatus === 'IN_RUN' ? 'In Run' : 'Not Run'}
-                            </span>
+                          <td className="py-3.5 px-4 text-right font-mono tabular-nums font-bold text-amber-600">
+                            {formatPKR(s.outstanding)}
                           </td>
                         </tr>
-                      );
-                    })
+                      ))
+                    )}
+                  </tbody>
+                  {t && reportData && reportData.byStaff.length > 0 && (
+                    <tfoot className="bg-[#FAF8F9] border-t-2 border-rose-200/60 text-xs font-semibold">
+                      <tr>
+                        <td className="py-3.5 px-4 text-left font-bold text-slate-900 uppercase tracking-wider">Totals</td>
+                        <td className="py-3.5 px-4 text-left text-slate-400">—</td>
+                        <td className="py-3.5 px-4 text-right font-mono tabular-nums font-bold text-slate-900">{formatPKR(t.attributedNetSales)}</td>
+                        <td className="py-3.5 px-4 text-right font-mono tabular-nums font-semibold text-slate-700">{formatPKR(t.openingLiability)}</td>
+                        <td className="py-3.5 px-4 text-right font-mono tabular-nums font-bold text-[#B82E69]">{formatPKR(t.earned)}</td>
+                        <td className="py-3.5 px-4 text-right font-mono tabular-nums font-semibold text-rose-600">{formatPKR(t.reversed)}</td>
+                        <td className="py-3.5 px-4 text-right font-mono tabular-nums font-bold text-slate-900">{formatPKR(t.net)}</td>
+                        <td className="py-3.5 px-4 text-right font-mono tabular-nums font-semibold text-emerald-600">{formatPKR(t.paid)}</td>
+                        <td className="py-3.5 px-4 text-right font-mono tabular-nums font-bold text-amber-600">{formatPKR(t.outstanding)}</td>
+                      </tr>
+                    </tfoot>
                   )}
-                </tbody>
-              </table>
-            )}
+                </table>
+              ) : (
+                <table className="report-records w-full min-w-[1250px] text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="bg-[#FAF8F9] border-b border-rose-100/60 text-[#B82E69] font-bold text-[11px] uppercase tracking-wider">
+                      <th className="py-3.5 px-4 whitespace-nowrap">Date</th>
+                      <th className="py-3.5 px-4">Staff</th>
+                      <th className="py-3.5 px-4">Invoice #</th>
+                      <th className="py-3.5 px-4">Customer</th>
+                      <th className="py-3.5 px-4">Item Name</th>
+                      <th className="py-3.5 px-4">Source</th>
+                      <th className="py-3.5 px-4 text-right">Attributed Net</th>
+                      <th className="py-3.5 px-4 text-right">Rate %</th>
+                      <th className="py-3.5 px-4 text-right">Earned</th>
+                      <th className="py-3.5 px-4 text-right">Reversed</th>
+                      <th className="py-3.5 px-4 text-right">Net</th>
+                      <th className="py-3.5 px-4 text-center">Run Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-slate-700 divide-y divide-rose-100/50">
+                    {(!reportData || reportData.rows.length === 0) ? (
+                      <tr>
+                        <td colSpan={12} className="py-12 text-center text-slate-400 font-medium">
+                          No commission events found for the selected criteria.
+                        </td>
+                      </tr>
+                    ) : (
+                      reportData.rows.map((r) => {
+                        const dateParts = formatDateParts(r.date);
+                        return (
+                          <tr key={r.eventId} className="hover:bg-[#B82E69]/[0.02] transition-colors border-b border-dashed border-rose-100/60">
+                            <td className="py-3.5 px-4 whitespace-nowrap leading-tight">
+                              <div className="font-semibold text-slate-800">{dateParts.dayMonth}</div>
+                              <div className="text-[11px] text-slate-400 font-mono">{dateParts.year}</div>
+                            </td>
+                            <td className="py-3.5 px-4 font-semibold text-slate-900">
+                              {r.staffName}
+                            </td>
+                            <td className="py-3.5 px-4 text-slate-700 font-medium whitespace-nowrap">
+                              <span className="font-semibold text-[#B82E69] font-mono">{r.invoiceNumber}</span>
+                              {r.eventType === 'REVERSAL' && (
+                                <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                                  REVERSAL
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-3.5 px-4 text-slate-700">{r.customer}</td>
+                            <td className="py-3.5 px-4 text-slate-800 font-medium">{r.itemName}</td>
+                            <td className="py-3.5 px-4 text-slate-500 capitalize">{r.source.toLowerCase()}</td>
+                            <td className="py-3.5 px-4 text-right font-mono tabular-nums font-semibold text-slate-800">
+                              {formatPKR(r.attributedNetSales)}
+                            </td>
+                            <td className="py-3.5 px-4 text-right font-mono tabular-nums text-slate-600">
+                              {r.rateSnapshot}%
+                            </td>
+                            <td className="py-3.5 px-4 text-right font-mono tabular-nums font-semibold text-[#B82E69]">
+                              {r.earned ? formatPKR(r.earned) : '—'}
+                            </td>
+                            <td className="py-3.5 px-4 text-right font-mono tabular-nums text-rose-600">
+                              {r.reversed ? formatPKR(r.reversed) : '—'}
+                            </td>
+                            <td className="py-3.5 px-4 text-right font-mono tabular-nums font-bold text-slate-900">
+                              {formatPKR(r.net)}
+                            </td>
+                            <td className="py-3.5 px-4 text-center">
+                              <span
+                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold border ${
+                                  r.runStatus === 'IN_RUN'
+                                    ? 'bg-rose-50 text-[#B82E69] border-rose-200 shadow-2xs'
+                                    : 'bg-slate-100 text-slate-600 border-slate-200'
+                                }`}
+                              >
+                                {r.runStatus === 'IN_RUN' ? 'In Run' : 'Not Run'}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              )}
+            </div>
           </div>
         </div>
       )}
-
-      {/* Footer Branding */}
-      <div className="mt-8 text-center text-xs text-slate-400 pb-6">
-        © iSysware Management System
-      </div>
     </div>
   );
 };
+
+export default StaffCommissionReportPage;
