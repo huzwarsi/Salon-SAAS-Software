@@ -24,13 +24,17 @@ import {
   Search,
   Scissors,
   Layers,
+  Landmark,
+  TrendingUp,
+  RotateCcw,
+  Percent,
 } from 'lucide-react';
 
 const selectClass =
-  'w-full text-xs border border-slate-300 rounded-md px-3 py-2 bg-white text-slate-700 focus:outline-hidden focus:ring-1 focus:ring-[#9D2558] focus:border-[#9D2558] transition-colors';
+  'w-full text-xs rounded-xl border border-white/80 bg-white/80 hover:bg-white px-3 py-2 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#B82E69]/20 focus:border-[#B82E69] shadow-2xs font-medium cursor-pointer transition-all';
 const inputClass =
-  'w-full text-xs border border-slate-300 rounded-md px-3 py-2 bg-white text-slate-700 focus:outline-hidden focus:ring-1 focus:ring-[#9D2558] focus:border-[#9D2558] transition-colors';
-const labelClass = 'block text-[11px] font-semibold text-[#23151D] mb-1.5';
+  'w-full text-xs rounded-xl border border-white/80 bg-white/80 hover:bg-white px-3 py-2 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#B82E69]/20 focus:border-[#B82E69] shadow-2xs font-medium transition-all';
+const labelClass = 'block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5';
 
 const formatPKR = (amt: number) => {
   const num = Number(amt) || 0;
@@ -466,17 +470,35 @@ export const TaxReportPage: React.FC = () => {
   }, [allBranches]);
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9] px-4 py-5 md:px-8 md:py-6 text-slate-800 font-['Inter',sans-serif]">
-      {/* Top Header Card with Title & Filters (Exact Matching Income & Expense Report) */}
-      <div className="bg-white rounded-xl shadow-xs border border-slate-200/90 p-5 md:p-6 mb-6">
-        <div className="mb-5">
-          <h1 className="text-xl font-bold text-[#23151D] tracking-tight">Tax Management Reports</h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Provincial & Federal Sales Tax (PST / SST) · Sale tax minus dated refunds and reversals. Full reversal in the selected period nets to zero.
-          </p>
-        </div>
+    <div className="w-full max-w-full space-y-6 text-slate-800 font-sans">
+      {/* ── 1. TOP HEADER BANNER (Frosted Glassmorphism) ── */}
+      <div className="relative overflow-hidden rounded-[24px] border border-white/90 bg-white/75 p-6 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-gradient-to-br from-[#B82E69]/10 via-[#D94883]/5 to-transparent blur-3xl" />
 
-        {/* Filters Form Row */}
+        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#B82E69] to-[#9D2558] text-white shadow-lg shadow-[#B82E69]/25">
+              <Receipt className="h-6 w-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold tracking-tight text-[#18191B]">
+                  Tax Management Reports
+                </h1>
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FDF2F5] text-[#B82E69] border border-[#B82E69]/20 uppercase tracking-wider">
+                  PST / SST Compliance
+                </span>
+              </div>
+              <p className="text-xs text-[#78616C] font-medium mt-0.5">
+                Provincial & Federal Sales Tax audit register: Gross taxable base, output tax, adjustments, reversals and net liability
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 2. FILTER CARD (Frosted Glass) ── */}
+      <div className="rounded-[24px] border border-white/90 bg-white/75 p-5 md:p-6 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
         <form onSubmit={handleApplyFilters} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3.5 items-end">
           {/* Branch Filter */}
           <div>
@@ -500,13 +522,13 @@ export const TaxReportPage: React.FC = () => {
           <div>
             <label className={labelClass}>Search</label>
             <div className="relative">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400" />
+              <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
               <input
                 type="text"
                 placeholder="Service, Invoice #, Client..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className={`${inputClass} pl-8`}
+                className={`${inputClass} pl-8.5`}
               />
             </div>
           </div>
@@ -538,7 +560,7 @@ export const TaxReportPage: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full h-[35px] bg-[#9D2558] hover:bg-[#851C47] active:bg-[#002b66] text-white font-medium text-xs rounded-md shadow-xs flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-70"
+              className="w-full h-9 bg-[#B82E69] hover:bg-[#A02358] active:bg-[#851C47] text-white font-semibold text-xs sm:text-sm rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-70"
             >
               {isLoading ? (
                 <>
@@ -548,7 +570,7 @@ export const TaxReportPage: React.FC = () => {
               ) : (
                 <>
                   <Filter className="w-3.5 h-3.5 fill-current" />
-                  <span>Filter</span>
+                  <span>Apply Filters</span>
                 </>
               )}
             </button>
@@ -556,79 +578,189 @@ export const TaxReportPage: React.FC = () => {
         </form>
       </div>
 
-      {/* Main Content Area: NO CARDS ON TOP, full width table layout matching Income & Expense */}
-      {!hasFiltered ? (
-        /* Empty State before Filter clicked */
-        <div className="bg-white rounded-xl border border-slate-200/90 p-16 md:p-24 flex flex-col items-center justify-center min-h-[380px] shadow-xs text-center">
-          <div className="text-slate-400 mb-3">
-            <Filter className="w-14 h-14 stroke-[1.25] text-slate-400" />
+      {/* ── 3. ROW 3 PURE WHITE FROSTED BLUR KPI CARDS (when filtered) ── */}
+      {hasFiltered && reportData && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          {/* Card 1: Gross Taxable Sales */}
+          <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+            <div className="flex items-center justify-between relative z-10">
+              <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-blue-600">
+                <TrendingUp className="w-4 h-4" />
+              </div>
+              <span className="bg-blue-50 text-blue-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                Taxable Base
+              </span>
+            </div>
+            <div className="mt-3 relative z-10">
+              <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+                PKR {formatPKR(reportData.totals.taxableBase || 0)}
+              </span>
+              <span className="text-xs text-[#78616C] font-medium mt-1 block">
+                Gross taxable turnover
+              </span>
+            </div>
           </div>
-          <p className="text-slate-400 text-sm font-medium">Please apply filters to view reports</p>
+
+          {/* Card 2: Output Tax Collected */}
+          <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+            <div className="flex items-center justify-between relative z-10">
+              <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-emerald-600">
+                <Receipt className="w-4 h-4" />
+              </div>
+              <span className="bg-emerald-50 text-emerald-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                Gross Tax
+              </span>
+            </div>
+            <div className="mt-3 relative z-10">
+              <span className="text-2xl sm:text-3xl font-extrabold text-emerald-600 font-mono tabular-nums tracking-tight block">
+                PKR {formatPKR(reportData.kpis?.totalTaxCollected ?? reportData.totals.taxAmount ?? 0)}
+              </span>
+              <span className="text-xs text-[#78616C] font-medium mt-1 block">
+                Total output tax collected
+              </span>
+            </div>
+          </div>
+
+          {/* Card 3: Tax Refunded / Reversed */}
+          <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+            <div className="flex items-center justify-between relative z-10">
+              <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-amber-600">
+                <RotateCcw className="w-4 h-4" />
+              </div>
+              <span className="bg-amber-50 text-amber-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                Refunds
+              </span>
+            </div>
+            <div className="mt-3 relative z-10">
+              <span className="text-2xl sm:text-3xl font-extrabold text-amber-600 font-mono tabular-nums tracking-tight block">
+                PKR {formatPKR(reportData.kpis?.totalTaxRefunded ?? 0)}
+              </span>
+              <span className="text-xs text-[#78616C] font-medium mt-1 block">
+                Tax reversed & credited
+              </span>
+            </div>
+          </div>
+
+          {/* Card 4: Net Tax Liability */}
+          <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+            <div className="flex items-center justify-between relative z-10">
+              <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+                <Landmark className="w-4 h-4" />
+              </div>
+              <span className="bg-[#FDF2F5] text-[#B82E69] shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                Payable
+              </span>
+            </div>
+            <div className="mt-3 relative z-10">
+              <span className="text-2xl sm:text-3xl font-extrabold text-[#B82E69] font-mono tabular-nums tracking-tight block">
+                PKR {formatPKR(reportData.kpis?.netTaxLiability ?? reportData.totals.netTax ?? reportData.totals.taxAmount ?? 0)}
+              </span>
+              <span className="text-xs text-[#78616C] font-medium mt-1 block">
+                Net tax payable to authority
+              </span>
+            </div>
+          </div>
+
+          {/* Card 5: Effective Tax Rate */}
+          <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+            <div className="flex items-center justify-between relative z-10">
+              <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-purple-600">
+                <Percent className="w-4 h-4" />
+              </div>
+              <span className="bg-purple-50 text-purple-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                Effective %
+              </span>
+            </div>
+            <div className="mt-3 relative z-10">
+              <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+                {reportData.totals.taxableBase > 0
+                  ? `${((reportData.totals.taxAmount / reportData.totals.taxableBase) * 100).toFixed(1)}%`
+                  : '0.0%'}
+              </span>
+              <span className="text-xs text-[#78616C] font-medium mt-1 block">
+                Weighted effective rate
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── 4. MAIN CONTENT AREA: TABLE & STATES ── */}
+      {!hasFiltered ? (
+        <div className="rounded-[24px] border border-white/90 bg-white/75 p-16 md:p-24 flex flex-col items-center justify-center min-h-[380px] backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] text-center">
+          <div className="w-16 h-16 rounded-2xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69] mb-4">
+            <Filter className="w-8 h-8 stroke-[1.5]" />
+          </div>
+          <h3 className="text-base font-bold text-[#18191B]">No Filter Applied</h3>
+          <p className="text-xs text-[#78616C] mt-1 max-w-sm">
+            Select a branch and date range above, then click &ldquo;Apply Filters&rdquo; to query live sales tax audit transactions.
+          </p>
         </div>
       ) : isLoading ? (
-        /* Loading Skeleton */
-        <div className="bg-white rounded-xl border border-slate-200/90 p-16 flex flex-col items-center justify-center min-h-[380px] shadow-xs text-center">
-          <div className="w-10 h-10 rounded-full border-3 border-[#F1DEE3] border-t-[#9D2558] animate-spin mb-3" />
-          <p className="text-slate-600 text-sm font-medium">Loading Tax Management Reports...</p>
+        <div className="rounded-[24px] border border-white/90 bg-white/75 p-16 flex flex-col items-center justify-center min-h-[380px] backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] text-center">
+          <div className="w-12 h-12 rounded-2xl bg-[#FDF2F5] border border-white/80 flex items-center justify-center text-[#B82E69] mb-4 shadow-sm animate-pulse">
+            <Loader2 className="w-6 h-6 animate-spin text-[#B82E69]" />
+          </div>
+          <p className="text-sm font-bold text-[#18191B]">Loading Tax Management Reports...</p>
+          <p className="text-xs text-[#78616C] mt-0.5">Fetching audited PST/SST transactions from server</p>
         </div>
       ) : errorMessage ? (
-        /* Error Message */
-        <div className="bg-white rounded-xl border border-rose-200 p-8 shadow-xs text-center">
-          <p className="text-rose-600 text-sm font-medium mb-3">{errorMessage}</p>
+        <div className="rounded-[24px] border border-rose-200/80 bg-white/85 p-8 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035)] text-center">
+          <p className="text-rose-600 text-sm font-semibold mb-3">{errorMessage}</p>
           <button
             onClick={() => handleApplyFilters()}
-            className="px-4 py-1.5 bg-[#9D2558] text-white text-xs font-semibold rounded-md shadow-xs hover:bg-[#851C47]"
+            className="px-4 py-2 bg-[#B82E69] text-white text-xs font-semibold rounded-xl shadow-xs hover:bg-[#A02358] transition-colors cursor-pointer"
           >
-            Retry
+            Retry Query
           </button>
         </div>
       ) : (
-        /* Filtered Data Layout: Royal Blue Banner + Full Table + Integrated Footer */
-        <div className="shadow-sm rounded-xl overflow-hidden border border-slate-200/90 mb-8 bg-white">
-          {/* Royal Blue Banner Header (matching Income & Expense Report exactly) */}
-          <div className="bg-[#9D2558] text-white px-5 py-3 flex flex-wrap items-center justify-between gap-3 rounded-t-xl">
+        /* Filtered Data Layout: Frosted Table Card */
+        <div className="rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] overflow-hidden">
+          {/* Header Bar with View Switcher Tabs & Export Actions */}
+          <div className="px-6 py-4 border-b border-white/80 bg-white/60 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 font-bold text-sm tracking-wide text-white">
-                <Receipt className="w-4 h-4 stroke-[2.5]" />
-                <span>Tax Management Reports</span>
+              <div className="flex items-center gap-2 font-bold text-sm tracking-tight text-[#18191B]">
+                <Receipt className="w-4 h-4 text-[#B82E69]" />
+                <span>Audited Tax Register</span>
               </div>
 
-              {/* View Switcher Tabs inside the banner */}
-              <div className="flex items-center bg-[#6A1237]/60 p-0.5 rounded-lg border border-[#F8D2DC]/30 text-xs">
+              {/* View Switcher Tabs */}
+              <div className="flex items-center bg-slate-100/70 p-1 rounded-xl border border-white/80 text-xs">
                 <button
                   type="button"
                   onClick={() => setActiveTab('SERVICES')}
-                  className={`px-3 py-1 rounded-md font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
+                  className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                     activeTab === 'SERVICES'
-                      ? 'bg-white text-[#9D2558] font-bold shadow-xs'
-                      : 'text-[#FCE8EC] hover:text-white'
+                      ? 'bg-white text-[#B82E69] shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  <Scissors className="w-3 h-3" />
+                  <Scissors className="w-3.5 h-3.5" />
                   <span>Service Breakdown ({serviceRows.length})</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTab('SERVICE_SUMMARY')}
-                  className={`px-3 py-1 rounded-md font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
+                  className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                     activeTab === 'SERVICE_SUMMARY'
-                      ? 'bg-white text-[#9D2558] font-bold shadow-xs'
-                      : 'text-[#FCE8EC] hover:text-white'
+                      ? 'bg-white text-[#B82E69] shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  <Layers className="w-3 h-3" />
+                  <Layers className="w-3.5 h-3.5" />
                   <span>Service Summary ({serviceSummary.length})</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTab('INVOICES')}
-                  className={`px-3 py-1 rounded-md font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
+                  className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                     activeTab === 'INVOICES'
-                      ? 'bg-white text-[#9D2558] font-bold shadow-xs'
-                      : 'text-[#FCE8EC] hover:text-white'
+                      ? 'bg-white text-[#B82E69] shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  <FileText className="w-3 h-3" />
+                  <FileText className="w-3.5 h-3.5" />
                   <span>Invoice Summary ({invoiceRows.length})</span>
                 </button>
               </div>
@@ -639,111 +771,111 @@ export const TaxReportPage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleExportCsv}
-                className="bg-[#009688] hover:bg-[#00897B] active:bg-[#00796B] text-white text-xs font-semibold px-3.5 py-1.5 rounded-md shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/80 bg-white/80 hover:bg-white text-slate-700 shadow-2xs text-xs font-semibold transition-all cursor-pointer"
               >
-                <FileSpreadsheet className="w-3.5 h-3.5" />
+                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
                 <span>CSV</span>
               </button>
               <button
                 type="button"
-                onClick={handleExportPdf}
-                className="bg-[#DC2626] hover:bg-[#B91C1C] active:bg-[#991B1B] text-white text-xs font-semibold px-3.5 py-1.5 rounded-md shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
-              >
-                <FileText className="w-3.5 h-3.5" />
-                <span>PDF</span>
-              </button>
-              <button
-                type="button"
                 onClick={handleExportExcel}
-                className="bg-[#059669] hover:bg-[#047857] active:bg-[#065F46] text-white text-xs font-semibold px-3.5 py-1.5 rounded-md shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/80 bg-white/80 hover:bg-white text-slate-700 shadow-2xs text-xs font-semibold transition-all cursor-pointer"
               >
-                <FileSpreadsheet className="w-3.5 h-3.5" />
+                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700" />
                 <span>Excel</span>
               </button>
               <button
                 type="button"
-                onClick={handlePrint}
-                className="bg-[#4B5563] hover:bg-[#374151] active:bg-[#1F2937] text-white text-xs font-semibold px-3.5 py-1.5 rounded-md shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                onClick={handleExportPdf}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/80 bg-white/80 hover:bg-white text-slate-700 shadow-2xs text-xs font-semibold transition-all cursor-pointer"
               >
-                <Printer className="w-3.5 h-3.5" />
+                <FileText className="w-3.5 h-3.5 text-rose-600" />
+                <span>PDF</span>
+              </button>
+              <button
+                type="button"
+                onClick={handlePrint}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/80 bg-white/80 hover:bg-white text-slate-700 shadow-2xs text-xs font-semibold transition-all cursor-pointer"
+              >
+                <Printer className="w-3.5 h-3.5 text-slate-600" />
                 <span>Print</span>
               </button>
             </div>
           </div>
 
-          {/* TAB 1: Service Breakdown (har service ke sath mein tax aa raha hoga) */}
+          {/* TAB 1: Service Breakdown */}
           {activeTab === 'SERVICES' && (
-            <div className="bg-white overflow-x-auto rounded-b-xl border-t border-[#F1DEE3]/40">
-              <table className="report-records w-full min-w-[1250px] text-left border-collapse text-[13px]">
+            <div className="overflow-x-auto">
+              <table className="report-records w-full min-w-[1250px] text-left border-collapse text-xs">
                 <thead>
-                  <tr className="bg-[#FDF2F5] border-b border-[#F1DEE3] text-[#475569] font-medium text-[13px]">
-                    <th className="py-3.5 px-4 text-center w-12 font-medium text-[#475569]">#</th>
-                    <th className="py-3.5 px-4 whitespace-nowrap font-medium text-[#475569]">Date & Time</th>
-                    <th className="py-3.5 px-4 min-w-[190px] font-medium text-[#475569]">Service Performed</th>
-                    <th className="py-3.5 px-4 whitespace-nowrap font-medium text-[#475569]">Staff / Stylist</th>
-                    <th className="py-3.5 px-4 whitespace-nowrap font-medium text-[#475569]">Invoice #</th>
-                    <th className="py-3.5 px-4 min-w-[160px] font-medium text-[#475569]">Client Name</th>
-                    <th className="py-3.5 px-4 text-right whitespace-nowrap font-medium text-[#475569]">Service Price</th>
-                    <th className="py-3.5 px-4 text-right whitespace-nowrap font-medium text-[#475569]">Discount</th>
-                    <th className="py-3.5 px-4 text-right whitespace-nowrap font-medium text-[#475569]">Taxable Base</th>
-                    <th className="py-3.5 px-4 text-center whitespace-nowrap font-medium text-[#475569]">Rate %</th>
-                    <th className="py-3.5 px-4 text-right whitespace-nowrap font-medium text-[#475569]">Net Tax</th>
-                    <th className="py-3.5 px-4 text-right whitespace-nowrap font-medium text-[#475569]">Total Bill</th>
+                  <tr className="border-b border-slate-200/80 bg-[#FDF2F5]/50 text-slate-600 font-bold">
+                    <th className="py-3 px-4 text-center w-12">#</th>
+                    <th className="py-3 px-4 whitespace-nowrap">Date & Time</th>
+                    <th className="py-3 px-4 min-w-[190px]">Service Performed</th>
+                    <th className="py-3 px-4 whitespace-nowrap">Staff / Stylist</th>
+                    <th className="py-3 px-4 whitespace-nowrap">Invoice #</th>
+                    <th className="py-3 px-4 min-w-[160px]">Client Name</th>
+                    <th className="py-3 px-4 text-right whitespace-nowrap">Service Price</th>
+                    <th className="py-3 px-4 text-right whitespace-nowrap">Discount</th>
+                    <th className="py-3 px-4 text-right whitespace-nowrap">Taxable Base</th>
+                    <th className="py-3 px-4 text-center whitespace-nowrap">Rate %</th>
+                    <th className="py-3 px-4 text-right whitespace-nowrap">Net Tax</th>
+                    <th className="py-3 px-4 text-right whitespace-nowrap">Total Bill</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-dashed divide-slate-200">
+                <tbody className="divide-y divide-slate-100">
                   {serviceRows.length > 0 ? (
                     serviceRows.map((row, idx) => {
                       const dateParts = formatDateParts(row.date);
                       return (
-                        <tr key={row.id || idx} className="hover:bg-[#FDF2F5]/20 transition-colors border-b border-dashed border-slate-200">
-                          <td className="py-3.5 px-4 text-center text-slate-500 font-normal">
+                        <tr key={row.id || idx} className="hover:bg-[#FDF2F5]/30 transition-colors">
+                          <td className="py-3 px-4 text-center text-slate-400 font-mono">
                             {idx + 1}
                           </td>
-                          <td className="py-3.5 px-4 whitespace-nowrap text-slate-700">
+                          <td className="py-3 px-4 whitespace-nowrap text-slate-700">
                             <div className="leading-tight">
-                              <div>{dateParts.dayMonth}</div>
-                              <div className="text-[12px] text-slate-400">{row.time || dateParts.year}</div>
+                              <div className="font-semibold">{dateParts.dayMonth}</div>
+                              <div className="text-[11px] text-slate-400">{row.time || dateParts.year}</div>
                             </div>
                           </td>
-                          <td className="py-3.5 px-4 font-semibold text-slate-900">
+                          <td className="py-3 px-4 font-semibold text-slate-900">
                             <div className="flex items-center gap-1.5">
                               <span>{row.serviceName}</span>
                               {row.quantity > 1 && (
-                                <span className="text-[11px] px-1.5 py-0.5 bg-[#FCE8EC] text-[#23151D] rounded font-bold">
+                                <span className="text-[10px] px-1.5 py-0.2 rounded-full font-bold bg-[#FDF2F5] text-[#B82E69]">
                                   ×{row.quantity}
                                 </span>
                               )}
                             </div>
                             <div className="text-[11px] text-slate-400 font-normal">{row.serviceType}</div>
                           </td>
-                          <td className="py-3.5 px-4 whitespace-nowrap text-slate-700 font-medium">
+                          <td className="py-3 px-4 whitespace-nowrap text-slate-700 font-medium">
                             {row.staffName || 'Staff'}
                           </td>
-                          <td className="py-3.5 px-4 whitespace-nowrap font-medium text-[#9D2558]">
+                          <td className="py-3 px-4 whitespace-nowrap font-mono font-bold text-[#B82E69]">
                             {row.invoiceNumber}
                           </td>
-                          <td className="py-3.5 px-4 text-slate-800">
+                          <td className="py-3 px-4 text-slate-800">
                             {row.clientName || 'Walk-in Customer'}
                           </td>
-                          <td className="py-3.5 px-4 text-right text-slate-700 whitespace-nowrap tabular-nums">
+                          <td className="py-3 px-4 text-right text-slate-700 whitespace-nowrap font-mono tabular-nums">
                             PKR {formatPKR(row.unitPrice)}
                           </td>
-                          <td className="py-3.5 px-4 text-right text-slate-500 whitespace-nowrap tabular-nums">
+                          <td className="py-3 px-4 text-right text-slate-500 whitespace-nowrap font-mono tabular-nums">
                             {row.discount > 0 ? `PKR ${formatPKR(row.discount)}` : '0.00'}
                           </td>
-                          <td className="py-3.5 px-4 text-right font-medium text-slate-900 whitespace-nowrap tabular-nums">
+                          <td className="py-3 px-4 text-right font-semibold text-slate-900 whitespace-nowrap font-mono tabular-nums">
                             PKR {formatPKR(row.taxableBase)}
                           </td>
-                          <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
+                          <td className="py-3 px-4 text-center whitespace-nowrap">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
                               {row.taxRate}%
                             </span>
                           </td>
-                          <td className="py-3.5 px-4 text-right font-bold text-emerald-600 whitespace-nowrap tabular-nums">
+                          <td className="py-3 px-4 text-right font-bold text-emerald-600 whitespace-nowrap font-mono tabular-nums">
                             PKR {formatPKR(row.taxAmount)}
                           </td>
-                          <td className="py-3.5 px-4 text-right font-semibold text-slate-900 whitespace-nowrap tabular-nums">
+                          <td className="py-3 px-4 text-right font-semibold text-slate-900 whitespace-nowrap font-mono tabular-nums">
                             PKR {formatPKR(row.total)}
                           </td>
                         </tr>
@@ -758,57 +890,53 @@ export const TaxReportPage: React.FC = () => {
                   )}
                 </tbody>
 
-                {/* Integrated Table Footer (Matching Income & Expense Totals Structure) */}
-                <tfoot className="bg-[#F8FAFC] border-t-2 border-slate-200 font-['Inter',sans-serif] text-[13px]">
-                  {/* Row 1: TOTALS (PKR) */}
-                  <tr className="border-b border-slate-200/70">
-                    <td colSpan={6} className="py-3.5 px-4 text-right font-bold text-slate-800 tracking-wide">
+                {/* Table Footer Totals */}
+                <tfoot className="border-t-2 border-slate-200/80 bg-white/90 text-xs">
+                  <tr className="border-b border-slate-200/60 font-bold">
+                    <td colSpan={6} className="py-3.5 px-4 text-right text-slate-800 tracking-wide">
                       TOTALS ({serviceRows.length} Services):
                     </td>
-                    <td className="py-3.5 px-4 text-right font-bold text-slate-700 tabular-nums">
+                    <td className="py-3.5 px-4 text-right text-slate-700 font-mono tabular-nums">
                       PKR {formatPKR(serviceRows.reduce((acc, r) => acc + (r.unitPrice || 0), 0))}
                     </td>
-                    <td className="py-3.5 px-4 text-right font-medium text-slate-500 tabular-nums">
+                    <td className="py-3.5 px-4 text-right text-slate-500 font-mono tabular-nums">
                       PKR {formatPKR(serviceRows.reduce((acc, r) => acc + (r.discount || 0), 0))}
                     </td>
-                    <td className="py-3.5 px-4 text-right font-bold text-[#9D2558] tabular-nums">
+                    <td className="py-3.5 px-4 text-right text-[#B82E69] font-mono tabular-nums">
                       PKR {formatPKR(reportData?.totals.taxableBase || 0)}
                     </td>
                     <td className="py-3.5 px-4 text-center text-slate-400">—</td>
-                    <td className="py-3.5 px-4 text-right font-bold text-emerald-600 tabular-nums">
+                    <td className="py-3.5 px-4 text-right text-emerald-600 font-mono tabular-nums">
                       PKR {formatPKR(reportData?.totals.taxAmount ?? 0)}
                     </td>
-                    <td className="py-3.5 px-4 text-right font-bold text-slate-900 tabular-nums">
+                    <td className="py-3.5 px-4 text-right text-slate-900 font-mono tabular-nums">
                       PKR {formatPKR(reportData?.totals.total || 0)}
                     </td>
                   </tr>
 
-                  {/* Row 2: Total Tax Collected */}
-                  <tr className="border-b border-slate-200/70">
-                    <td colSpan={8} className="py-3 px-4 text-right font-medium text-slate-700">
+                  <tr className="border-b border-slate-200/60">
+                    <td colSpan={8} className="py-2.5 px-4 text-right font-semibold text-slate-700">
                       Total Sales Tax Collected (Gross)
                     </td>
-                    <td colSpan={4} className="py-3 px-4 text-right font-bold text-[13px] tabular-nums text-emerald-600">
+                    <td colSpan={4} className="py-2.5 px-4 text-right font-bold font-mono tabular-nums text-emerald-600">
                       +PKR {formatPKR(reportData?.kpis.totalTaxCollected ?? 0)}
                     </td>
                   </tr>
 
-                  {/* Row 3: Tax Refunded / Reversed */}
-                  <tr className="border-b border-slate-200/70">
-                    <td colSpan={8} className="py-3 px-4 text-right font-medium text-slate-700">
+                  <tr className="border-b border-slate-200/60">
+                    <td colSpan={8} className="py-2.5 px-4 text-right font-semibold text-slate-700">
                       Tax Refunded / Reversed
                     </td>
-                    <td colSpan={4} className="py-3 px-4 text-right font-bold text-[13px] tabular-nums text-amber-600">
+                    <td colSpan={4} className="py-2.5 px-4 text-right font-bold font-mono tabular-nums text-amber-600">
                       -PKR {formatPKR(reportData?.kpis.totalTaxRefunded || 0)}
                     </td>
                   </tr>
 
-                  {/* Row 4: Net Tax Liability */}
                   <tr>
-                    <td colSpan={8} className="py-3 px-4 text-right font-bold text-slate-800">
-                      Net Sales Tax Liability (Payable to Authority)
+                    <td colSpan={8} className="py-3 px-4 text-right font-extrabold text-slate-900">
+                      Net Sales Tax Liability (Payable to Revenue Authority)
                     </td>
-                    <td colSpan={4} className="py-3 px-4 text-right font-bold text-[13px] tabular-nums text-[#9D2558]">
+                    <td colSpan={4} className="py-3 px-4 text-right font-extrabold font-mono tabular-nums text-[#B82E69] text-sm">
                       PKR {formatPKR(reportData?.kpis.netTaxLiability ?? reportData?.totals.netTax ?? 0)}
                     </td>
                   </tr>
@@ -817,46 +945,46 @@ export const TaxReportPage: React.FC = () => {
             </div>
           )}
 
-          {/* TAB 2: Service Summary (Grouped by service) */}
+          {/* TAB 2: Service Summary */}
           {activeTab === 'SERVICE_SUMMARY' && (
-            <div className="bg-white overflow-x-auto rounded-b-xl border-t border-[#F1DEE3]/40">
-              <table className="report-records w-full min-w-[950px] text-left border-collapse text-[13px]">
+            <div className="overflow-x-auto">
+              <table className="report-records w-full min-w-[950px] text-left border-collapse text-xs">
                 <thead>
-                  <tr className="bg-[#FDF2F5] border-b border-[#F1DEE3] text-[#475569] font-medium text-[13px]">
-                    <th className="py-3.5 px-4 text-center w-12 font-medium text-[#475569]">#</th>
-                    <th className="py-3.5 px-4 min-w-[220px] font-medium text-[#475569]">Service Name</th>
-                    <th className="py-3.5 px-4 whitespace-nowrap font-medium text-[#475569]">Category / Type</th>
-                    <th className="py-3.5 px-4 text-center whitespace-nowrap font-medium text-[#475569]">Net Quantity</th>
-                    <th className="py-3.5 px-4 text-right whitespace-nowrap font-medium text-[#475569]">Total Taxable Sales</th>
-                    <th className="py-3.5 px-4 text-center whitespace-nowrap font-medium text-[#475569]">Tax Rate %</th>
-                    <th className="py-3.5 px-4 text-right whitespace-nowrap font-medium text-[#475569]">Net Tax</th>
+                  <tr className="border-b border-slate-200/80 bg-[#FDF2F5]/50 text-slate-600 font-bold">
+                    <th className="py-3 px-4 text-center w-12">#</th>
+                    <th className="py-3 px-4 min-w-[220px]">Service Name</th>
+                    <th className="py-3 px-4 whitespace-nowrap">Category / Type</th>
+                    <th className="py-3 px-4 text-center whitespace-nowrap">Net Quantity</th>
+                    <th className="py-3 px-4 text-right whitespace-nowrap">Total Taxable Sales</th>
+                    <th className="py-3 px-4 text-center whitespace-nowrap">Tax Rate %</th>
+                    <th className="py-3 px-4 text-right whitespace-nowrap">Net Tax</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-dashed divide-slate-200">
+                <tbody className="divide-y divide-slate-100">
                   {serviceSummary.length > 0 ? (
                     serviceSummary.map((s, idx) => (
-                      <tr key={s.serviceName || idx} className="hover:bg-[#FDF2F5]/20 transition-colors border-b border-dashed border-slate-200">
-                        <td className="py-3.5 px-4 text-center text-slate-500 font-normal">
+                      <tr key={s.serviceName || idx} className="hover:bg-[#FDF2F5]/30 transition-colors">
+                        <td className="py-3 px-4 text-center text-slate-400 font-mono">
                           {idx + 1}
                         </td>
-                        <td className="py-3.5 px-4 font-semibold text-slate-900">
+                        <td className="py-3 px-4 font-semibold text-slate-900">
                           {s.serviceName}
                         </td>
-                        <td className="py-3.5 px-4 text-slate-600">
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-slate-100 text-slate-700">
+                        <td className="py-3 px-4 text-slate-600">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-700">
                             {s.serviceType}
                           </span>
                         </td>
-                        <td className="py-3.5 px-4 text-center font-bold text-[#9D2558]">
+                        <td className="py-3 px-4 text-center font-bold text-[#B82E69] font-mono">
                           {s.count}
                         </td>
-                        <td className="py-3.5 px-4 text-right font-medium text-slate-900 whitespace-nowrap tabular-nums">
+                        <td className="py-3 px-4 text-right font-semibold text-slate-900 whitespace-nowrap font-mono tabular-nums">
                           PKR {formatPKR(s.taxableBase)}
                         </td>
-                        <td className="py-3.5 px-4 text-center whitespace-nowrap font-medium text-slate-600">
+                        <td className="py-3 px-4 text-center whitespace-nowrap font-medium text-slate-600">
                           {s.taxRate}%
                         </td>
-                        <td className="py-3.5 px-4 text-right font-bold text-emerald-600 whitespace-nowrap tabular-nums">
+                        <td className="py-3 px-4 text-right font-bold text-emerald-600 whitespace-nowrap font-mono tabular-nums">
                           PKR {formatPKR(s.taxAmount)}
                         </td>
                       </tr>
@@ -870,16 +998,16 @@ export const TaxReportPage: React.FC = () => {
                   )}
                 </tbody>
 
-                <tfoot className="bg-[#F8FAFC] border-t-2 border-slate-200 font-['Inter',sans-serif] text-[13px]">
-                  <tr className="border-b border-slate-200/70">
-                    <td colSpan={4} className="py-3.5 px-4 text-right font-bold text-slate-800">
+                <tfoot className="border-t-2 border-slate-200/80 bg-white/90 text-xs">
+                  <tr className="font-bold">
+                    <td colSpan={4} className="py-3.5 px-4 text-right text-slate-800">
                       TOTALS ({serviceSummary.length} Unique Services):
                     </td>
-                    <td className="py-3.5 px-4 text-right font-bold text-[#9D2558] tabular-nums">
+                    <td className="py-3.5 px-4 text-right text-[#B82E69] font-mono tabular-nums">
                       PKR {formatPKR(reportData?.totals.taxableBase || 0)}
                     </td>
                     <td className="py-3.5 px-4 text-center text-slate-400">—</td>
-                    <td className="py-3.5 px-4 text-right font-bold text-emerald-600 tabular-nums">
+                    <td className="py-3.5 px-4 text-right text-emerald-600 font-mono tabular-nums">
                       PKR {formatPKR(reportData?.totals.taxAmount ?? 0)}
                     </td>
                   </tr>
@@ -890,66 +1018,66 @@ export const TaxReportPage: React.FC = () => {
 
           {/* TAB 3: Invoice Summary */}
           {activeTab === 'INVOICES' && (
-            <div className="bg-white overflow-x-auto rounded-b-xl border-t border-[#F1DEE3]/40">
-              <table className="report-records w-full min-w-[1100px] text-left border-collapse text-[13px]">
+            <div className="overflow-x-auto">
+              <table className="report-records w-full min-w-[1100px] text-left border-collapse text-xs">
                 <thead>
-                  <tr className="bg-[#FDF2F5] border-b border-[#F1DEE3] text-[#475569] font-medium text-[13px]">
-                    <th className="py-3.5 px-4 text-center w-12 font-medium text-[#475569]">#</th>
-                    <th className="py-3.5 px-4 whitespace-nowrap font-medium text-[#475569]">Date & Time</th>
-                    <th className="py-3.5 px-4 whitespace-nowrap font-medium text-[#475569]">Invoice #</th>
-                    <th className="py-3.5 px-4 whitespace-nowrap font-medium text-[#475569]">Branch</th>
-                    <th className="py-3.5 px-4 min-w-[180px] font-medium text-[#475569]">Client Name</th>
-                    <th className="py-3.5 px-4 text-right whitespace-nowrap font-medium text-[#475569]">Taxable Base</th>
-                    <th className="py-3.5 px-4 text-center whitespace-nowrap font-medium text-[#475569]">Rate %</th>
-                    <th className="py-3.5 px-4 text-right whitespace-nowrap font-medium text-[#475569]">Net Tax</th>
-                    <th className="py-3.5 px-4 text-right whitespace-nowrap font-medium text-[#475569]">Total Invoice</th>
-                    <th className="py-3.5 px-4 whitespace-nowrap font-medium text-[#475569]">Payment Method</th>
-                    <th className="py-3.5 px-4 text-center whitespace-nowrap font-medium text-[#475569]">Status</th>
+                  <tr className="border-b border-slate-200/80 bg-[#FDF2F5]/50 text-slate-600 font-bold">
+                    <th className="py-3 px-4 text-center w-12">#</th>
+                    <th className="py-3 px-4 whitespace-nowrap">Date & Time</th>
+                    <th className="py-3 px-4 whitespace-nowrap">Invoice #</th>
+                    <th className="py-3 px-4 whitespace-nowrap">Branch</th>
+                    <th className="py-3 px-4 min-w-[180px]">Client Name</th>
+                    <th className="py-3 px-4 text-right whitespace-nowrap">Taxable Base</th>
+                    <th className="py-3 px-4 text-center whitespace-nowrap">Rate %</th>
+                    <th className="py-3 px-4 text-right whitespace-nowrap">Net Tax</th>
+                    <th className="py-3 px-4 text-right whitespace-nowrap">Total Invoice</th>
+                    <th className="py-3 px-4 whitespace-nowrap">Payment Method</th>
+                    <th className="py-3 px-4 text-center whitespace-nowrap">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-dashed divide-slate-200">
+                <tbody className="divide-y divide-slate-100">
                   {invoiceRows.length > 0 ? (
                     invoiceRows.map((row, idx) => {
                       const dateParts = formatDateParts(row.date);
                       return (
-                        <tr key={row.id || idx} className="hover:bg-[#FDF2F5]/20 transition-colors border-b border-dashed border-slate-200">
-                          <td className="py-3.5 px-4 text-center text-slate-500 font-normal">
+                        <tr key={row.id || idx} className="hover:bg-[#FDF2F5]/30 transition-colors">
+                          <td className="py-3 px-4 text-center text-slate-400 font-mono">
                             {idx + 1}
                           </td>
-                          <td className="py-3.5 px-4 whitespace-nowrap text-slate-700">
+                          <td className="py-3 px-4 whitespace-nowrap text-slate-700">
                             <div className="leading-tight">
-                              <div>{dateParts.dayMonth}</div>
-                              <div className="text-[12px] text-slate-400">{row.time || dateParts.year}</div>
+                              <div className="font-semibold">{dateParts.dayMonth}</div>
+                              <div className="text-[11px] text-slate-400">{row.time || dateParts.year}</div>
                             </div>
                           </td>
-                          <td className="py-3.5 px-4 whitespace-nowrap font-medium text-[#9D2558]">
+                          <td className="py-3 px-4 whitespace-nowrap font-mono font-bold text-[#B82E69]">
                             {row.reference}
                           </td>
-                          <td className="py-3.5 px-4 whitespace-nowrap text-slate-700">
+                          <td className="py-3 px-4 whitespace-nowrap text-slate-700">
                             {row.branchName || 'Branch'}
                           </td>
-                          <td className="py-3.5 px-4 text-slate-800">
+                          <td className="py-3 px-4 text-slate-800">
                             {row.clientName || 'Walk-in Customer'}
                           </td>
-                          <td className="py-3.5 px-4 text-right font-medium text-slate-900 whitespace-nowrap tabular-nums">
+                          <td className="py-3 px-4 text-right font-semibold text-slate-900 whitespace-nowrap font-mono tabular-nums">
                             PKR {formatPKR(row.taxableBase)}
                           </td>
-                          <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
+                          <td className="py-3 px-4 text-center whitespace-nowrap">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
                               {row.taxRate}%
                             </span>
                           </td>
-                          <td className="py-3.5 px-4 text-right font-bold text-emerald-600 whitespace-nowrap tabular-nums">
+                          <td className="py-3 px-4 text-right font-bold text-emerald-600 whitespace-nowrap font-mono tabular-nums">
                             PKR {formatPKR(row.taxAmount)}
                           </td>
-                          <td className="py-3.5 px-4 text-right font-semibold text-slate-900 whitespace-nowrap tabular-nums">
+                          <td className="py-3 px-4 text-right font-semibold text-slate-900 whitespace-nowrap font-mono tabular-nums">
                             PKR {formatPKR(row.total)}
                           </td>
-                          <td className="py-3.5 px-4 whitespace-nowrap text-slate-600">
+                          <td className="py-3 px-4 whitespace-nowrap text-slate-600">
                             {formatMethod(row.paymentMethod)}
                           </td>
-                          <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800">
+                          <td className="py-3 px-4 text-center whitespace-nowrap">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
                               {row.status}
                             </span>
                           </td>
@@ -965,23 +1093,23 @@ export const TaxReportPage: React.FC = () => {
                   )}
                 </tbody>
 
-                <tfoot className="bg-[#F8FAFC] border-t-2 border-slate-200 font-['Inter',sans-serif] text-[13px]">
-                  <tr className="border-b border-slate-200/70">
-                    <td colSpan={5} className="py-3.5 px-4 text-right font-bold text-slate-800">
+                <tfoot className="border-t-2 border-slate-200/80 bg-white/90 text-xs">
+                  <tr className="font-bold">
+                    <td colSpan={5} className="py-3.5 px-4 text-right text-slate-800">
                       TOTALS ({invoiceRows.length} Invoices):
                     </td>
-                    <td className="py-3.5 px-4 text-right font-bold text-[#9D2558] tabular-nums">
+                    <td className="py-3.5 px-4 text-right text-[#B82E69] font-mono tabular-nums">
                       PKR {formatPKR(reportData?.totals.taxableBase || 0)}
                     </td>
                     <td className="py-3.5 px-4 text-center text-slate-400">—</td>
-                    <td className="py-3.5 px-4 text-right font-bold text-emerald-600 tabular-nums">
+                    <td className="py-3.5 px-4 text-right text-emerald-600 font-mono tabular-nums">
                       PKR {formatPKR(reportData?.totals.taxAmount ?? 0)}
                     </td>
-                    <td className="py-3.5 px-4 text-right font-bold text-slate-900 tabular-nums">
+                    <td className="py-3.5 px-4 text-right text-slate-900 font-mono tabular-nums">
                       PKR {formatPKR(reportData?.totals.total || 0)}
                     </td>
                     <td colSpan={2} className="py-3.5 px-4 text-slate-600">
-                      Net Liability: <span className="text-[#9D2558] font-bold">PKR {formatPKR(reportData?.totals.netTax || 0)}</span>
+                      Net Liability: <span className="text-[#B82E69] font-mono font-bold">PKR {formatPKR(reportData?.totals.netTax || 0)}</span>
                     </td>
                   </tr>
                 </tfoot>

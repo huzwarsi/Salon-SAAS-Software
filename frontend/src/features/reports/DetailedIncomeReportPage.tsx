@@ -31,10 +31,10 @@ import {
 } from 'lucide-react';
 
 const selectClass =
-  'w-full text-xs border border-slate-300 rounded-md px-3 py-2 bg-white text-slate-700 focus:outline-hidden focus:ring-1 focus:ring-[#9D2558] focus:border-[#9D2558] transition-colors';
+  'w-full text-xs rounded-xl border border-white/80 bg-white/80 hover:bg-white px-3 py-2 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#B82E69]/20 focus:border-[#B82E69] shadow-2xs font-medium cursor-pointer transition-all';
 const inputClass =
-  'w-full text-xs border border-slate-300 rounded-md px-3 py-2 bg-white text-slate-700 focus:outline-hidden focus:ring-1 focus:ring-[#9D2558] focus:border-[#9D2558] transition-colors';
-const labelClass = 'block text-[11px] font-semibold text-[#23151D] mb-1.5';
+  'w-full text-xs rounded-xl border border-white/80 bg-white/80 hover:bg-white px-3 py-2 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#B82E69]/20 focus:border-[#B82E69] shadow-2xs font-medium transition-all';
+const labelClass = 'block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5';
 
 const formatPKR = (amt: number) => {
   const num = Number(amt) || 0;
@@ -267,17 +267,35 @@ export const DetailedIncomeReportPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9] px-4 py-5 md:px-8 md:py-6 text-slate-800">
-      {/* Top Header Card */}
-      <div className="bg-white rounded-xl shadow-xs border border-slate-200/90 p-5 md:p-6 mb-6">
-        <div className="mb-4">
-          <h1 className="text-xl font-bold text-[#23151D] tracking-tight">Detailed Income Report</h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Transaction-level recognized revenue register: granular drilldown by service, package component and retail product
-          </p>
-        </div>
+    <div className="w-full max-w-full space-y-6 text-slate-800 font-sans">
+      {/* ── 1. TOP HEADER BANNER (Frosted Glassmorphism) ── */}
+      <div className="relative overflow-hidden rounded-[24px] border border-white/90 bg-white/75 p-6 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-gradient-to-br from-[#B82E69]/10 via-[#D94883]/5 to-transparent blur-3xl" />
 
-        {/* Filters Form */}
+        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#B82E69] to-[#9D2558] text-white shadow-lg shadow-[#B82E69]/25">
+              <Receipt className="h-6 w-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold tracking-tight text-[#18191B]">
+                  Detailed Income Report
+                </h1>
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FDF2F5] text-[#B82E69] border border-[#B82E69]/20 uppercase tracking-wider">
+                  Recognized Revenue
+                </span>
+              </div>
+              <p className="text-xs text-[#78616C] font-medium mt-0.5">
+                Transaction-level recognized revenue register: granular drilldown by service, package component and retail product
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 2. FILTER CARD (Frosted Glass) ── */}
+      <div className="rounded-[24px] border border-white/90 bg-white/75 p-5 md:p-6 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
         <form onSubmit={handleApplyFilters} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3.5 items-end">
           {/* Branch */}
           <div>
@@ -370,7 +388,7 @@ export const DetailedIncomeReportPage: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full h-[35px] bg-[#9D2558] hover:bg-[#851C47] active:bg-[#002b66] text-white font-medium text-xs rounded-md shadow-xs flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-70"
+              className="w-full h-9 bg-[#B82E69] hover:bg-[#A02358] active:bg-[#851C47] text-white font-semibold text-xs sm:text-sm rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-70"
             >
               {isLoading ? (
                 <>
@@ -380,7 +398,7 @@ export const DetailedIncomeReportPage: React.FC = () => {
               ) : (
                 <>
                   <Filter className="w-3.5 h-3.5 fill-current" />
-                  <span>Filter</span>
+                  <span>Apply Filters</span>
                 </>
               )}
             </button>
@@ -388,117 +406,135 @@ export const DetailedIncomeReportPage: React.FC = () => {
         </form>
       </div>
 
-      {/* Main Content Area */}
+      {/* ── 3. MAIN CONTENT AREA ── */}
       {!hasFiltered ? (
-        <div className="bg-white rounded-xl border border-slate-200/90 p-16 md:p-24 flex flex-col items-center justify-center min-h-[380px] shadow-xs text-center">
-          <div className="text-slate-400 mb-3">
-            <Filter className="w-14 h-14 stroke-[1.25] text-slate-400" />
+        <div className="rounded-[24px] border border-white/90 bg-white/75 p-16 md:p-24 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] flex flex-col items-center justify-center min-h-[380px] text-center">
+          <div className="w-16 h-16 rounded-2xl bg-[#FDF2F5] border border-white/80 flex items-center justify-center text-[#B82E69] mb-4 shadow-2xs">
+            <Filter className="w-8 h-8 stroke-[1.75]" />
           </div>
-          <p className="text-slate-400 text-sm font-medium">Please apply filters to view detailed recognized income</p>
+          <h3 className="text-base font-semibold text-[#18191B]">Ready to Generate Report</h3>
+          <p className="text-xs text-[#78616C] font-medium mt-1 max-w-sm">
+            Select branch, date range, or lifecycle above and click Apply Filters to load detailed income.
+          </p>
         </div>
       ) : isLoading ? (
-        <div className="bg-white rounded-xl border border-slate-200/90 p-16 flex flex-col items-center justify-center min-h-[380px] shadow-xs text-center">
-          <div className="w-10 h-10 rounded-full border-3 border-[#F1DEE3] border-t-[#9D2558] animate-spin mb-3" />
-          <p className="text-slate-600 text-sm font-medium">Loading Detailed Income Drilldown...</p>
+        <div className="rounded-[24px] border border-white/90 bg-white/75 p-16 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] flex flex-col items-center justify-center min-h-[380px] text-center">
+          <div className="w-12 h-12 rounded-full border-3 border-[#F1DEE3] border-t-[#B82E69] animate-spin mb-4" />
+          <p className="text-slate-800 text-sm font-semibold">Loading Detailed Income Drilldown...</p>
+          <p className="text-xs text-slate-500 mt-0.5">Fetching transaction-level data</p>
         </div>
       ) : errorMessage ? (
-        <div className="bg-white rounded-xl border border-rose-200 p-8 shadow-xs text-center">
-          <p className="text-rose-600 text-sm font-medium mb-3">{errorMessage}</p>
+        <div className="rounded-[24px] border border-rose-200 bg-white/90 p-8 backdrop-blur-2xl shadow-xs text-center">
+          <p className="text-rose-600 text-sm font-semibold mb-3">{errorMessage}</p>
           <button
             onClick={() => handleApplyFilters()}
-            className="px-4 py-1.5 bg-[#9D2558] text-white text-xs font-semibold rounded-md shadow-xs hover:bg-[#851C47]"
+            className="px-4 py-2 bg-[#B82E69] text-white text-xs font-semibold rounded-xl shadow-xs hover:bg-[#A02358] cursor-pointer"
           >
-            Retry
+            Retry Fetch
           </button>
         </div>
       ) : (
-        <div>
-          {/* KPI Summary Cards */}
+        <div className="space-y-6">
+          {/* ── ROW 3 PURE WHITE FROSTED BLUR KPI CARDS ── */}
           {reportData?.kpis && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
-              <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-xs">
-                <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-1">Total Lines</span>
-                <span className="text-xl font-bold text-slate-800">{reportData.kpis.totalTransactions}</span>
-                <div className="text-[10px] text-slate-400 mt-1">Recognized line items</div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3.5">
+              <div className="p-4 rounded-[20px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-md transition-all">
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Total Lines</span>
+                <span className="text-xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">{reportData.kpis.totalTransactions}</span>
+                <div className="text-[10px] text-slate-400 mt-1">Recognized items</div>
               </div>
 
-              <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-xs">
-                <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-1">Gross Sales</span>
-                <span className="text-xl font-bold text-slate-800">PKR {formatPKR(reportData.kpis.grossSales)}</span>
-                <div className="text-[10px] text-slate-400 mt-1">Before allocated disc</div>
+              <div className="p-4 rounded-[20px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-md transition-all">
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Gross Sales</span>
+                <span className="text-xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">PKR {formatPKR(reportData.kpis.grossSales)}</span>
+                <div className="text-[10px] text-slate-400 mt-1">Before discount</div>
               </div>
 
-              <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-xs">
-                <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-1">Net Revenue</span>
-                <span className="text-xl font-bold text-[#9D2558]">PKR {formatPKR(reportData.kpis.recognizedNetRevenue)}</span>
+              <div className="p-4 rounded-[20px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-md transition-all">
+                <span className="text-[10px] font-bold text-[#B82E69] uppercase tracking-wider block mb-1">Net Revenue</span>
+                <span className="text-xl font-extrabold text-[#B82E69] font-mono tabular-nums tracking-tight block">PKR {formatPKR(reportData.kpis.recognizedNetRevenue)}</span>
                 <div className="text-[10px] text-emerald-600 mt-1">P&L recognized sales</div>
               </div>
 
-              <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-xs">
-                <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-1">Services Net</span>
-                <span className="text-xl font-bold text-emerald-600">PKR {formatPKR(reportData.kpis.serviceRevenue)}</span>
+              <div className="p-4 rounded-[20px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-md transition-all">
+                <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider block mb-1">Services Net</span>
+                <span className="text-xl font-extrabold text-emerald-700 font-mono tabular-nums tracking-tight block">PKR {formatPKR(reportData.kpis.serviceRevenue)}</span>
                 <div className="text-[10px] text-slate-400 mt-1">{reportData.kpis.serviceCount} service units</div>
               </div>
 
-              <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-xs">
-                <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-1">Products Net</span>
-                <span className="text-xl font-bold text-purple-600">PKR {formatPKR(reportData.kpis.productRevenue)}</span>
+              <div className="p-4 rounded-[20px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-md transition-all">
+                <span className="text-[10px] font-bold text-purple-700 uppercase tracking-wider block mb-1">Products Net</span>
+                <span className="text-xl font-extrabold text-purple-700 font-mono tabular-nums tracking-tight block">PKR {formatPKR(reportData.kpis.productRevenue)}</span>
                 <div className="text-[10px] text-slate-400 mt-1">{reportData.kpis.productCount} retail units</div>
               </div>
 
-              <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-xs">
-                <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-1">Packages Net</span>
-                <span className="text-xl font-bold text-amber-600">PKR {formatPKR(reportData.kpis.packageRevenue)}</span>
+              <div className="p-4 rounded-[20px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-md transition-all">
+                <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider block mb-1">Packages Net</span>
+                <span className="text-xl font-extrabold text-amber-700 font-mono tabular-nums tracking-tight block">PKR {formatPKR(reportData.kpis.packageRevenue)}</span>
                 <div className="text-[10px] text-slate-400 mt-1">{reportData.kpis.packageCount} package sales</div>
               </div>
 
-              <div className="bg-white p-4 rounded-xl border border-slate-200/90 shadow-xs">
-                <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-1">Sales Tax Net</span>
-                <span className="text-xl font-bold text-slate-700">PKR {formatPKR(reportData.kpis.netTaxLiability)}</span>
-                <div className="text-[10px] text-slate-400 mt-1">Excluded from revenue</div>
+              <div className="p-4 rounded-[20px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-md transition-all">
+                <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wider block mb-1">Sales Tax Net</span>
+                <span className="text-xl font-extrabold text-slate-800 font-mono tabular-nums tracking-tight block">PKR {formatPKR(reportData.kpis.netTaxLiability)}</span>
+                <div className="text-[10px] text-slate-400 mt-1">Excluded tax liability</div>
               </div>
             </div>
           )}
 
-          {/* Banner + Table */}
-          <div className="shadow-sm rounded-xl overflow-hidden border border-slate-200/90 mb-8 bg-white">
-            <div className="bg-[#9D2558] text-white px-5 py-3 flex flex-wrap items-center justify-between gap-3 rounded-t-xl">
-              <div className="flex items-center gap-2 font-bold text-sm tracking-wide text-white">
-                <Receipt className="w-4 h-4 stroke-[2.5]" />
-                <span>Transaction-Level Income Register</span>
+          {/* ── FROSTED TABLE CONTAINER ── */}
+          <div className="rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] overflow-hidden">
+            <div className="p-5 border-b border-white/80 flex flex-wrap items-center justify-between gap-3 bg-white/50">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-white shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+                  <Receipt className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-bold text-[#18191B] tracking-tight">Transaction-Level Income Register</h3>
+                    <span className="bg-[#FDF2F5] text-[#B82E69] border border-white/80 shadow-2xs text-[11px] font-bold px-2 py-0.5 rounded-full font-mono">
+                      {filteredRows.length} items
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-[#78616C] mt-0.5">
+                    Recognized revenues across services, products, and packages
+                  </p>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2 print:hidden">
                 <button
                   type="button"
                   onClick={handleExportCsv}
-                  className="bg-[#009688] hover:bg-[#00897B] active:bg-[#00796B] text-white text-xs font-semibold px-3.5 py-1.5 rounded-md shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                  className="h-8 px-3 bg-cyan-50 hover:bg-cyan-100 text-cyan-700 border border-cyan-200/80 rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
                 >
-                  <FileSpreadsheet className="w-3.5 h-3.5" />
+                  <FileSpreadsheet className="w-3.5 h-3.5 text-cyan-600" />
                   <span>CSV</span>
                 </button>
                 <button
                   type="button"
                   onClick={handlePrint}
-                  className="bg-[#DC2626] hover:bg-[#B91C1C] active:bg-[#991B1B] text-white text-xs font-semibold px-3.5 py-1.5 rounded-md shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                  className="h-8 px-3 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/80 rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
                 >
-                  <FileText className="w-3.5 h-3.5" />
+                  <FileText className="w-3.5 h-3.5 text-rose-600" />
                   <span>PDF</span>
                 </button>
                 <button
                   type="button"
                   onClick={handlePrint}
-                  className="bg-[#4B5563] hover:bg-[#374151] active:bg-[#1F2937] text-white text-xs font-semibold px-3.5 py-1.5 rounded-md shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                  className="h-8 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/80 rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
                 >
-                  <Printer className="w-3.5 h-3.5" />
+                  <Printer className="w-3.5 h-3.5 text-slate-600" />
                   <span>Print</span>
                 </button>
               </div>
             </div>
 
-            <div className="bg-white overflow-x-auto rounded-b-xl border-t border-[#F1DEE3]/40">
-              <table className="report-records w-full min-w-[1380px] text-left border-collapse font-['Inter',sans-serif] text-[13px] antialiased">
+            <div className="overflow-x-auto w-full">
+              <table className="report-records w-full min-w-[1380px] text-left border-collapse text-xs">
                 <thead>
-                  <tr className="bg-[#FDF2F5] border-b border-[#F1DEE3] text-[#475569] font-medium text-[13px]">
+                  <tr className="bg-[#FAF8F9]/80 text-slate-700 font-semibold border-b border-slate-100 uppercase tracking-wider text-[11px]">
                     <th className="py-3.5 px-3 text-center w-10 font-medium text-[#475569]">#</th>
                     <th className="py-3.5 px-3 whitespace-nowrap font-medium text-[#475569]">Date & Time</th>
                     <th className="py-3.5 px-3 whitespace-nowrap font-medium text-[#475569]">Invoice #</th>

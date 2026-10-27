@@ -745,70 +745,70 @@ export const BranchSettingsPage: React.FC = () => {
   if (!isSuperAdmin && ['/admin/payment-accounts', '/admin/tax-settings'].includes(pathname)) return <AccessDeniedView attemptedPath={pathname} />;
 
   if (isSuperAdmin && !selectedBranchId) {
-    return <div className="max-w-lg mx-auto mt-8 space-y-4 rounded-2xl border border-slate-200 bg-white p-6">
-      <h1 className="font-semibold text-slate-900">Select a branch</h1>
-      <p className="text-sm text-slate-500">Choose the branch whose settings you want to view or update.</p>
-      <BranchActionField value={selectedBranchId} onChange={setSelectedBranchId} />
-    </div>;
+    return (
+      <div className="max-w-lg mx-auto mt-12 space-y-4 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl p-7 shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-[#FDF2F5] text-[#B82E69] flex items-center justify-center">
+            <Building2 className="w-5 h-5" />
+          </div>
+          <div>
+            <h1 className="font-bold text-base text-[#18191B]">Select a Branch</h1>
+            <p className="text-xs text-[#78616C]">Choose the branch whose settings you want to view or update.</p>
+          </div>
+        </div>
+        <BranchActionField value={selectedBranchId} onChange={setSelectedBranchId} />
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6 font-sans">
       {/* UNIFIED PAGE HEADER & ACTIONS */}
-      <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
-              {activeTab === 'SALON_PROFILE' && (
-                <>
-                  <Store className="w-6 h-6 text-[#9D2558]" />
-                  <span>Salon Profile & Branding</span>
-                </>
-              )}
-              {activeTab === 'PAYMENT_ACCOUNTS' && (
-                <>
-                  <Landmark className="w-6 h-6 text-[#9D2558]" />
-                  <span>Payment Accounts & Settlement Channels</span>
-                </>
-              )}
-              {activeTab === 'TAX_SETTINGS' && (
-                <>
-                  <Percent className="w-6 h-6 text-[#9D2558]" />
-                  <span>Branch Tax Settings & Invoicing Rules</span>
-                </>
-              )}
-              {activeTab === 'DEVICE_INTEGRATION' && (
-                <>
-                  <Cpu className="w-6 h-6 text-[#9D2558]" />
-                  <span>Hardware & Device Integration</span>
-                </>
-              )}
-              {activeTab === 'DATA_RESET' && (
-                <>
-                  <RotateCcw className="w-6 h-6 text-rose-600" />
-                  <span>Operational Data Reset</span>
-                </>
-              )}
-            </h1>
-            <p className="text-xs text-slate-500 mt-1">
-              {activeTab === 'SALON_PROFILE' && `Manage salon business name, official logo, contact information, and address for ${currentBranch?.name || 'this branch'}.`}
-              {activeTab === 'PAYMENT_ACCOUNTS' && `Active payment collection accounts and bank settlement channels for ${currentBranch?.name || 'this salon'}.`}
-              {activeTab === 'TAX_SETTINGS' && `Configure provincial sales tax, tax authority, and invoice tax rules for ${currentBranch?.name || 'this branch'}.`}
-              {activeTab === 'DEVICE_INTEGRATION' && `Manage connected biometric attendance, POS printers and cash drawers for ${currentBranch?.name || 'this branch'}.`}
-              {activeTab === 'DATA_RESET' && `Reset operational data, bookings, bills, and registers.`}
-            </p>
+      <div className="relative overflow-hidden rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl p-6 sm:p-7 shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#B82E69] to-[#851C47] text-white flex items-center justify-center shadow-[0_8px_20px_rgba(184,46,105,0.22)] shrink-0">
+              {activeTab === 'SALON_PROFILE' && <Store className="w-6 h-6" />}
+              {activeTab === 'PAYMENT_ACCOUNTS' && <Landmark className="w-6 h-6" />}
+              {activeTab === 'TAX_SETTINGS' && <Percent className="w-6 h-6" />}
+              {activeTab === 'DEVICE_INTEGRATION' && <Cpu className="w-6 h-6" />}
+              {activeTab === 'DATA_RESET' && <RotateCcw className="w-6 h-6" />}
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-[#B82E69] bg-[#FDF2F5] px-2.5 py-0.5 rounded-full border border-[#B82E69]/15">
+                  Administration
+                </span>
+                <span className="text-slate-300">·</span>
+                <span className="text-xs text-[#78616C] font-medium">System Configuration</span>
+              </div>
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#18191B] mt-1">
+                {activeTab === 'SALON_PROFILE' && 'Salon Profile & Branding'}
+                {activeTab === 'PAYMENT_ACCOUNTS' && 'Payment Accounts & Settlement Channels'}
+                {activeTab === 'TAX_SETTINGS' && 'Branch Tax Settings & Invoicing Rules'}
+                {activeTab === 'DEVICE_INTEGRATION' && 'Hardware & Device Integration'}
+                {activeTab === 'DATA_RESET' && 'Operational Data Reset'}
+              </h1>
+              <p className="text-xs text-[#78616C] mt-0.5">
+                {activeTab === 'SALON_PROFILE' && `Manage salon business name, official logo, contact information, and address for ${currentBranch?.name || 'this branch'}.`}
+                {activeTab === 'PAYMENT_ACCOUNTS' && `Active payment collection accounts and bank settlement channels for ${currentBranch?.name || 'this salon'}.`}
+                {activeTab === 'TAX_SETTINGS' && `Configure provincial sales tax, tax authority, and invoice tax rules for ${currentBranch?.name || 'this branch'}.`}
+                {activeTab === 'DEVICE_INTEGRATION' && `Manage connected biometric attendance, POS printers and cash drawers for ${currentBranch?.name || 'this branch'}.`}
+                {activeTab === 'DATA_RESET' && `Reset operational data, bookings, bills, and registers.`}
+              </p>
+            </div>
           </div>
 
           {/* Controls: Branch Switcher (if Super Admin) + Contextual Actions */}
           <div className="flex flex-wrap items-center gap-2.5">
             {isSuperAdmin && (
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-slate-600 flex items-center gap-1.5">
-                  <Building2 className="w-3.5 h-3.5 text-slate-400" />
+              <div className="flex items-center gap-2 bg-[#FAF8F9]/80 border border-white/80 rounded-xl px-3 py-1.5 shadow-2xs">
+                <span className="text-xs font-medium text-[#78616C] flex items-center gap-1.5">
+                  <Building2 className="w-3.5 h-3.5 text-[#B82E69]" />
                   Branch:
                 </span>
                 <Select value={selectedBranchId} onValueChange={(val) => setSelectedBranchId(val)}>
-                  <SelectTrigger className="w-48 sm:w-56 h-9 text-xs">
+                  <SelectTrigger className="w-48 sm:w-52 h-8 text-xs border-0 bg-transparent shadow-none focus:ring-0">
                     <SelectValue placeholder="Select Branch" />
                   </SelectTrigger>
                   <SelectContent>
@@ -839,7 +839,7 @@ export const BranchSettingsPage: React.FC = () => {
                   setCreationBranchIds([]);
                   setIsAddAccountModalOpen(true);
                 }}
-                className="text-xs font-semibold shadow-sm"
+                className="text-xs font-semibold bg-[#B82E69] hover:bg-[#A02358] text-white shadow-[0_4px_16px_rgba(184,46,105,0.22)] rounded-xl"
               >
                 Add Payment Account
               </Button>
@@ -861,37 +861,38 @@ export const BranchSettingsPage: React.FC = () => {
                   setCreationBranchIds([]);
                   setIsAddTaxRuleModalOpen(true);
                 }}
-                className="text-xs font-semibold shadow-sm"
+                className="text-xs font-semibold bg-[#B82E69] hover:bg-[#A02358] text-white shadow-[0_4px_16px_rgba(184,46,105,0.22)] rounded-xl"
               >
                 Add Tax Rule
               </Button>
             )}
           </div>
         </div>
+      </div>
 
         {/* --- TAB 0: SALON PROFILE & BRANDING --- */}
         {activeTab === 'SALON_PROFILE' && (
-          <form onSubmit={handleSaveProfile} className="space-y-6 mt-4">
-            <Card padding="lg" className="bg-white border-slate-200/90 shadow-xs space-y-6">
-              <div className="border-b border-slate-100 pb-4">
-                <h3 className="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
-                  <Store className="w-4 h-4 text-[#9D2558]" />
+          <form onSubmit={handleSaveProfile} className="space-y-6">
+            <div className="rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl p-6 sm:p-7 shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] space-y-6">
+              <div className="border-b border-black/5 pb-4">
+                <h3 className="text-base font-bold text-[#18191B] flex items-center gap-2">
+                  <Store className="w-4 h-4 text-[#B82E69]" />
                   Salon Branding & Identity
                 </h3>
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs text-[#78616C] mt-1">
                   Manage your salon's business name, official logo, and contact info displayed on system headers, invoices, thermal receipts, and client PDFs.
                 </p>
               </div>
 
               {/* LOGO UPLOAD SECTION */}
-              <div className="bg-slate-50/80 rounded-xl p-4 sm:p-5 border border-slate-200/80">
-                <label className="text-xs font-bold text-slate-800 block mb-2">
+              <div className="bg-[#FAF8F9]/80 rounded-2xl p-5 border border-white/80 shadow-2xs">
+                <label className="text-xs font-bold text-[#18191B] block mb-2">
                   Salon Official Logo
                 </label>
                 <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
                   {/* Logo Preview Box */}
                   <div className="relative group shrink-0">
-                    <div className="w-28 h-28 rounded-2xl border-2 border-dashed border-slate-300 bg-white flex items-center justify-center overflow-hidden shadow-xs">
+                    <div className="w-28 h-28 rounded-2xl border-2 border-dashed border-[#B82E69]/30 bg-white/90 flex items-center justify-center overflow-hidden shadow-xs">
                       {profileLogoUrl ? (
                         <img
                           src={profileLogoUrl}
@@ -922,7 +923,7 @@ export const BranchSettingsPage: React.FC = () => {
                   {/* Upload Controls */}
                   <div className="flex-1 space-y-3 text-center sm:text-left w-full">
                     <div className="flex flex-wrap items-center gap-2">
-                      <label className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-[#9D2558] hover:bg-[#1B3FC5] text-white text-xs font-semibold cursor-pointer shadow-xs transition-colors">
+                      <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#B82E69] hover:bg-[#A02358] text-white text-xs font-semibold cursor-pointer shadow-[0_4px_16px_rgba(184,46,105,0.22)] transition-all">
                         <Upload className="w-3.5 h-3.5" />
                         <span>Upload Logo Image</span>
                         <input
@@ -938,26 +939,26 @@ export const BranchSettingsPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={handleRemoveLogo}
-                          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold cursor-pointer transition-colors shadow-2xs"
+                          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold cursor-pointer transition-colors"
                         >
                           <Trash2 className="w-3.5 h-3.5 text-rose-600" />
                           <span>Remove Logo</span>
                         </button>
                       )}
 
-                      <span className="text-[11px] text-slate-400 block sm:inline w-full sm:w-auto mt-1 sm:mt-0">
+                      <span className="text-[11px] text-[#78616C] block sm:inline w-full sm:w-auto mt-1 sm:mt-0">
                         PNG, JPG, SVG or WEBP (Max 2MB).
                       </span>
                     </div>
 
                     <div className="space-y-1">
-                      <span className="text-[11px] font-medium text-slate-500 block">Or Image URL:</span>
+                      <span className="text-[11px] font-medium text-[#78616C] block">Or Image URL:</span>
                       <Input
                         type="text"
                         value={profileLogoUrl}
                         onChange={(e) => setProfileLogoUrl(e.target.value)}
                         placeholder="https://example.com/logo.png"
-                        className="text-xs max-w-md bg-white"
+                        className="text-xs max-w-md bg-white/80 border-white/80 rounded-xl"
                       />
                     </div>
                   </div>
@@ -967,7 +968,7 @@ export const BranchSettingsPage: React.FC = () => {
               {/* SALON BASIC INFO FIELDS */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-semibold text-slate-700 block mb-1">
+                  <label className="text-xs font-semibold text-[#18191B] block mb-1">
                     Salon / Branch Name <span className="text-rose-500">*</span>
                   </label>
                   <Input
@@ -976,12 +977,12 @@ export const BranchSettingsPage: React.FC = () => {
                     value={profileName}
                     onChange={(e) => setProfileName(e.target.value)}
                     placeholder="e.g. Meerub Salon & Spa"
-                    className="text-xs"
+                    className="text-xs rounded-xl bg-white/70 border-white/80 focus:border-[#B82E69]"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-slate-700 block mb-1">
+                  <label className="text-xs font-semibold text-[#18191B] block mb-1">
                     Contact Phone Number
                   </label>
                   <Input
@@ -989,12 +990,12 @@ export const BranchSettingsPage: React.FC = () => {
                     value={profilePhone}
                     onChange={(e) => setProfilePhone(e.target.value)}
                     placeholder="e.g. 0300 1234567"
-                    className="text-xs"
+                    className="text-xs rounded-xl bg-white/70 border-white/80 focus:border-[#B82E69]"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-slate-700 block mb-1">
+                  <label className="text-xs font-semibold text-[#18191B] block mb-1">
                     Business Email
                   </label>
                   <Input
@@ -1002,12 +1003,12 @@ export const BranchSettingsPage: React.FC = () => {
                     value={profileEmail}
                     onChange={(e) => setProfileEmail(e.target.value)}
                     placeholder="e.g. info@meerubsalon.com"
-                    className="text-xs"
+                    className="text-xs rounded-xl bg-white/70 border-white/80 focus:border-[#B82E69]"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-slate-700 block mb-1">
+                  <label className="text-xs font-semibold text-[#18191B] block mb-1">
                     City
                   </label>
                   <Input
@@ -1015,12 +1016,12 @@ export const BranchSettingsPage: React.FC = () => {
                     value={profileCity}
                     onChange={(e) => setProfileCity(e.target.value)}
                     placeholder="e.g. Lahore"
-                    className="text-xs"
+                    className="text-xs rounded-xl bg-white/70 border-white/80 focus:border-[#B82E69]"
                   />
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="text-xs font-semibold text-slate-700 block mb-1">
+                  <label className="text-xs font-semibold text-[#18191B] block mb-1">
                     Salon Address (Appears on Invoices & Receipts)
                   </label>
                   <Input
@@ -1028,12 +1029,12 @@ export const BranchSettingsPage: React.FC = () => {
                     value={profileAddress}
                     onChange={(e) => setProfileAddress(e.target.value)}
                     placeholder="e.g. Shop # 4, Main Boulevard, Gulberg III"
-                    className="text-xs"
+                    className="text-xs rounded-xl bg-white/70 border-white/80 focus:border-[#B82E69]"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-slate-700 block mb-1">
+                  <label className="text-xs font-semibold text-[#18191B] block mb-1">
                     Tax Authority Name (Optional)
                   </label>
                   <Input
@@ -1041,12 +1042,12 @@ export const BranchSettingsPage: React.FC = () => {
                     value={profileTaxAuth}
                     onChange={(e) => setProfileTaxAuth(e.target.value)}
                     placeholder="e.g. PRA / SRB / FBR"
-                    className="text-xs"
+                    className="text-xs rounded-xl bg-white/70 border-white/80 focus:border-[#B82E69]"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-slate-700 block mb-1">
+                  <label className="text-xs font-semibold text-[#18191B] block mb-1">
                     Tax Registration / NTN (Optional)
                   </label>
                   <Input
@@ -1054,19 +1055,19 @@ export const BranchSettingsPage: React.FC = () => {
                     value={profileTaxReg}
                     onChange={(e) => setProfileTaxReg(e.target.value)}
                     placeholder="e.g. PRA-LHE-7392014-9"
-                    className="text-xs"
+                    className="text-xs rounded-xl bg-white/70 border-white/80 focus:border-[#B82E69]"
                   />
                 </div>
               </div>
 
               {/* SAVE ACTION BAR */}
-              <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+              <div className="pt-4 border-t border-black/5 flex items-center justify-end gap-3">
                 <Button
                   type="submit"
                   variant="primary"
                   size="md"
                   disabled={isSavingProfile}
-                  className="font-semibold shadow-xs gap-2"
+                  className="font-semibold bg-[#B82E69] hover:bg-[#A02358] text-white shadow-[0_4px_16px_rgba(184,46,105,0.22)] rounded-xl gap-2"
                 >
                   {isSavingProfile ? (
                     <>
@@ -1081,90 +1082,90 @@ export const BranchSettingsPage: React.FC = () => {
                   )}
                 </Button>
               </div>
-            </Card>
+            </div>
           </form>
         )}
 
         {/* --- TAB 1: PAYMENT ACCOUNTS --- */}
         {activeTab === 'PAYMENT_ACCOUNTS' && (
-          <div className="space-y-5 mt-4">
+          <div className="space-y-5">
             {/* KPI Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card padding="sm" className="bg-white border-slate-200/90 shadow-xs relative overflow-hidden">
+              <div className="rounded-2xl border border-white/90 bg-white/75 backdrop-blur-2xl p-4 shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
                 <div className="flex items-start justify-between">
                   <div>
-                    <span className="text-[11px] text-slate-500 font-medium block">Total Active Accounts</span>
-                    <span className="text-xl font-bold text-slate-900 mt-1 block">
+                    <span className="text-[11px] text-[#78616C] font-medium block">Total Active Accounts</span>
+                    <span className="text-xl font-bold text-[#18191B] mt-1 block">
                       {accountMetrics.total} {accountMetrics.total === 1 ? 'Account' : 'Accounts'}
                     </span>
-                    <span className="text-[10px] text-slate-400 mt-0.5 block">Configured for {currentBranch?.name}</span>
+                    <span className="text-[10px] text-[#A38D98] mt-0.5 block">Configured for {currentBranch?.name}</span>
                   </div>
-                  <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 rounded-xl bg-slate-100 text-[#78616C] flex items-center justify-center shrink-0">
                     <Landmark className="w-4 h-4" />
                   </div>
                 </div>
-              </Card>
+              </div>
 
-              <Card padding="sm" className="bg-white border-slate-200/90 shadow-xs relative overflow-hidden">
+              <div className="rounded-2xl border border-white/90 bg-white/75 backdrop-blur-2xl p-4 shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
                 <div className="flex items-start justify-between">
                   <div>
-                    <span className="text-[11px] text-slate-500 font-medium block">Commercial Bank Checking</span>
-                    <span className="text-xl font-bold text-[#9D2558] mt-1 block">
+                    <span className="text-[11px] text-[#78616C] font-medium block">Commercial Bank Checking</span>
+                    <span className="text-xl font-bold text-[#B82E69] mt-1 block">
                       {accountMetrics.bankCount} {accountMetrics.bankCount === 1 ? 'Corporate Account' : 'Corporate Accounts'}
                     </span>
-                    <span className="text-[10px] text-slate-400 mt-0.5 block">Active settlement channels</span>
+                    <span className="text-[10px] text-[#A38D98] mt-0.5 block">Active settlement channels</span>
                   </div>
-                  <div className="w-8 h-8 rounded-lg bg-[#FDF2F5] text-[#9D2558] flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 rounded-xl bg-[#FDF2F5] text-[#B82E69] flex items-center justify-center shrink-0">
                     <Building2 className="w-4 h-4" />
                   </div>
                 </div>
-              </Card>
+              </div>
 
-              <Card padding="sm" className="bg-white border-slate-200/90 shadow-xs relative overflow-hidden">
+              <div className="rounded-2xl border border-white/90 bg-white/75 backdrop-blur-2xl p-4 shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
                 <div className="flex items-start justify-between">
                   <div>
-                    <span className="text-[11px] text-slate-500 font-medium block">Card POS Terminals</span>
+                    <span className="text-[11px] text-[#78616C] font-medium block">Card POS Terminals</span>
                     <span className="text-xl font-bold text-purple-700 mt-1 block">
                       {accountMetrics.posCount} {accountMetrics.posCount === 1 ? 'Terminal' : 'Terminals'}
                     </span>
-                    <span className="text-[10px] text-slate-400 mt-0.5 block">Physical card readers</span>
+                    <span className="text-[10px] text-[#A38D98] mt-0.5 block">Physical card readers</span>
                   </div>
-                  <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-700 flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center shrink-0">
                     <CreditCard className="w-4 h-4" />
                   </div>
                 </div>
-              </Card>
+              </div>
 
-              <Card padding="sm" className="bg-white border-slate-200/90 shadow-xs relative overflow-hidden">
+              <div className="rounded-2xl border border-white/90 bg-white/75 backdrop-blur-2xl p-4 shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
                 <div className="flex items-start justify-between">
                   <div>
-                    <span className="text-[11px] text-slate-500 font-medium block">Total Electronic Balances</span>
+                    <span className="text-[11px] text-[#78616C] font-medium block">Total Electronic Balances</span>
                     <span className="text-xl font-bold text-emerald-700 mt-1 block tabular-nums">
                       {formatCurrency(accountMetrics.totalBalance)}
                     </span>
-                    <span className="text-[10px] text-slate-400 mt-0.5 block">Sum of active accounts</span>
+                    <span className="text-[10px] text-[#A38D98] mt-0.5 block">Sum of active accounts</span>
                   </div>
-                  <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
                     <Wallet className="w-4 h-4" />
                   </div>
                 </div>
-              </Card>
+              </div>
             </div>
 
             {/* Filter Bar */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-white p-3 rounded-xl border border-slate-200">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 rounded-2xl border border-white/90 bg-white/75 backdrop-blur-2xl p-3.5 shadow-2xs">
               <div className="relative">
-                <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
+                <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-[#78616C]" />
                 <Input
                   placeholder="Search account name, bank, or holder..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 h-9 text-xs"
+                  className="pl-9 h-9 text-xs rounded-xl bg-white/70 border-white/80"
                 />
               </div>
 
               <Select value={accountTypeFilter} onValueChange={(val) => setAccountTypeFilter(val)}>
-                <SelectTrigger className="h-9 text-xs">
+                <SelectTrigger className="h-9 text-xs rounded-xl bg-white/70 border-white/80">
                   <SelectValue placeholder="All Account Types" />
                 </SelectTrigger>
                 <SelectContent>
@@ -1177,7 +1178,7 @@ export const BranchSettingsPage: React.FC = () => {
               </Select>
 
               <Select value={statusFilter} onValueChange={(val) => setStatusFilter(val as any)}>
-                <SelectTrigger className="h-9 text-xs">
+                <SelectTrigger className="h-9 text-xs rounded-xl bg-white/70 border-white/80">
                   <SelectValue placeholder="All Statuses" />
                 </SelectTrigger>
                 <SelectContent>
@@ -1189,18 +1190,18 @@ export const BranchSettingsPage: React.FC = () => {
             </div>
 
             {/* Accounts Table */}
-            <Card padding="none" className="overflow-hidden">
+            <div className="rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] overflow-hidden">
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-slate-50/75">
-                      <TableHead className="text-xs font-semibold">Account Display Name</TableHead>
-                      <TableHead className="text-xs font-semibold">Type & Institution</TableHead>
-                      <TableHead className="text-xs font-semibold">Account Holder</TableHead>
-                      <TableHead className="text-xs font-semibold">Identifier / IBAN</TableHead>
-                      <TableHead className="text-xs font-semibold text-right">Current Ledger Balance</TableHead>
-                      <TableHead className="text-xs font-semibold">Status</TableHead>
-                      <TableHead className="min-w-[70px] text-center text-xs font-semibold">Actions</TableHead>
+                    <TableRow className="bg-[#FAF8F9]/80 border-b border-black/5">
+                      <TableHead className="text-xs font-semibold text-[#78616C]">Account Display Name</TableHead>
+                      <TableHead className="text-xs font-semibold text-[#78616C]">Type & Institution</TableHead>
+                      <TableHead className="text-xs font-semibold text-[#78616C]">Account Holder</TableHead>
+                      <TableHead className="text-xs font-semibold text-[#78616C]">Identifier / IBAN</TableHead>
+                      <TableHead className="text-xs font-semibold text-right text-[#78616C]">Current Ledger Balance</TableHead>
+                      <TableHead className="text-xs font-semibold text-[#78616C]">Status</TableHead>
+                      <TableHead className="min-w-[70px] text-center text-xs font-semibold text-[#78616C]">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1208,38 +1209,38 @@ export const BranchSettingsPage: React.FC = () => {
                       <TableRow>
                         <TableCell colSpan={7} className="py-12 text-center text-slate-400">
                           <Landmark className="w-8 h-8 mx-auto text-slate-300 mb-2" />
-                          <p className="font-medium text-xs text-slate-600">No payment accounts found.</p>
-                          <p className="text-[11px] text-slate-400 mt-0.5">Register a commercial bank account or card terminal.</p>
+                          <p className="font-medium text-xs text-[#18191B]">No payment accounts found.</p>
+                          <p className="text-[11px] text-[#78616C] mt-0.5">Register a commercial bank account or card terminal.</p>
                         </TableCell>
                       </TableRow>
                     ) : (
                       filteredAccounts.map((acc) => {
                         const isRevealed = unmaskedAccountIds[acc.id];
                         return (
-                          <TableRow key={acc.id} className="hover:bg-slate-50/50 transition-colors">
+                          <TableRow key={acc.id} className="hover:bg-white/60 transition-colors border-b border-black/5">
                             <TableCell>
                               <div>
-                                <p className="font-medium text-xs text-slate-900">{acc.name}</p>
-                                <span className="text-[10px] text-slate-500">{(acc.branchIds ?? [acc.branchId]).map((id) => allBranches.find((b) => b.id === id)?.name ?? id).join(", ")}</span>
-                                <span className="text-[10px] text-slate-400 block font-mono">ID: {acc.id}</span>
+                                <p className="font-semibold text-xs text-[#18191B]">{acc.name}</p>
+                                <span className="text-[10px] text-[#78616C]">{(acc.branchIds ?? [acc.branchId]).map((id) => allBranches.find((b) => b.id === id)?.name ?? id).join(", ")}</span>
+                                <span className="text-[10px] text-[#A38D98] block font-mono">ID: {acc.id}</span>
                               </div>
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center gap-1.5">
                                 {getAccountTypeIcon(acc.accountType)}
                                 <div>
-                                  <span className="font-medium text-xs text-slate-800">{acc.providerName}</span>
-                                  <span className="text-[10px] text-slate-400 block uppercase tracking-wider">
+                                  <span className="font-medium text-xs text-[#18191B] block">{acc.providerName}</span>
+                                  <span className="text-[10px] text-[#78616C] block uppercase tracking-wider">
                                     {acc.accountType === 'OTHER' ? 'POS Terminal' : acc.accountType}
                                   </span>
                                 </div>
                               </div>
                             </TableCell>
-                            <TableCell className="text-xs text-slate-700">
+                            <TableCell className="text-xs font-medium text-[#18191B]">
                               {acc.accountHolder}
                             </TableCell>
                             <TableCell>
-                              <div className="flex items-center gap-1.5 font-mono text-xs text-slate-600">
+                              <div className="flex items-center gap-1.5 font-mono text-xs text-[#18191B]">
                                 <span>{isRevealed ? acc.accountIdentifier || 'N/A' : maskIdentifier(acc.accountIdentifier)}</span>
                                 {acc.accountIdentifier && (
                                   <button
@@ -1248,25 +1249,25 @@ export const BranchSettingsPage: React.FC = () => {
                                     className="p-1 rounded text-slate-400 hover:text-slate-700 cursor-pointer"
                                     title={isRevealed ? 'Mask' : 'Reveal full identifier'}
                                   >
-                                    {isRevealed ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                                    {isRevealed ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                                   </button>
                                 )}
                               </div>
                             </TableCell>
-                            <TableCell className="text-xs font-semibold text-slate-900 text-right tabular-nums">
+                            <TableCell className="text-xs font-bold text-[#18191B] text-right tabular-nums">
                               {formatCurrency(acc.currentBalance)}
                             </TableCell>
                             <TableCell>
                               {acc.isActive ? (
-                                <Badge variant="success" dot>Active</Badge>
+                                <Badge variant="success" dot className="rounded-full">Active</Badge>
                               ) : (
-                                <Badge variant="neutral">Inactive</Badge>
+                                <Badge variant="neutral" className="rounded-full">Inactive</Badge>
                               )}
                             </TableCell>
                             <TableCell className="text-center">
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <button className="p-1 rounded hover:bg-slate-100 text-slate-500 cursor-pointer">
+                                  <button className="p-1 rounded-lg hover:bg-slate-100 text-slate-500 cursor-pointer">
                                     <MoreVertical className="w-4 h-4" />
                                   </button>
                                 </DropdownMenuTrigger>
@@ -1286,7 +1287,7 @@ export const BranchSettingsPage: React.FC = () => {
                                     }}
                                     className="text-xs cursor-pointer gap-2"
                                   >
-                                    <Edit className="w-3.5 h-3.5 text-[#9D2558]" />
+                                    <Edit className="w-3.5 h-3.5 text-[#B82E69]" />
                                     Edit Account
                                   </DropdownMenuItem>
                                   <DropdownMenuSeparator />
@@ -1331,13 +1332,13 @@ export const BranchSettingsPage: React.FC = () => {
                   </TableBody>
                 </Table>
               </div>
-            </Card>
+            </div>
 
-            <div className="p-3.5 rounded-xl bg-[#FDF2F5]/70 border border-[#F1DEE3] text-xs text-slate-700 flex items-center justify-between gap-3">
+            <div className="p-4 rounded-2xl bg-[#FDF2F5]/80 border border-[#B82E69]/15 text-xs text-[#78616C] flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <Info className="w-4 h-4 text-[#9D2558] shrink-0" />
+                <Info className="w-4 h-4 text-[#B82E69] shrink-0" />
                 <span>
-                  <strong>Role Isolation Rule:</strong> Branch Accountants can select these active accounts in POS to process client payments, but cannot configure or alter accounts. Direct balance edits are blocked.
+                  <strong className="text-[#18191B]">Role Isolation Rule:</strong> Branch Accountants can select these active accounts in POS to process client payments, but cannot configure or alter accounts. Direct balance edits are blocked.
                 </span>
               </div>
             </div>
@@ -1346,33 +1347,37 @@ export const BranchSettingsPage: React.FC = () => {
 
         {/* --- TAB 2: SIMPLE BRANCH TAX SETTINGS --- */}
         {activeTab === 'TAX_SETTINGS' && (
-          <div className="space-y-6 mt-4 max-w-3xl">
-            <Card padding="lg" className="bg-white border-slate-200 shadow-sm space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-3">
+          <div className="space-y-6 max-w-3xl">
+            <div className="rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl p-6 sm:p-7 shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-black/5 gap-3">
                 <div>
-                  <h3 className="font-bold text-base text-slate-900 flex items-center gap-2">
-                    <Percent className="w-5 h-5 text-[#9D2558]" />
+                  <h3 className="font-bold text-base text-[#18191B] flex items-center gap-2">
+                    <Percent className="w-5 h-5 text-[#B82E69]" />
                     Branch Sales Tax Settings
                   </h3>
-                  <p className="text-xs text-slate-500 mt-1">
+                  <p className="text-xs text-[#78616C] mt-1">
                     Set the sales tax rate for <strong>{currentBranch?.name || 'this branch'}</strong>. This rate is dynamically applied across all salon services, packages, and POS bill checkouts.
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge variant={currentBranch?.taxEnabled ? 'primary' : 'neutral'} className="text-xs font-mono py-1 px-2.5">
+                  <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-semibold border ${
+                    currentBranch?.taxEnabled
+                      ? 'bg-[#FDF2F5] text-[#B82E69] border-[#B82E69]/20'
+                      : 'bg-slate-100 text-slate-500 border-slate-200'
+                  }`}>
                     Current Rate: {currentBranch?.taxEnabled ? `${((currentBranch?.taxRate || 0) * 100).toFixed(0)}%` : 'Disabled (0%)'}
-                  </Badge>
+                  </span>
                 </div>
               </div>
 
               <form onSubmit={handleSaveSimpleBranchTax} className="space-y-5">
                 {/* Enable / Disable Toggle */}
-                <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50/80 border border-slate-200/80">
+                <div className="flex items-center justify-between p-4 rounded-2xl bg-[#FAF8F9]/80 border border-white/80">
                   <div className="space-y-0.5">
-                    <label className="text-sm font-semibold text-slate-800 cursor-pointer" htmlFor="tax-toggle">
+                    <label className="text-sm font-semibold text-[#18191B] cursor-pointer" htmlFor="tax-toggle">
                       Enable Sales Tax on Billing
                     </label>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-[#78616C]">
                       When enabled, tax is automatically calculated on POS invoices and services for this branch.
                     </p>
                   </div>
@@ -1382,9 +1387,9 @@ export const BranchSettingsPage: React.FC = () => {
                       type="checkbox"
                       checked={branchTaxEnabled}
                       onChange={(e) => setBranchTaxEnabled(e.target.checked)}
-                      className="w-5 h-5 text-[#9D2558] rounded border-slate-300 focus:ring-[#9D2558] cursor-pointer"
+                      className="w-5 h-5 text-[#B82E69] rounded border-slate-300 focus:ring-[#B82E69] cursor-pointer"
                     />
-                    <span className="text-xs font-semibold text-slate-700">
+                    <span className="text-xs font-semibold text-[#18191B]">
                       {branchTaxEnabled ? 'Enabled' : 'Disabled'}
                     </span>
                   </div>
@@ -1393,7 +1398,7 @@ export const BranchSettingsPage: React.FC = () => {
                 {/* Tax Rate & Tax Name Input Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="font-semibold text-slate-700 block mb-1 text-xs">
+                    <label className="font-semibold text-[#18191B] block mb-1 text-xs">
                       Branch Tax Rate (%) *
                     </label>
                     <div className="relative">
@@ -1407,19 +1412,19 @@ export const BranchSettingsPage: React.FC = () => {
                         disabled={!branchTaxEnabled}
                         placeholder="e.g. 20"
                         required={branchTaxEnabled}
-                        className="h-10 text-sm font-semibold tabular-nums pr-8 disabled:bg-slate-100 disabled:text-slate-400"
+                        className="h-10 text-sm font-semibold tabular-nums pr-8 rounded-xl bg-white/70 border-white/80 focus:border-[#B82E69] disabled:bg-slate-100 disabled:text-slate-400"
                       />
                       <span className="absolute right-3 top-2.5 text-slate-400 font-bold text-sm pointer-events-none">
                         %
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-400 mt-1">
+                    <p className="text-[11px] text-[#78616C] mt-1">
                       Enter percentage (e.g. 20 for 20% SST / GST).
                     </p>
                   </div>
 
                   <div>
-                    <label className="font-semibold text-slate-700 block mb-1 text-xs">
+                    <label className="font-semibold text-[#18191B] block mb-1 text-xs">
                       Tax Label / Name
                     </label>
                     <Input
@@ -1428,19 +1433,19 @@ export const BranchSettingsPage: React.FC = () => {
                       onChange={(e) => setBranchTaxName(e.target.value)}
                       disabled={!branchTaxEnabled}
                       placeholder="e.g. Sindh Sales Tax (SST)"
-                      className="h-10 text-xs disabled:bg-slate-100 disabled:text-slate-400"
+                      className="h-10 text-xs rounded-xl bg-white/70 border-white/80 focus:border-[#B82E69] disabled:bg-slate-100 disabled:text-slate-400"
                     />
-                    <p className="text-[11px] text-slate-400 mt-1">
+                    <p className="text-[11px] text-[#78616C] mt-1">
                       Appears on customer invoices and receipts.
                     </p>
                   </div>
                 </div>
 
                 {/* Information Banner */}
-                <div className="p-3.5 rounded-xl bg-[#FDF2F5]/70 border border-[#F1DEE3] text-xs text-slate-700 flex items-start gap-2.5">
-                  <Info className="w-4 h-4 text-[#9D2558] shrink-0 mt-0.5" />
+                <div className="p-4 rounded-2xl bg-[#FDF2F5]/80 border border-[#B82E69]/15 text-xs text-[#78616C] flex items-start gap-2.5">
+                  <Info className="w-4 h-4 text-[#B82E69] shrink-0 mt-0.5" />
                   <div>
-                    <strong className="text-slate-900">Dynamic Synchronization:</strong> The tax rate configured here (<strong>{branchTaxEnabled ? `${branchTaxRateInput || 0}%` : '0%'}</strong>) is automatically used everywhere — in catalogue services, package builders, and POS sales invoices.
+                    <strong className="text-[#18191B]">Dynamic Synchronization:</strong> The tax rate configured here (<strong>{branchTaxEnabled ? `${branchTaxRateInput || 0}%` : '0%'}</strong>) is automatically used everywhere — in catalogue services, package builders, and POS sales invoices.
                   </div>
                 </div>
 
@@ -1450,7 +1455,7 @@ export const BranchSettingsPage: React.FC = () => {
                     type="submit"
                     variant="primary"
                     disabled={isSavingTax}
-                    className="flex items-center gap-2 px-6 h-10 text-xs font-semibold"
+                    className="font-semibold bg-[#B82E69] hover:bg-[#A02358] text-white shadow-[0_4px_16px_rgba(184,46,105,0.22)] rounded-xl gap-2 px-6 h-10 text-xs"
                   >
                     {isSavingTax ? (
                       <>
@@ -1466,23 +1471,27 @@ export const BranchSettingsPage: React.FC = () => {
                   </Button>
                 </div>
               </form>
-            </Card>
+            </div>
           </div>
         )}
 
         {/* --- TAB 3: DATA RESET (TESTING & ENVIRONMENT RESTORATION) --- */}
         {activeTab === 'DATA_RESET' && (
-          <div className="space-y-6 mt-4">
-            <Card padding="md" className="bg-white border-slate-200 space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                  <h3 className="font-semibold text-sm text-rose-900 flex items-center gap-2">
-                    <Database className="w-4 h-4 text-rose-600" />
-                    Operational & Transactional Data Reset
-                  </h3>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Reset testing records (sales invoices, appointments, attendance, cash custody, purchases & ledgers) back to 0.
-                  </p>
+          <div className="space-y-6">
+            <div className="rounded-[24px] border border-rose-200/80 bg-white/80 backdrop-blur-2xl p-6 sm:p-7 shadow-[0_10px_35px_rgba(225,29,72,0.05),inset_0_1.5px_2px_rgba(255,255,255,1)] space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-rose-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+                    <Database className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-base text-rose-950">
+                      Operational & Transactional Data Reset
+                    </h3>
+                    <p className="text-xs text-[#78616C] mt-0.5">
+                      Reset testing records (sales invoices, appointments, attendance, cash custody, purchases & ledgers) back to 0.
+                    </p>
+                  </div>
                 </div>
 
                 <Button
@@ -1493,12 +1502,13 @@ export const BranchSettingsPage: React.FC = () => {
                     setResetConfirmationText('');
                     setIsResetModalOpen(true);
                   }}
+                  className="rounded-xl shadow-xs text-xs font-semibold"
                 >
                   Reset Test Data
                 </Button>
               </div>
 
-              <div className="p-4 rounded-xl border border-rose-200 bg-rose-50/60 text-xs text-rose-900 space-y-3">
+              <div className="p-4 rounded-2xl border border-rose-200 bg-rose-50/60 text-xs text-rose-900 space-y-3">
                 <div className="flex items-start gap-2.5">
                   <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                   <div>
@@ -1510,7 +1520,7 @@ export const BranchSettingsPage: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-rose-200/80">
-                  <div className="bg-white/80 p-3 rounded-lg border border-rose-100">
+                  <div className="bg-white/80 p-3 rounded-xl border border-rose-100">
                     <span className="font-bold text-rose-900 block mb-1">What Will Be Reset to 0:</span>
                     <ul className="space-y-1 text-slate-700 list-disc list-inside text-[11px]">
                       <li>Invoices, POS orders, refunds and payment lines</li>
@@ -1523,7 +1533,7 @@ export const BranchSettingsPage: React.FC = () => {
                     </ul>
                   </div>
 
-                  <div className="bg-white/80 p-3 rounded-lg border border-emerald-100">
+                  <div className="bg-white/80 p-3 rounded-xl border border-emerald-100">
                     <span className="font-bold text-emerald-900 block mb-1">What Remains Completely Safe:</span>
                     <ul className="space-y-1 text-slate-700 list-disc list-inside text-[11px]">
                       <li><strong>Administrator Logins & Credentials:</strong> Kept intact, you will not be logged out.</li>
@@ -1535,7 +1545,7 @@ export const BranchSettingsPage: React.FC = () => {
                   </div>
                 </div>
               </div>
-            </Card>
+            </div>
           </div>
         )}
 
@@ -1549,7 +1559,6 @@ export const BranchSettingsPage: React.FC = () => {
             />
           </div>
         )}
-      </div>
 
       {/* --- MODAL: ADD / EDIT PAYMENT ACCOUNT --- */}
       <Dialog

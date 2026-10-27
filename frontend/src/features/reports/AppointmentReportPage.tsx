@@ -366,28 +366,45 @@ export const AppointmentReportPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9] px-4 py-5 md:px-8 md:py-6 text-slate-800">
-      {/* Top Header Card with Title & Filters */}
-      <div className="bg-white rounded-xl shadow-xs border border-slate-200/90 p-5 md:p-6 mb-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
-          <div>
-            <h1 className="text-xl font-bold text-[#23151D] tracking-tight">Appointment Audit Reports</h1>
-            <p className="text-xs text-slate-500 mt-1">
-              Audit of scheduled reservations, status velocity, estimated booking values & actual POS conversions.
-            </p>
+    <div className="w-full max-w-full space-y-6 text-slate-800 font-sans">
+      {/* ── 1. TOP HEADER BANNER (Frosted Glassmorphism) ── */}
+      <div className="relative overflow-hidden rounded-[24px] border border-white/90 bg-white/75 p-6 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-gradient-to-br from-[#B82E69]/10 via-[#D94883]/5 to-transparent blur-3xl" />
+
+        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#B82E69] to-[#9D2558] text-white shadow-lg shadow-[#B82E69]/25">
+              <CalendarCheck className="h-6 w-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold tracking-tight text-[#18191B]">
+                  Appointment Audit Reports
+                </h1>
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FDF2F5] text-[#B82E69] border border-[#B82E69]/20 uppercase tracking-wider">
+                  Booking Velocity
+                </span>
+              </div>
+              <p className="text-xs text-[#78616C] font-medium mt-0.5">
+                Audit of scheduled reservations, status velocity, estimated booking values & actual POS conversions
+              </p>
+            </div>
           </div>
+
           <button
             type="button"
             onClick={() => navigate('/operations/appointments')}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 bg-white rounded-md text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-2xs cursor-pointer"
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-white/80 bg-white/80 hover:bg-white text-xs font-semibold text-slate-700 shadow-2xs transition-all cursor-pointer"
           >
-            <ExternalLink className="w-3.5 h-3.5" />
-            Go to Operational Calendar
+            <ExternalLink className="w-3.5 h-3.5 text-[#B82E69]" />
+            <span>Go to Calendar</span>
           </button>
         </div>
+      </div>
 
-        {/* Filters Form Row */}
-        <form onSubmit={handleApplyFilters} className="space-y-3">
+      {/* ── 2. FILTER CARD (Frosted Glass) ── */}
+      <div className="rounded-[24px] border border-white/90 bg-white/75 p-5 md:p-6 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+        <form onSubmit={handleApplyFilters} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
             {/* Branch */}
             <div>
@@ -509,7 +526,7 @@ export const AppointmentReportPage: React.FC = () => {
             </div>
 
             {/* Search Query */}
-            <div className="md:col-span-4">
+            <div className="md:col-span-4 relative">
               <label className={labelClass}>Search</label>
               <input
                 type="text"
@@ -525,7 +542,7 @@ export const AppointmentReportPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-[35px] bg-[#9D2558] hover:bg-[#851C47] active:bg-[#002b66] text-white font-medium text-xs rounded-md shadow-xs flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-70"
+                className="w-full h-9 bg-[#B82E69] hover:bg-[#A02358] active:bg-[#851C47] text-white font-semibold text-xs sm:text-sm rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-70"
               >
                 {isLoading ? (
                   <>
@@ -535,7 +552,7 @@ export const AppointmentReportPage: React.FC = () => {
                 ) : (
                   <>
                     <Filter className="w-3.5 h-3.5 fill-current" />
-                    <span>Filter</span>
+                    <span>Apply Filters</span>
                   </>
                 )}
               </button>
@@ -544,165 +561,273 @@ export const AppointmentReportPage: React.FC = () => {
         </form>
       </div>
 
-      {/* Main Content Area */}
-      {!hasFiltered ? (
-        /* Empty State before Filter clicked */
-        <div className="bg-white rounded-xl border border-slate-200/90 p-16 md:p-24 flex flex-col items-center justify-center min-h-[380px] shadow-xs text-center">
-          <div className="text-slate-400 mb-3">
-            <Filter className="w-14 h-14 stroke-[1.25] text-slate-400" />
+      {/* ── 3. ROW 3 PURE WHITE FROSTED BLUR FINANCIAL KPI CARDS (when filtered) ── */}
+      {hasFiltered && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          {/* Card 1: Total Appointments */}
+          <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+            <div className="flex items-center justify-between relative z-10">
+              <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-blue-600">
+                <CalendarCheck className="w-4 h-4" />
+              </div>
+              <span className="bg-blue-50 text-blue-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                Bookings
+              </span>
+            </div>
+            <div className="mt-3 relative z-10">
+              <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+                {summary.totalAppointments}
+              </span>
+              <span className="text-xs text-[#78616C] font-medium mt-1 block">
+                {summary.completedCount} completed · {summary.confirmedCount} confirmed
+              </span>
+            </div>
           </div>
-          <p className="text-slate-400 text-sm font-medium">Please apply filters to view reports</p>
+
+          {/* Card 2: Quoted Booking Value */}
+          <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+            <div className="flex items-center justify-between relative z-10">
+              <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-purple-600">
+                <CalendarCheck className="w-4 h-4" />
+              </div>
+              <span className="bg-purple-50 text-purple-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                Quoted
+              </span>
+            </div>
+            <div className="mt-3 relative z-10">
+              <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+                PKR {formatPKR(summary.totalQuotedValue)}
+              </span>
+              <span className="text-xs text-[#78616C] font-medium mt-1 block">
+                Estimated service reservation value
+              </span>
+            </div>
+          </div>
+
+          {/* Card 3: Converted POS Sales */}
+          <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+            <div className="flex items-center justify-between relative z-10">
+              <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-emerald-600">
+                <CalendarCheck className="w-4 h-4" />
+              </div>
+              <span className="bg-emerald-50 text-emerald-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                Realized
+              </span>
+            </div>
+            <div className="mt-3 relative z-10">
+              <span className="text-2xl sm:text-3xl font-extrabold text-emerald-600 font-mono tabular-nums tracking-tight block">
+                PKR {formatPKR(summary.totalActualNetSales)}
+              </span>
+              <span className="text-xs text-[#78616C] font-medium mt-1 block">
+                Actual billed sales conversion
+              </span>
+            </div>
+          </div>
+
+          {/* Card 4: Billed Invoices */}
+          <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+            <div className="flex items-center justify-between relative z-10">
+              <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+                <CalendarCheck className="w-4 h-4" />
+              </div>
+              <span className="bg-[#FDF2F5] text-[#B82E69] shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                Conversion
+              </span>
+            </div>
+            <div className="mt-3 relative z-10">
+              <span className="text-2xl sm:text-3xl font-extrabold text-[#B82E69] font-mono tabular-nums tracking-tight block">
+                {summary.totalAppointments > 0 ? ((summary.billedCount / summary.totalAppointments) * 100).toFixed(1) : '0.0'}%
+              </span>
+              <span className="text-xs text-[#78616C] font-medium mt-1 block">
+                {summary.billedCount} of {summary.totalAppointments} converted to invoice
+              </span>
+            </div>
+          </div>
+
+          {/* Card 5: No-Shows & Cancellations */}
+          <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+            <div className="flex items-center justify-between relative z-10">
+              <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-rose-600">
+                <CalendarCheck className="w-4 h-4" />
+              </div>
+              <span className="bg-rose-50 text-rose-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                Dropouts
+              </span>
+            </div>
+            <div className="mt-3 relative z-10">
+              <span className="text-2xl sm:text-3xl font-extrabold text-rose-600 font-mono tabular-nums tracking-tight block">
+                {(summary.noShowCount || 0) + (summary.cancelledCount || 0)}
+              </span>
+              <span className="text-xs text-[#78616C] font-medium mt-1 block">
+                {summary.noShowCount || 0} no-shows · {summary.cancelledCount || 0} cancelled
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── 4. MAIN CONTENT AREA: TABLE & STATES ── */}
+      {!hasFiltered ? (
+        <div className="rounded-[24px] border border-white/90 bg-white/75 p-16 md:p-24 flex flex-col items-center justify-center min-h-[380px] backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] text-center">
+          <div className="w-16 h-16 rounded-2xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69] mb-4">
+            <Filter className="w-8 h-8 stroke-[1.5]" />
+          </div>
+          <h3 className="text-base font-bold text-[#18191B]">No Filter Applied</h3>
+          <p className="text-xs text-[#78616C] mt-1 max-w-sm">
+            Select a branch, status, or date range above, then click &ldquo;Apply Filters&rdquo; to load scheduled appointment audits.
+          </p>
         </div>
       ) : isLoading ? (
-        /* Loading Skeleton */
-        <div className="bg-white rounded-xl border border-slate-200/90 p-16 flex flex-col items-center justify-center min-h-[380px] shadow-xs text-center">
-          <div className="w-10 h-10 rounded-full border-3 border-[#F1DEE3] border-t-[#9D2558] animate-spin mb-3" />
-          <p className="text-slate-600 text-sm font-medium">Loading Appointment Reports...</p>
+        <div className="rounded-[24px] border border-white/90 bg-white/75 p-16 flex flex-col items-center justify-center min-h-[380px] backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] text-center">
+          <div className="w-12 h-12 rounded-2xl bg-[#FDF2F5] border border-white/80 flex items-center justify-center text-[#B82E69] mb-4 shadow-sm animate-pulse">
+            <Loader2 className="w-6 h-6 animate-spin text-[#B82E69]" />
+          </div>
+          <p className="text-sm font-bold text-[#18191B]">Loading Appointment Reports...</p>
+          <p className="text-xs text-[#78616C] mt-0.5">Fetching scheduled reservation and invoice conversion data from server</p>
         </div>
       ) : errorMessage ? (
-        /* Error Message */
-        <div className="bg-white rounded-xl border border-rose-200 p-8 shadow-xs text-center">
-          <p className="text-rose-600 text-sm font-medium mb-3">{errorMessage}</p>
+        <div className="rounded-[24px] border border-rose-200/80 bg-white/85 p-8 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035)] text-center">
+          <p className="text-rose-600 text-sm font-semibold mb-3">{errorMessage}</p>
           <button
             onClick={() => handleApplyFilters()}
-            className="px-4 py-1.5 bg-[#9D2558] text-white text-xs font-semibold rounded-md shadow-xs hover:bg-[#851C47]"
+            className="px-4 py-2 bg-[#B82E69] text-white text-xs font-semibold rounded-xl shadow-xs hover:bg-[#A02358] transition-colors cursor-pointer"
           >
-            Retry
+            Retry Query
           </button>
         </div>
       ) : (
-        /* Filtered Data Layout */
-        <div className="shadow-sm rounded-xl overflow-hidden border border-slate-200/90 mb-8 bg-white">
-          {/* Royal Blue Banner Header */}
-          <div className="bg-[#9D2558] text-white px-5 py-3 flex flex-wrap items-center justify-between gap-3 rounded-t-xl">
-            <div className="flex items-center gap-2.5 font-bold text-sm tracking-wide text-white">
-              <CalendarCheck className="w-4 h-4 stroke-[2.5]" />
-              <span>Appointment Audit Reports ({records.length} records)</span>
+        /* Filtered Data Layout: Frosted Table Card */
+        <div className="rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] overflow-hidden">
+          {/* Header Bar */}
+          <div className="px-6 py-4 border-b border-white/80 bg-white/60 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5 font-bold text-sm tracking-tight text-[#18191B]">
+              <CalendarCheck className="w-4 h-4 text-[#B82E69]" />
+              <span>Appointment Audit Log ({records.length} records)</span>
             </div>
 
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={handleExportCsv}
-                className="bg-[#009688] hover:bg-[#00897B] active:bg-[#00796B] text-white text-xs font-semibold px-3.5 py-1.5 rounded-md shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/80 bg-white/80 hover:bg-white text-slate-700 shadow-2xs text-xs font-semibold transition-all cursor-pointer"
               >
-                <FileSpreadsheet className="w-3.5 h-3.5" />
+                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
                 <span>CSV</span>
               </button>
               <button
                 type="button"
                 onClick={handleExportExcel}
-                className="bg-[#DC2626] hover:bg-[#B91C1C] active:bg-[#991B1B] text-white text-xs font-semibold px-3.5 py-1.5 rounded-md shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/80 bg-white/80 hover:bg-white text-slate-700 shadow-2xs text-xs font-semibold transition-all cursor-pointer"
               >
-                <FileText className="w-3.5 h-3.5" />
+                <FileText className="w-3.5 h-3.5 text-rose-600" />
                 <span>PDF</span>
               </button>
               <button
                 type="button"
                 onClick={handlePrint}
-                className="bg-[#4B5563] hover:bg-[#374151] active:bg-[#1F2937] text-white text-xs font-semibold px-3.5 py-1.5 rounded-md shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/80 bg-white/80 hover:bg-white text-slate-700 shadow-2xs text-xs font-semibold transition-all cursor-pointer"
               >
-                <Printer className="w-3.5 h-3.5" />
+                <Printer className="w-3.5 h-3.5 text-slate-600" />
                 <span>Print</span>
               </button>
             </div>
           </div>
 
           {/* Table Container */}
-          <div className="bg-white overflow-x-auto rounded-b-xl border-t border-[#F1DEE3]/40">
-            <table className="report-records w-full text-left border-collapse min-w-[1100px] font-['Inter',sans-serif] text-[13px] antialiased">
+          <div className="overflow-x-auto">
+            <table className="report-records w-full text-left border-collapse min-w-[1100px] text-xs">
               <thead>
-                <tr className="bg-[#FDF2F5] border-b border-[#F1DEE3] text-[#475569] font-medium text-[13px]">
-                  <th className="py-3.5 px-4">Scheduled Date</th>
-                  <th className="py-3.5 px-4">Ref #</th>
-                  <th className="py-3.5 px-4">Customer</th>
-                  <th className="py-3.5 px-4">Branch</th>
-                  <th className="py-3.5 px-4">Services & Staff</th>
-                  <th className="py-3.5 px-4 text-right">Quoted Value</th>
-                  <th className="py-3.5 px-4">Status</th>
-                  <th className="py-3.5 px-4">Billing State</th>
-                  <th className="py-3.5 px-4">Linked Invoice</th>
-                  <th className="py-3.5 px-4 text-right">Invoice Net</th>
+                <tr className="border-b border-slate-200/80 bg-[#FDF2F5]/50 text-slate-600 font-bold">
+                  <th className="py-3 px-4">Scheduled Date</th>
+                  <th className="py-3 px-4">Ref #</th>
+                  <th className="py-3 px-4">Customer</th>
+                  <th className="py-3 px-4">Branch</th>
+                  <th className="py-3 px-4">Services & Staff</th>
+                  <th className="py-3 px-4 text-right">Quoted Value</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4">Billing State</th>
+                  <th className="py-3 px-4">Linked Invoice</th>
+                  <th className="py-3 px-4 text-right">Invoice Net</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-dashed divide-slate-200">
+              <tbody className="divide-y divide-slate-100">
                 {records.length === 0 ? (
                   <tr>
-                    <td colSpan={10} className="py-12 text-center text-slate-400">
+                    <td colSpan={10} className="py-16 text-center text-slate-400 font-medium">
                       No appointments found matching the selected criteria.
                     </td>
                   </tr>
                 ) : (
                   records.map((r) => (
-                    <tr key={r.id} className="hover:bg-[#FDF2F5]/20 transition-colors border-b border-dashed border-slate-200">
-                      <td className="py-3.5 px-4 font-semibold text-[#23151D] whitespace-nowrap">
+                    <tr key={r.id} className="hover:bg-[#FDF2F5]/30 transition-colors">
+                      <td className="py-3 px-4 font-semibold text-slate-900 whitespace-nowrap font-mono">
                         {r.date}
                       </td>
-                      <td className="py-3.5 px-4 font-mono text-[12px] text-slate-600 whitespace-nowrap">
+                      <td className="py-3 px-4 font-mono font-bold text-[#B82E69] whitespace-nowrap">
                         {r.appointmentNumber || r.id.slice(-6)}
                       </td>
-                      <td className="py-3.5 px-4 whitespace-nowrap">
+                      <td className="py-3 px-4 whitespace-nowrap">
                         <div className="font-semibold text-slate-900">{r.clientName}</div>
-                        <div className="text-[11px] text-slate-500">
+                        <div className="text-[11px] text-slate-400 font-mono">
                           {formatPhoneNumber(r.clientPhone)}
                         </div>
                       </td>
-                      <td className="py-3.5 px-4 text-slate-600 whitespace-nowrap">
+                      <td className="py-3 px-4 text-slate-600 whitespace-nowrap">
                         {r.branchName || r.branchId}
                       </td>
-                      <td className="py-3.5 px-4 max-w-xs">
+                      <td className="py-3 px-4 max-w-xs">
                         <div className="font-medium text-slate-800 truncate" title={r.serviceSummary}>
                           {r.serviceSummary}
                         </div>
-                        <div className="text-[11px] text-slate-500 truncate" title={r.staffSummary}>
+                        <div className="text-[11px] text-slate-400 truncate" title={r.staffSummary}>
                           Stylists: {r.staffSummary}
                         </div>
                       </td>
-                      <td className="py-3.5 px-4 text-right font-semibold text-slate-900 whitespace-nowrap">
-                        {formatPKR(r.quotedPrice)}
+                      <td className="py-3 px-4 text-right font-semibold text-slate-700 whitespace-nowrap font-mono tabular-nums">
+                        PKR {formatPKR(r.quotedPrice)}
                       </td>
-                      <td className="py-3.5 px-4 whitespace-nowrap">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-[#FDF2F5] text-[#9D2558] border border-[#F1DEE3]">
+                      <td className="py-3 px-4 whitespace-nowrap">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FDF2F5] text-[#B82E69] border border-[#B82E69]/20">
                           {r.status}
                         </span>
                       </td>
-                      <td className="py-3.5 px-4 whitespace-nowrap">
+                      <td className="py-3 px-4 whitespace-nowrap">
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold ${
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
                             r.billingStatus === 'BILLED'
-                              ? 'bg-[#FCE8EC] text-[#23151D]'
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60'
                               : 'bg-slate-100 text-slate-600'
                           }`}
                         >
                           {r.billingStatus}
                         </span>
                       </td>
-                      <td className="py-3.5 px-4 font-mono text-[12px] text-slate-600 whitespace-nowrap">
+                      <td className="py-3 px-4 font-mono font-bold text-[#B82E69] whitespace-nowrap">
                         {r.linkedInvoiceNumber || '—'}
                       </td>
-                      <td className="py-3.5 px-4 text-right font-bold text-[#23151D] whitespace-nowrap">
-                        {formatPKR(r.actualNetSales || 0)}
+                      <td className="py-3 px-4 text-right font-bold text-slate-900 whitespace-nowrap font-mono tabular-nums">
+                        {r.actualNetSales ? `PKR ${formatPKR(r.actualNetSales)}` : '—'}
                       </td>
                     </tr>
                   ))
                 )}
               </tbody>
               {records.length > 0 && (
-                <tfoot className="bg-[#F8FAFC] font-bold text-[#23151D] border-t-2 border-slate-200 text-[13px]">
+                <tfoot className="border-t-2 border-slate-200/80 bg-white/90 text-xs font-bold text-slate-800">
                   <tr>
                     <td className="py-3.5 px-4 text-left">Totals</td>
                     <td className="py-3.5 px-4">—</td>
                     <td className="py-3.5 px-4">{records.length} Appointments</td>
                     <td className="py-3.5 px-4">—</td>
                     <td className="py-3.5 px-4">—</td>
-                    <td className="py-3.5 px-4 text-right text-[#9D2558]">
-                      {formatPKR(summary.totalQuotedValue)}
+                    <td className="py-3.5 px-4 text-right font-mono tabular-nums text-[#B82E69]">
+                      PKR {formatPKR(summary.totalQuotedValue)}
                     </td>
                     <td className="py-3.5 px-4">—</td>
                     <td className="py-3.5 px-4">—</td>
                     <td className="py-3.5 px-4">—</td>
-                    <td className="py-3.5 px-4 text-right text-[#23151D]">
-                      {formatPKR(summary.totalActualNetSales)}
+                    <td className="py-3.5 px-4 text-right font-mono tabular-nums text-slate-900">
+                      PKR {formatPKR(summary.totalActualNetSales)}
                     </td>
                   </tr>
                 </tfoot>
@@ -719,3 +844,5 @@ export const AppointmentReportPage: React.FC = () => {
     </div>
   );
 };
+
+export default AppointmentReportPage;

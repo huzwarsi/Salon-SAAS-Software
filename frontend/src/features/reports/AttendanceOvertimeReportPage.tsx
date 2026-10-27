@@ -355,18 +355,36 @@ export const AttendanceOvertimeReportPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9] px-4 py-5 md:px-8 md:py-6 text-slate-800">
-      {/* Top Header Card with Title & Filters */}
-      <div className="bg-white rounded-xl shadow-xs border border-slate-200/90 p-5 md:p-6 mb-6">
-        <div className="mb-5">
-          <h1 className="text-xl font-bold text-[#23151D] tracking-tight">Staff Attendance & Overtime Reports</h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Audit of staff attendance, working hours, punctuality, and overtime costs across branches.
-          </p>
-        </div>
+    <div className="w-full max-w-full space-y-6 text-slate-800 font-sans">
+      {/* ── 1. TOP HEADER BANNER (Frosted Glassmorphism) ── */}
+      <div className="relative overflow-hidden rounded-[24px] border border-white/90 bg-white/75 p-6 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-gradient-to-br from-[#B82E69]/10 via-[#D94883]/5 to-transparent blur-3xl" />
 
-        {/* Filters Form Row */}
-        <form onSubmit={handleApplyFilters} className="space-y-3">
+        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#B82E69] to-[#9D2558] text-white shadow-lg shadow-[#B82E69]/25">
+              <Clock className="h-6 w-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold tracking-tight text-[#18191B]">
+                  Staff Attendance & Overtime Reports
+                </h1>
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FDF2F5] text-[#B82E69] border border-[#B82E69]/20 uppercase tracking-wider">
+                  HR Timesheets
+                </span>
+              </div>
+              <p className="text-xs text-[#78616C] font-medium mt-0.5">
+                Audit of staff attendance, working hours, punctuality, and overtime costs across branches
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 2. FILTER CARD (Frosted Glass) ── */}
+      <div className="rounded-[24px] border border-white/90 bg-white/75 p-5 md:p-6 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+        <form onSubmit={handleApplyFilters} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
             {/* Branch */}
             <div>
@@ -491,7 +509,7 @@ export const AttendanceOvertimeReportPage: React.FC = () => {
             </div>
 
             {/* Search Query */}
-            <div className="md:col-span-4">
+            <div className="md:col-span-4 relative">
               <label className={labelClass}>Search</label>
               <input
                 type="text"
@@ -507,7 +525,7 @@ export const AttendanceOvertimeReportPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-[35px] bg-[#9D2558] hover:bg-[#851C47] active:bg-[#002b66] text-white font-medium text-xs rounded-md shadow-xs flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-70"
+                className="w-full h-9 bg-[#B82E69] hover:bg-[#A02358] active:bg-[#851C47] text-white font-semibold text-xs sm:text-sm rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-70"
               >
                 {isLoading ? (
                   <>
@@ -517,7 +535,7 @@ export const AttendanceOvertimeReportPage: React.FC = () => {
                 ) : (
                   <>
                     <Filter className="w-3.5 h-3.5 fill-current" />
-                    <span>Filter</span>
+                    <span>Apply Filters</span>
                   </>
                 )}
               </button>
@@ -526,152 +544,260 @@ export const AttendanceOvertimeReportPage: React.FC = () => {
         </form>
       </div>
 
-      {/* Main Content Area */}
-      {!hasFiltered ? (
-        /* Empty State before Filter clicked */
-        <div className="bg-white rounded-xl border border-slate-200/90 p-16 md:p-24 flex flex-col items-center justify-center min-h-[380px] shadow-xs text-center">
-          <div className="text-slate-400 mb-3">
-            <Filter className="w-14 h-14 stroke-[1.25] text-slate-400" />
+      {/* ── 3. ROW 3 PURE WHITE FROSTED BLUR KPI CARDS (when filtered) ── */}
+      {hasFiltered && reportData && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          {/* Card 1: Total Records */}
+          <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+            <div className="flex items-center justify-between relative z-10">
+              <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-blue-600">
+                <Clock className="w-4 h-4" />
+              </div>
+              <span className="bg-blue-50 text-blue-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                Logs
+              </span>
+            </div>
+            <div className="mt-3 relative z-10">
+              <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+                {reportData.rows.length}
+              </span>
+              <span className="text-xs text-[#78616C] font-medium mt-1 block">
+                Total attendance entries
+              </span>
+            </div>
           </div>
-          <p className="text-slate-400 text-sm font-medium">Please apply filters to view reports</p>
+
+          {/* Card 2: Scheduled Hours */}
+          <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+            <div className="flex items-center justify-between relative z-10">
+              <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-purple-600">
+                <Clock className="w-4 h-4" />
+              </div>
+              <span className="bg-purple-50 text-purple-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                Scheduled
+              </span>
+            </div>
+            <div className="mt-3 relative z-10">
+              <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+                {reportData.totals.scheduledHours.toFixed(1)}h
+              </span>
+              <span className="text-xs text-[#78616C] font-medium mt-1 block">
+                Roster planned work hours
+              </span>
+            </div>
+          </div>
+
+          {/* Card 3: Worked Hours */}
+          <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+            <div className="flex items-center justify-between relative z-10">
+              <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-emerald-600">
+                <Clock className="w-4 h-4" />
+              </div>
+              <span className="bg-emerald-50 text-emerald-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                Actual
+              </span>
+            </div>
+            <div className="mt-3 relative z-10">
+              <span className="text-2xl sm:text-3xl font-extrabold text-emerald-600 font-mono tabular-nums tracking-tight block">
+                {reportData.totals.workedHours.toFixed(1)}h
+              </span>
+              <span className="text-xs text-[#78616C] font-medium mt-1 block">
+                Punched recognized shift hours
+              </span>
+            </div>
+          </div>
+
+          {/* Card 4: Overtime Hours */}
+          <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+            <div className="flex items-center justify-between relative z-10">
+              <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-amber-600">
+                <Clock className="w-4 h-4" />
+              </div>
+              <span className="bg-amber-50 text-amber-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                Overtime
+              </span>
+            </div>
+            <div className="mt-3 relative z-10">
+              <span className="text-2xl sm:text-3xl font-extrabold text-amber-600 font-mono tabular-nums tracking-tight block">
+                {reportData.totals.otHours.toFixed(1)}h
+              </span>
+              <span className="text-xs text-[#78616C] font-medium mt-1 block">
+                Additional overtime hours logged
+              </span>
+            </div>
+          </div>
+
+          {/* Card 5: Overtime Cost */}
+          <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+            <div className="flex items-center justify-between relative z-10">
+              <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+                <Clock className="w-4 h-4" />
+              </div>
+              <span className="bg-[#FDF2F5] text-[#B82E69] shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                OT Expense
+              </span>
+            </div>
+            <div className="mt-3 relative z-10">
+              <span className="text-2xl sm:text-3xl font-extrabold text-[#B82E69] font-mono tabular-nums tracking-tight block">
+                PKR {formatPKR(reportData.totals.otAmount)}
+              </span>
+              <span className="text-xs text-[#78616C] font-medium mt-1 block">
+                Approved OT payout obligation
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── 4. MAIN CONTENT AREA: TABLE & STATES ── */}
+      {!hasFiltered ? (
+        <div className="rounded-[24px] border border-white/90 bg-white/75 p-16 md:p-24 flex flex-col items-center justify-center min-h-[380px] backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] text-center">
+          <div className="w-16 h-16 rounded-2xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69] mb-4">
+            <Filter className="w-8 h-8 stroke-[1.5]" />
+          </div>
+          <h3 className="text-base font-bold text-[#18191B]">No Filter Applied</h3>
+          <p className="text-xs text-[#78616C] mt-1 max-w-sm">
+            Select a branch, status, or date range above, then click &ldquo;Apply Filters&rdquo; to load staff timesheet reports.
+          </p>
         </div>
       ) : isLoading ? (
-        /* Loading Skeleton */
-        <div className="bg-white rounded-xl border border-slate-200/90 p-16 flex flex-col items-center justify-center min-h-[380px] shadow-xs text-center">
-          <div className="w-10 h-10 rounded-full border-3 border-[#F1DEE3] border-t-[#9D2558] animate-spin mb-3" />
-          <p className="text-slate-600 text-sm font-medium">Loading Attendance & Overtime Reports...</p>
+        <div className="rounded-[24px] border border-white/90 bg-white/75 p-16 flex flex-col items-center justify-center min-h-[380px] backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] text-center">
+          <div className="w-12 h-12 rounded-2xl bg-[#FDF2F5] border border-white/80 flex items-center justify-center text-[#B82E69] mb-4 shadow-sm animate-pulse">
+            <Loader2 className="w-6 h-6 animate-spin text-[#B82E69]" />
+          </div>
+          <p className="text-sm font-bold text-[#18191B]">Loading Attendance & Overtime Reports...</p>
+          <p className="text-xs text-[#78616C] mt-0.5">Fetching audited biometric shift records from server</p>
         </div>
       ) : errorMessage ? (
-        /* Error Message */
-        <div className="bg-white rounded-xl border border-rose-200 p-8 shadow-xs text-center">
-          <p className="text-rose-600 text-sm font-medium mb-3">{errorMessage}</p>
+        <div className="rounded-[24px] border border-rose-200/80 bg-white/85 p-8 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035)] text-center">
+          <p className="text-rose-600 text-sm font-semibold mb-3">{errorMessage}</p>
           <button
             onClick={() => handleApplyFilters()}
-            className="px-4 py-1.5 bg-[#9D2558] text-white text-xs font-semibold rounded-md shadow-xs hover:bg-[#851C47]"
+            className="px-4 py-2 bg-[#B82E69] text-white text-xs font-semibold rounded-xl shadow-xs hover:bg-[#A02358] transition-colors cursor-pointer"
           >
-            Retry
+            Retry Query
           </button>
         </div>
       ) : (
-        /* Filtered Data Layout */
-        <div className="shadow-sm rounded-xl overflow-hidden border border-slate-200/90 mb-8 bg-white">
-          {/* Royal Blue Banner Header */}
-          <div className="bg-[#9D2558] text-white px-5 py-3 flex flex-wrap items-center justify-between gap-3 rounded-t-xl">
-            <div className="flex items-center gap-2.5 font-bold text-sm tracking-wide text-white">
-              <Clock className="w-4 h-4 stroke-[2.5]" />
-              <span>Staff Attendance & Overtime Reports ({reportData?.rows.length ?? 0} records)</span>
+        /* Filtered Data Layout: Frosted Table Card */
+        <div className="rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] overflow-hidden">
+          {/* Header Bar */}
+          <div className="px-6 py-4 border-b border-white/80 bg-white/60 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5 font-bold text-sm tracking-tight text-[#18191B]">
+              <Clock className="w-4 h-4 text-[#B82E69]" />
+              <span>Staff Attendance & Overtime ({reportData?.rows.length ?? 0} records)</span>
             </div>
 
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={handleExportCsv}
-                className="bg-[#009688] hover:bg-[#00897B] active:bg-[#00796B] text-white text-xs font-semibold px-3.5 py-1.5 rounded-md shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/80 bg-white/80 hover:bg-white text-slate-700 shadow-2xs text-xs font-semibold transition-all cursor-pointer"
               >
-                <FileSpreadsheet className="w-3.5 h-3.5" />
+                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
                 <span>CSV</span>
               </button>
               <button
                 type="button"
                 onClick={handleExportExcel}
-                className="bg-[#DC2626] hover:bg-[#B91C1C] active:bg-[#991B1B] text-white text-xs font-semibold px-3.5 py-1.5 rounded-md shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/80 bg-white/80 hover:bg-white text-slate-700 shadow-2xs text-xs font-semibold transition-all cursor-pointer"
               >
-                <FileText className="w-3.5 h-3.5" />
+                <FileText className="w-3.5 h-3.5 text-rose-600" />
                 <span>PDF</span>
               </button>
               <button
                 type="button"
                 onClick={handlePrint}
-                className="bg-[#4B5563] hover:bg-[#374151] active:bg-[#1F2937] text-white text-xs font-semibold px-3.5 py-1.5 rounded-md shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/80 bg-white/80 hover:bg-white text-slate-700 shadow-2xs text-xs font-semibold transition-all cursor-pointer"
               >
-                <Printer className="w-3.5 h-3.5" />
+                <Printer className="w-3.5 h-3.5 text-slate-600" />
                 <span>Print</span>
               </button>
             </div>
           </div>
 
           {/* Table Container */}
-          <div className="bg-white overflow-x-auto rounded-b-xl border-t border-[#F1DEE3]/40">
-            <table className="report-records w-full text-left border-collapse min-w-[1100px] font-['Inter',sans-serif] text-[13px] antialiased">
+          <div className="overflow-x-auto">
+            <table className="report-records w-full text-left border-collapse min-w-[1100px] text-xs">
               <thead>
-                <tr className="bg-[#FDF2F5] border-b border-[#F1DEE3] text-[#475569] font-medium text-[13px]">
-                  <th className="py-3.5 px-4">Date</th>
-                  <th className="py-3.5 px-4">Staff Member</th>
-                  <th className="py-3.5 px-4">Branch</th>
-                  <th className="py-3.5 px-4">Shift</th>
-                  <th className="py-3.5 px-4">In / Out</th>
-                  <th className="py-3.5 px-4 text-right">Sched.</th>
-                  <th className="py-3.5 px-4 text-right">Worked</th>
-                  <th className="py-3.5 px-4">Late / Early</th>
-                  <th className="py-3.5 px-4">Status</th>
-                  <th className="py-3.5 px-4 text-center">Overtime</th>
-                  <th className="py-3.5 px-4 text-right">OT Amount</th>
-                  <th className="py-3.5 px-4">Approved By</th>
+                <tr className="border-b border-slate-200/80 bg-[#FDF2F5]/50 text-slate-600 font-bold">
+                  <th className="py-3 px-4">Date</th>
+                  <th className="py-3 px-4">Staff Member</th>
+                  <th className="py-3 px-4">Branch</th>
+                  <th className="py-3 px-4">Shift</th>
+                  <th className="py-3 px-4">In / Out</th>
+                  <th className="py-3 px-4 text-right">Sched.</th>
+                  <th className="py-3 px-4 text-right">Worked</th>
+                  <th className="py-3 px-4">Late / Early</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4 text-center">Overtime</th>
+                  <th className="py-3 px-4 text-right">OT Amount</th>
+                  <th className="py-3 px-4">Approved By</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-dashed divide-slate-200">
+              <tbody className="divide-y divide-slate-100">
                 {!reportData || reportData.rows.length === 0 ? (
                   <tr>
-                    <td colSpan={12} className="py-12 text-center text-slate-400">
+                    <td colSpan={12} className="py-16 text-center text-slate-400 font-medium">
                       No attendance and overtime records found for the selected criteria.
                     </td>
                   </tr>
                 ) : (
                   reportData.rows.map((r, i) => (
-                    <tr key={`${r.date}-${r.staffId}-${i}`} className="hover:bg-[#FDF2F5]/20 transition-colors border-b border-dashed border-slate-200">
-                      <td className="py-3.5 px-4 font-semibold text-[#23151D] whitespace-nowrap">
+                    <tr key={`${r.date}-${r.staffId}-${i}`} className="hover:bg-[#FDF2F5]/30 transition-colors">
+                      <td className="py-3 px-4 font-semibold text-slate-900 whitespace-nowrap font-mono">
                         {r.date}
                       </td>
-                      <td className="py-3.5 px-4 whitespace-nowrap">
+                      <td className="py-3 px-4 whitespace-nowrap">
                         <div className="font-semibold text-slate-900">{r.staffName}</div>
-                        <div className="text-[11px] text-slate-500">
+                        <div className="text-[11px] text-slate-400 font-mono">
                           {r.employeeCode} • {r.designation}
                         </div>
                       </td>
-                      <td className="py-3.5 px-4 text-slate-600 whitespace-nowrap">
+                      <td className="py-3 px-4 text-slate-600 whitespace-nowrap">
                         {r.branchName}
                       </td>
-                      <td className="py-3.5 px-4 text-slate-600 whitespace-nowrap text-[12px]">
+                      <td className="py-3 px-4 text-slate-600 whitespace-nowrap font-mono text-[11px]">
                         {r.shift}
                       </td>
-                      <td className="py-3.5 px-4 whitespace-nowrap text-[12px]">
-                        <span className="text-[#23151D] font-semibold">{r.checkIn}</span>
+                      <td className="py-3 px-4 whitespace-nowrap font-mono text-[11px]">
+                        <span className="text-slate-900 font-semibold">{r.checkIn}</span>
                         <span className="text-slate-400 mx-1">→</span>
                         <span className="text-slate-700">{r.checkOut}</span>
                       </td>
-                      <td className="py-3.5 px-4 text-right text-slate-600 whitespace-nowrap font-medium">
+                      <td className="py-3 px-4 text-right text-slate-600 whitespace-nowrap font-mono tabular-nums">
                         {r.scheduledHours}h
                       </td>
-                      <td className="py-3.5 px-4 text-right font-bold text-[#23151D] whitespace-nowrap">
+                      <td className="py-3 px-4 text-right font-bold text-slate-900 whitespace-nowrap font-mono tabular-nums">
                         {r.workedHours}h
                       </td>
-                      <td className="py-3.5 px-4 whitespace-nowrap text-[12px]">
+                      <td className="py-3 px-4 whitespace-nowrap text-[11px]">
                         {r.lateMinutes > 0 ? (
-                          <span className="text-[#9D2558] font-semibold">{r.lateMinutes}m late</span>
+                          <span className="text-[#B82E69] font-semibold">{r.lateMinutes}m late</span>
                         ) : r.earlyExitMinutes > 0 ? (
                           <span className="text-slate-600 font-semibold">{r.earlyExitMinutes}m early</span>
                         ) : (
-                          <span className="text-slate-500">On time</span>
+                          <span className="text-slate-400">On time</span>
                         )}
                       </td>
-                      <td className="py-3.5 px-4 whitespace-nowrap">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-[#FDF2F5] text-[#9D2558] border border-[#F1DEE3]">
+                      <td className="py-3 px-4 whitespace-nowrap">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FDF2F5] text-[#B82E69] border border-[#B82E69]/20">
                           {r.status}
                         </span>
                       </td>
-                      <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                      <td className="py-3 px-4 text-center whitespace-nowrap">
                         {r.otHours > 0 ? (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-[#23151D]">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200/60 font-mono">
                             {r.otHours.toFixed(1)}h {r.otStatus}
                           </span>
                         ) : (
                           <span className="text-slate-400 text-xs">—</span>
                         )}
                       </td>
-                      <td className="py-3.5 px-4 text-right font-semibold text-[#9D2558] whitespace-nowrap">
-                        {r.otAmount > 0 ? formatPKR(r.otAmount) : '—'}
+                      <td className="py-3 px-4 text-right font-bold text-[#B82E69] whitespace-nowrap font-mono tabular-nums">
+                        {r.otAmount > 0 ? `PKR ${formatPKR(r.otAmount)}` : '—'}
                       </td>
-                      <td className="py-3.5 px-4 text-slate-500 whitespace-nowrap text-[12px]">
+                      <td className="py-3 px-4 text-slate-500 whitespace-nowrap text-[11px]">
                         {r.otApprovedBy || '—'}
                       </td>
                     </tr>
@@ -679,26 +805,26 @@ export const AttendanceOvertimeReportPage: React.FC = () => {
                 )}
               </tbody>
               {reportData && reportData.rows.length > 0 && (
-                <tfoot className="bg-[#F8FAFC] font-bold text-[#23151D] border-t-2 border-slate-200 text-[13px]">
+                <tfoot className="border-t-2 border-slate-200/80 bg-white/90 text-xs font-bold text-slate-800">
                   <tr>
                     <td className="py-3.5 px-4 text-left">Totals</td>
                     <td className="py-3.5 px-4">—</td>
                     <td className="py-3.5 px-4">{reportData.rows.length} Records</td>
                     <td className="py-3.5 px-4">—</td>
                     <td className="py-3.5 px-4">—</td>
-                    <td className="py-3.5 px-4 text-right">
+                    <td className="py-3.5 px-4 text-right font-mono tabular-nums">
                       {reportData.totals.scheduledHours.toFixed(1)}h
                     </td>
-                    <td className="py-3.5 px-4 text-right text-[#23151D]">
+                    <td className="py-3.5 px-4 text-right font-mono tabular-nums text-slate-900">
                       {reportData.totals.workedHours.toFixed(1)}h
                     </td>
                     <td className="py-3.5 px-4">—</td>
                     <td className="py-3.5 px-4">—</td>
-                    <td className="py-3.5 px-4 text-center text-[#9D2558]">
+                    <td className="py-3.5 px-4 text-center font-mono tabular-nums text-amber-600">
                       {reportData.totals.otHours.toFixed(1)}h
                     </td>
-                    <td className="py-3.5 px-4 text-right text-[#9D2558]">
-                      {formatPKR(reportData.totals.otAmount)}
+                    <td className="py-3.5 px-4 text-right font-mono tabular-nums text-[#B82E69]">
+                      PKR {formatPKR(reportData.totals.otAmount)}
                     </td>
                     <td className="py-3.5 px-4">—</td>
                   </tr>
@@ -716,3 +842,5 @@ export const AttendanceOvertimeReportPage: React.FC = () => {
     </div>
   );
 };
+
+export default AttendanceOvertimeReportPage;

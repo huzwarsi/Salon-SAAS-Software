@@ -99,6 +99,7 @@ export const StaffCommissionPage: React.FC = () => {
 
   // Action loading
   const [actionLoading, setActionLoading] = useState<boolean>(false);
+  const [feedback, setFeedback] = useState<{ type: 'error' | 'success'; message: string } | null>(null);
 
   const effectiveBranchId = user.role === 'SUPER_ADMIN' ? selectedBranchId : (user.branchId || activeBranchId);
 

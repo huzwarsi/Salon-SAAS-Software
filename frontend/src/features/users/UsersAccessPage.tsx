@@ -444,45 +444,54 @@ export const UsersAccessPage: React.FC = () => {
   return (
     <div className="space-y-6 font-sans">
       {/* Title Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#9D2558] bg-[#FDF2F5] px-2 py-0.5 rounded border border-[#F1DEE3]">
-              {isSuperAdmin ? 'Enterprise Access Control' : `Branch Console · ${user.branchName}`}
-            </span>
-            <span className="text-slate-300">·</span>
-            <span className="text-xs text-slate-500 font-medium">Users & Permissions</span>
+      <div className="relative overflow-hidden rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl p-6 sm:p-7 shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#B82E69] to-[#851C47] text-white flex items-center justify-center shadow-[0_8px_20px_rgba(184,46,105,0.22)] shrink-0">
+              <ShieldCheck className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-[#B82E69] bg-[#FDF2F5] px-2.5 py-0.5 rounded-full border border-[#B82E69]/15">
+                  {isSuperAdmin ? 'Enterprise Access Control' : `Branch Console · ${user.branchName}`}
+                </span>
+                <span className="text-slate-300">·</span>
+                <span className="text-xs text-[#78616C] font-medium">Security & IAM</span>
+              </div>
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#18191B] mt-1">
+                Users & Permissions
+              </h1>
+              <p className="text-xs text-[#78616C] mt-0.5">
+                Manage authenticated portal accounts, branch scopes, and credential provisioning.
+              </p>
+            </div>
           </div>
-          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-slate-900 mt-1">
-            Users & Access Control
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Manage authenticated portal accounts, branch scopes, and credential provisioning.
-          </p>
-        </div>
 
-        <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto flex-wrap sm:flex-nowrap">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={loadData}
-            leftIcon={<RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />}
-          >
-            Refresh
-          </Button>
-          <Button
-            variant="default"
-            size="sm"
-            onClick={handleOpenAdd}
-            leftIcon={<Plus className="w-4 h-4" />}
-          >
-            Create User Account
-          </Button>
+          <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-auto flex-wrap sm:flex-nowrap">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={loadData}
+              leftIcon={<RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />}
+              className="text-xs font-semibold rounded-xl border-white/80 bg-white/70 hover:bg-white text-[#78616C]"
+            >
+              Refresh
+            </Button>
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handleOpenAdd}
+              leftIcon={<Plus className="w-4 h-4" />}
+              className="text-xs font-semibold rounded-xl bg-[#B82E69] hover:bg-[#A02358] text-white shadow-[0_4px_16px_rgba(184,46,105,0.22)]"
+            >
+              Create User Account
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-xl border border-slate-200/80 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 rounded-2xl border border-white/90 bg-white/75 backdrop-blur-2xl p-4 shadow-2xs">
         <div className="relative flex-1 max-w-md">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <Input
@@ -550,7 +559,7 @@ export const UsersAccessPage: React.FC = () => {
       </div>
 
       {/* Users Table */}
-      <Card padding="none" className="overflow-hidden">
+      <div className="rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] overflow-hidden">
         <div className="overflow-x-auto w-full">
           <Table className="min-w-[1050px] w-full">
             <TableHeader>
@@ -748,7 +757,7 @@ export const UsersAccessPage: React.FC = () => {
             </TableBody>
           </Table>
         </div>
-      </Card>
+      </div>
 
       {/* --- ADD USER MODAL --- */}
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>

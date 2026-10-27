@@ -436,45 +436,58 @@ export const DeviceIntegrationView: React.FC<DeviceIntegrationViewProps> = ({
   return (
     <div className="space-y-6">
       {/* HEADER BAR */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
-            <Cpu className="w-6 h-6 text-[#9D2558]" />
-            Connected Devices & Terminals
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Configure ZKTeco biometric punch terminals, ESC/POS thermal printers, barcode scanners, and payment card readers for {branchName || 'this branch'}.
-          </p>
-        </div>
+      <div className="relative overflow-hidden rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl p-6 sm:p-7 shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#B82E69] to-[#851C47] text-white flex items-center justify-center shadow-[0_8px_20px_rgba(184,46,105,0.22)] shrink-0">
+              <Cpu className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-[#B82E69] bg-[#FDF2F5] px-2.5 py-0.5 rounded-full border border-[#B82E69]/15">
+                  Hardware Integration
+                </span>
+                <span className="text-slate-300">·</span>
+                <span className="text-xs text-[#78616C] font-medium">Device Connectivity</span>
+              </div>
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#18191B] mt-1">
+                Connected Devices & Terminals
+              </h1>
+              <p className="text-xs text-[#78616C] mt-0.5">
+                Configure ZKTeco biometric punch terminals, ESC/POS thermal printers, barcode scanners, and payment card readers for {branchName || 'this branch'}.
+              </p>
+            </div>
+          </div>
 
-        <div className="flex flex-wrap items-center gap-2.5">
-          {branchSwitcher}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={loadDevices}
-            leftIcon={<RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />}
-            className="text-xs font-semibold"
-          >
-            Refresh
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            leftIcon={<Plus className="w-3.5 h-3.5" />}
-            onClick={() => {
-              handleDeviceTypeChange('BIOMETRIC_ATTENDANCE');
-              setFormData((prev) => ({
-                ...prev,
-                name: 'Main Entrance Biometric',
-                serialNumber: '',
-              }));
-              setIsAddModalOpen(true);
-            }}
-            className="text-xs font-semibold shadow-sm"
-          >
-            Add Hardware Device
-          </Button>
+          <div className="flex flex-wrap items-center gap-2.5">
+            {branchSwitcher}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={loadDevices}
+              leftIcon={<RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />}
+              className="text-xs font-semibold rounded-xl border-white/80 bg-white/70 hover:bg-white text-[#78616C]"
+            >
+              Refresh
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              leftIcon={<Plus className="w-3.5 h-3.5" />}
+              onClick={() => {
+                handleDeviceTypeChange('BIOMETRIC_ATTENDANCE');
+                setFormData((prev) => ({
+                  ...prev,
+                  name: 'Main Entrance Biometric',
+                  serialNumber: '',
+                }));
+                setIsAddModalOpen(true);
+              }}
+              className="text-xs font-semibold rounded-xl bg-[#B82E69] hover:bg-[#A02358] text-white shadow-[0_4px_16px_rgba(184,46,105,0.22)]"
+            >
+              Add Hardware Device
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -573,10 +586,10 @@ export const DeviceIntegrationView: React.FC<DeviceIntegrationViewProps> = ({
       </div>
 
       {/* DEVICES TABLE */}
-      <Card padding="none" className="bg-white border-slate-200 overflow-hidden shadow-sm">
+      <div className="rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] overflow-hidden">
         <div className="overflow-x-auto">
           <Table>
-            <TableHeader className="bg-slate-50/80">
+            <TableHeader className="bg-[#FAF8F9]/80 border-b border-black/5">
               <TableRow>
                 <TableHead className="text-xs font-semibold text-slate-700 py-3">Device / Hardware</TableHead>
                 <TableHead className="text-xs font-semibold text-slate-700 py-3">Category</TableHead>
@@ -770,7 +783,7 @@ export const DeviceIntegrationView: React.FC<DeviceIntegrationViewProps> = ({
             </TableBody>
           </Table>
         </div>
-      </Card>
+      </div>
 
       {/* ── MODAL: ADD / EDIT DEVICE ────────────────────────────────────────── */}
       <Dialog

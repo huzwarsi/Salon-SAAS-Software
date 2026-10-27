@@ -329,18 +329,36 @@ export const TipsStatementPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9] px-4 py-5 md:px-8 md:py-6 text-slate-800">
-      {/* Top Header Card with Title & Filters */}
-      <div className="bg-white rounded-xl shadow-xs border border-slate-200/90 p-5 md:p-6 mb-6">
-        <div className="mb-5">
-          <h1 className="text-xl font-bold text-[#23151D] tracking-tight">Tips & Gratuity Financial Statement</h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Audit of tip collections, staff entitlements, disbursements, and unallocated pool reconciliation.
-          </p>
-        </div>
+    <div className="w-full max-w-full space-y-6 text-slate-800 font-sans">
+      {/* ── 1. TOP HEADER BANNER (Frosted Glassmorphism) ── */}
+      <div className="relative overflow-hidden rounded-[24px] border border-white/90 bg-white/75 p-6 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-gradient-to-br from-[#B82E69]/10 via-[#D94883]/5 to-transparent blur-3xl" />
 
-        {/* Filters Form Row */}
-        <form onSubmit={handleApplyFilters} className="space-y-3">
+        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#B82E69] to-[#9D2558] text-white shadow-lg shadow-[#B82E69]/25">
+              <Coins className="h-6 w-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold tracking-tight text-[#18191B]">
+                  Tips & Gratuity Financial Statement
+                </h1>
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FDF2F5] text-[#B82E69] border border-[#B82E69]/20 uppercase tracking-wider">
+                  Gratuity Ledger
+                </span>
+              </div>
+              <p className="text-xs text-[#78616C] font-medium mt-0.5">
+                Audit of client tip collections at POS, staff entitlements, cash/bank disbursements, and unallocated float reconciliation
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 2. FILTER CARD (Frosted Glass) ── */}
+      <div className="rounded-[24px] border border-white/90 bg-white/75 p-5 md:p-6 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+        <form onSubmit={handleApplyFilters} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
             {/* Branch */}
             <div>
@@ -443,15 +461,18 @@ export const TipsStatementPage: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-3.5 items-end">
             {/* Search Query */}
-            <div className="md:col-span-5">
+            <div className="md:col-span-5 relative">
               <label className={labelClass}>Search</label>
-              <input
-                type="text"
-                placeholder="Search receipt #, invoice #, staff recipient..."
-                className={inputClass}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search receipt #, invoice #, staff recipient..."
+                  className={`${inputClass} pl-8.5`}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
             </div>
 
             {/* Filter Action Button */}
@@ -459,7 +480,7 @@ export const TipsStatementPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full h-[35px] bg-[#9D2558] hover:bg-[#851C47] active:bg-[#002b66] text-white font-medium text-xs rounded-md shadow-xs flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-70"
+                className="w-full h-9 bg-[#B82E69] hover:bg-[#A02358] active:bg-[#851C47] text-white font-semibold text-xs sm:text-sm rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-70"
               >
                 {loading ? (
                   <>
@@ -469,7 +490,7 @@ export const TipsStatementPage: React.FC = () => {
                 ) : (
                   <>
                     <Filter className="w-3.5 h-3.5 fill-current" />
-                    <span>Filter</span>
+                    <span>Apply Filters</span>
                   </>
                 )}
               </button>
@@ -478,50 +499,160 @@ export const TipsStatementPage: React.FC = () => {
         </form>
       </div>
 
-      {/* Main Content Area */}
-      {!hasFiltered ? (
-        /* Empty State before Filter clicked */
-        <div className="bg-white rounded-xl border border-slate-200/90 p-16 md:p-24 flex flex-col items-center justify-center min-h-[380px] shadow-xs text-center">
-          <div className="text-slate-400 mb-3">
-            <Filter className="w-14 h-14 stroke-[1.25] text-slate-400" />
+      {/* ── 3. ROW 3 PURE WHITE FROSTED BLUR FINANCIAL KPI CARDS (when filtered) ── */}
+      {hasFiltered && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          {/* Card 1: Opening Gratuity Liability */}
+          <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+            <div className="flex items-center justify-between relative z-10">
+              <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-slate-600">
+                <Scale className="w-4 h-4" />
+              </div>
+              <span className="bg-slate-100 text-slate-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                Opening
+              </span>
+            </div>
+            <div className="mt-3 relative z-10">
+              <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+                PKR {formatCurrency(summary.openingLiability)}
+              </span>
+              <span className="text-xs text-[#78616C] font-medium mt-1 block">
+                Unsettled balance prior
+              </span>
+            </div>
           </div>
-          <p className="text-slate-400 text-sm font-medium">Please apply filters to view reports</p>
+
+          {/* Card 2: Net Tips Collected at POS */}
+          <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+            <div className="flex items-center justify-between relative z-10">
+              <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-emerald-600">
+                <Coins className="w-4 h-4" />
+              </div>
+              <span className="bg-emerald-50 text-emerald-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                Inflow (+)
+              </span>
+            </div>
+            <div className="mt-3 relative z-10">
+              <span className="text-2xl sm:text-3xl font-extrabold text-emerald-600 font-mono tabular-nums tracking-tight block">
+                +PKR {formatCurrency(summary.netTipsCollected)}
+              </span>
+              <span className="text-xs text-[#78616C] font-medium mt-1 block">
+                {summary.receiptsCount} client receipts collected
+              </span>
+            </div>
+          </div>
+
+          {/* Card 3: Net Payouts Disbursed to Staff */}
+          <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+            <div className="flex items-center justify-between relative z-10">
+              <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-rose-600">
+                <CheckCircle2 className="w-4 h-4" />
+              </div>
+              <span className="bg-rose-50 text-rose-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                Outflow (−)
+              </span>
+            </div>
+            <div className="mt-3 relative z-10">
+              <span className="text-2xl sm:text-3xl font-extrabold text-rose-600 font-mono tabular-nums tracking-tight block">
+                -PKR {formatCurrency(summary.netPayouts)}
+              </span>
+              <span className="text-xs text-[#78616C] font-medium mt-1 block">
+                {summary.payoutsCount} staff payouts disbursed
+              </span>
+            </div>
+          </div>
+
+          {/* Card 4: Closing Gratuity Liability */}
+          <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+            <div className="flex items-center justify-between relative z-10">
+              <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+                <Scale className="w-4 h-4" />
+              </div>
+              <span className="bg-[#FDF2F5] text-[#B82E69] shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                Closing
+              </span>
+            </div>
+            <div className="mt-3 relative z-10">
+              <span className="text-2xl sm:text-3xl font-extrabold text-[#B82E69] font-mono tabular-nums tracking-tight block">
+                PKR {formatCurrency(summary.closingLiability)}
+              </span>
+              <span className="text-xs text-[#78616C] font-medium mt-1 block">
+                Net liability payable to staff
+              </span>
+            </div>
+          </div>
+
+          {/* Card 5: Unallocated Tips Pool */}
+          <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+            <div className="flex items-center justify-between relative z-10">
+              <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-amber-600">
+                <AlertTriangle className="w-4 h-4" />
+              </div>
+              <span className="bg-amber-50 text-amber-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                Unallocated
+              </span>
+            </div>
+            <div className="mt-3 relative z-10">
+              <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+                PKR {formatCurrency(summary.unallocatedTips)}
+              </span>
+              <span className="text-xs text-[#78616C] font-medium mt-1 block">
+                Collected but unassigned float
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── 4. MAIN CONTENT AREA: TABLE & STATES ── */}
+      {!hasFiltered ? (
+        <div className="rounded-[24px] border border-white/90 bg-white/75 p-16 md:p-24 flex flex-col items-center justify-center min-h-[380px] backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] text-center">
+          <div className="w-16 h-16 rounded-2xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69] mb-4">
+            <Filter className="w-8 h-8 stroke-[1.5]" />
+          </div>
+          <h3 className="text-base font-bold text-[#18191B]">No Filter Applied</h3>
+          <p className="text-xs text-[#78616C] mt-1 max-w-sm">
+            Select a branch and date range above, then click &ldquo;Apply Filters&rdquo; to load tip financial ledger statements.
+          </p>
         </div>
       ) : loading ? (
-        /* Loading Skeleton */
-        <div className="bg-white rounded-xl border border-slate-200/90 p-16 flex flex-col items-center justify-center min-h-[380px] shadow-xs text-center">
-          <div className="w-10 h-10 rounded-full border-3 border-[#F1DEE3] border-t-[#9D2558] animate-spin mb-3" />
-          <p className="text-slate-600 text-sm font-medium">Reconciling Tip Ledger Records...</p>
+        <div className="rounded-[24px] border border-white/90 bg-white/75 p-16 flex flex-col items-center justify-center min-h-[380px] backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] text-center">
+          <div className="w-12 h-12 rounded-2xl bg-[#FDF2F5] border border-white/80 flex items-center justify-center text-[#B82E69] mb-4 shadow-sm animate-pulse">
+            <Loader2 className="w-6 h-6 animate-spin text-[#B82E69]" />
+          </div>
+          <p className="text-sm font-bold text-[#18191B]">Reconciling Tip Ledger Records...</p>
+          <p className="text-xs text-[#78616C] mt-0.5">Calculating staff tip allocations and disbursements from server</p>
         </div>
       ) : errorMessage ? (
-        /* Error Message */
-        <div className="bg-white rounded-xl border border-rose-200 p-8 shadow-xs text-center">
-          <p className="text-rose-600 text-sm font-medium mb-3">{errorMessage}</p>
+        <div className="rounded-[24px] border border-rose-200/80 bg-white/85 p-8 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035)] text-center">
+          <p className="text-rose-600 text-sm font-semibold mb-3">{errorMessage}</p>
           <button
             onClick={() => handleApplyFilters()}
-            className="px-4 py-1.5 bg-[#9D2558] text-white text-xs font-semibold rounded-md shadow-xs hover:bg-[#851C47]"
+            className="px-4 py-2 bg-[#B82E69] text-white text-xs font-semibold rounded-xl shadow-xs hover:bg-[#A02358] transition-colors cursor-pointer"
           >
-            Retry
+            Retry Query
           </button>
         </div>
       ) : (
-        /* Filtered Data Layout */
-        <div className="shadow-sm rounded-xl overflow-hidden border border-slate-200/90 mb-8 bg-white">
-          {/* Royal Blue Banner Header */}
-          <div className="bg-[#9D2558] text-white px-5 py-3 flex flex-wrap items-center justify-between gap-3 rounded-t-xl">
+        /* Filtered Data Layout: Frosted Table Card */
+        <div className="rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] overflow-hidden">
+          {/* Header Bar with View Switcher Tabs & Export Actions */}
+          <div className="px-6 py-4 border-b border-white/80 bg-white/60 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 font-bold text-sm tracking-wide text-white">
-                <Coins className="w-4 h-4 stroke-[2.5]" />
-                <span>Tips Financial Statement</span>
+              <div className="flex items-center gap-2 font-bold text-sm tracking-tight text-[#18191B]">
+                <Coins className="w-4 h-4 text-[#B82E69]" />
+                <span>Tips Statement Ledger</span>
               </div>
-              <div className="flex items-center bg-black/15 p-0.5 rounded-lg border border-white/10">
+
+              {/* View Switcher Tabs */}
+              <div className="flex items-center bg-slate-100/70 p-1 rounded-xl border border-white/80 text-xs">
                 <button
                   type="button"
                   onClick={() => setActiveTab('SUMMARY')}
-                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
                     activeTab === 'SUMMARY'
-                      ? 'bg-white text-[#9D2558] shadow-xs'
-                      : 'text-white/80 hover:text-white'
+                      ? 'bg-white text-[#B82E69] shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   Summary
@@ -529,10 +660,10 @@ export const TipsStatementPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setActiveTab('COLLECTIONS')}
-                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
                     activeTab === 'COLLECTIONS'
-                      ? 'bg-white text-[#9D2558] shadow-xs'
-                      : 'text-white/80 hover:text-white'
+                      ? 'bg-white text-[#B82E69] shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   Collections ({filteredReceipts.length})
@@ -540,10 +671,10 @@ export const TipsStatementPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setActiveTab('ALLOCATIONS')}
-                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
                     activeTab === 'ALLOCATIONS'
-                      ? 'bg-white text-[#9D2558] shadow-xs'
-                      : 'text-white/80 hover:text-white'
+                      ? 'bg-white text-[#B82E69] shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   Allocations ({filteredAllocations.length})
@@ -551,10 +682,10 @@ export const TipsStatementPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setActiveTab('PAYOUTS')}
-                  className={`px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
                     activeTab === 'PAYOUTS'
-                      ? 'bg-white text-[#9D2558] shadow-xs'
-                      : 'text-white/80 hover:text-white'
+                      ? 'bg-white text-[#B82E69] shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   Disbursements ({filteredPayouts.length})
@@ -562,168 +693,169 @@ export const TipsStatementPage: React.FC = () => {
               </div>
             </div>
 
+            {/* Export Buttons */}
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={handleExportCSV}
-                className="bg-[#009688] hover:bg-[#00897B] active:bg-[#00796B] text-white text-xs font-semibold px-3.5 py-1.5 rounded-md shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/80 bg-white/80 hover:bg-white text-slate-700 shadow-2xs text-xs font-semibold transition-all cursor-pointer"
               >
-                <FileSpreadsheet className="w-3.5 h-3.5" />
+                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
                 <span>CSV</span>
               </button>
               <button
                 type="button"
                 onClick={handleExportExcel}
-                className="bg-[#DC2626] hover:bg-[#B91C1C] active:bg-[#991B1B] text-white text-xs font-semibold px-3.5 py-1.5 rounded-md shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/80 bg-white/80 hover:bg-white text-slate-700 shadow-2xs text-xs font-semibold transition-all cursor-pointer"
               >
-                <FileText className="w-3.5 h-3.5" />
+                <FileText className="w-3.5 h-3.5 text-rose-600" />
                 <span>PDF</span>
               </button>
               <button
                 type="button"
                 onClick={handlePrint}
-                className="bg-[#4B5563] hover:bg-[#374151] active:bg-[#1F2937] text-white text-xs font-semibold px-3.5 py-1.5 rounded-md shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/80 bg-white/80 hover:bg-white text-slate-700 shadow-2xs text-xs font-semibold transition-all cursor-pointer"
               >
-                <Printer className="w-3.5 h-3.5" />
+                <Printer className="w-3.5 h-3.5 text-slate-600" />
                 <span>Print</span>
               </button>
             </div>
           </div>
 
           {/* Table Container */}
-          <div className="bg-white overflow-x-auto rounded-b-xl border-t border-[#F1DEE3]/40">
+          <div className="overflow-x-auto">
             {activeTab === 'SUMMARY' ? (
-              <table className="report-records w-full text-left border-collapse min-w-[800px] font-['Inter',sans-serif] text-[13px] antialiased">
+              <table className="report-records w-full text-left border-collapse min-w-[800px] text-xs">
                 <thead>
-                  <tr className="bg-[#FDF2F5] border-b border-[#F1DEE3] text-[#475569] font-medium text-[13px]">
-                    <th className="py-3.5 px-4">Financial Liability Metric</th>
-                    <th className="py-3.5 px-4 text-center">Accounting Classification</th>
-                    <th className="py-3.5 px-4 text-right">Balance (PKR)</th>
-                    <th className="py-3.5 px-4">Notes</th>
+                  <tr className="border-b border-slate-200/80 bg-[#FDF2F5]/50 text-slate-600 font-bold">
+                    <th className="py-3 px-4">Financial Liability Metric</th>
+                    <th className="py-3 px-4 text-center">Accounting Classification</th>
+                    <th className="py-3 px-4 text-right">Balance (PKR)</th>
+                    <th className="py-3 px-4">Notes</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-dashed divide-slate-200">
-                  <tr className="hover:bg-[#FDF2F5]/20 transition-colors">
-                    <td className="py-3.5 px-4 font-semibold text-[#23151D]">Opening Gratuity Liability</td>
-                    <td className="py-3.5 px-4 text-center">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700">
+                <tbody className="divide-y divide-slate-100">
+                  <tr className="hover:bg-[#FDF2F5]/30 transition-colors">
+                    <td className="py-3 px-4 font-semibold text-slate-900">Opening Gratuity Liability</td>
+                    <td className="py-3 px-4 text-center">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
                         OPENING BALANCE
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-right font-mono font-bold text-[#23151D]">
+                    <td className="py-3 px-4 text-right font-mono font-bold text-slate-900 tabular-nums">
                       {formatCurrency(summary.openingLiability)}
                     </td>
-                    <td className="py-3.5 px-4 text-slate-500">Unsettled tip balance prior to {startDate}</td>
+                    <td className="py-3 px-4 text-slate-500">Unsettled tip balance prior to {startDate}</td>
                   </tr>
-                  <tr className="hover:bg-[#FDF2F5]/20 transition-colors">
-                    <td className="py-3.5 px-4 font-semibold text-[#23151D]">Net Tips Collected at POS</td>
-                    <td className="py-3.5 px-4 text-center">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-[#FDF2F5] text-[#9D2558] border border-[#F1DEE3]">
+                  <tr className="hover:bg-[#FDF2F5]/30 transition-colors">
+                    <td className="py-3 px-4 font-semibold text-slate-900">Net Tips Collected at POS</td>
+                    <td className="py-3 px-4 text-center">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
                         PERIOD INFLOW (+)
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-right font-mono font-bold text-[#9D2558]">
-                      {formatCurrency(summary.netTipsCollected)}
+                    <td className="py-3 px-4 text-right font-mono font-bold text-emerald-600 tabular-nums">
+                      +{formatCurrency(summary.netTipsCollected)}
                     </td>
-                    <td className="py-3.5 px-4 text-slate-500">{summary.receiptsCount} client receipts posted</td>
+                    <td className="py-3 px-4 text-slate-500">{summary.receiptsCount} client receipts posted</td>
                   </tr>
-                  <tr className="hover:bg-[#FDF2F5]/20 transition-colors">
-                    <td className="py-3.5 px-4 font-semibold text-[#23151D]">Net Payouts Disbursed to Staff</td>
-                    <td className="py-3.5 px-4 text-center">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700">
-                        PERIOD OUTFLOW (-)
+                  <tr className="hover:bg-[#FDF2F5]/30 transition-colors">
+                    <td className="py-3 px-4 font-semibold text-slate-900">Net Payouts Disbursed to Staff</td>
+                    <td className="py-3 px-4 text-center">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200/60">
+                        PERIOD OUTFLOW (−)
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-800">
-                      {formatCurrency(summary.netPayouts)}
+                    <td className="py-3 px-4 text-right font-mono font-bold text-rose-600 tabular-nums">
+                      -{formatCurrency(summary.netPayouts)}
                     </td>
-                    <td className="py-3.5 px-4 text-slate-500">{summary.payoutsCount} staff cash/bank payouts</td>
+                    <td className="py-3 px-4 text-slate-500">{summary.payoutsCount} staff cash/bank payouts</td>
                   </tr>
-                  <tr className="bg-slate-100/70 border-t-2 border-b-2 border-slate-300 font-bold text-[#23151D]">
+                  <tr className="bg-[#FDF2F5]/60 border-t-2 border-b-2 border-slate-200/80 font-bold text-slate-900">
                     <td className="py-3 px-4 font-black">Closing Gratuity Liability</td>
                     <td className="py-3 px-4 text-center">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-black bg-[#23151D] text-white">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-[#B82E69] text-white">
                         CLOSING BALANCE
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-right font-mono text-sm font-black text-[#23151D]">
+                    <td className="py-3 px-4 text-right font-mono text-sm font-black text-[#B82E69] tabular-nums">
                       {formatCurrency(summary.closingLiability)}
                     </td>
-                    <td className="py-3 px-4 text-slate-600 font-medium">Net liability owed as of {endDate}</td>
+                    <td className="py-3 px-4 text-slate-600 font-semibold">
+                      Current staff liability (Opening + Inflows − Outflows)
+                    </td>
                   </tr>
-                  <tr className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-2.5 px-4 font-medium text-slate-800 pl-8">• Unallocated Gratuity Pool</td>
-                    <td className="py-2.5 px-4 text-center">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-600">
-                        RESERVE POOL
+                  <tr className="hover:bg-[#FDF2F5]/30 transition-colors">
+                    <td className="py-3 px-4 font-medium text-slate-700">Unallocated Tips (Float pool)</td>
+                    <td className="py-3 px-4 text-center">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200/60">
+                        UNASSIGNED POOL
                       </span>
                     </td>
-                    <td className="py-2.5 px-4 text-right font-mono font-semibold text-slate-700">
+                    <td className="py-3 px-4 text-right font-mono font-semibold text-amber-600 tabular-nums">
                       {formatCurrency(summary.unallocatedTips)}
                     </td>
-                    <td className="py-2.5 px-4 text-slate-400">Tips collected but not yet assigned to staff</td>
+                    <td className="py-3 px-4 text-slate-500">Collected at POS but not yet assigned to stylists</td>
                   </tr>
-                  <tr className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-2.5 px-4 font-medium text-slate-800 pl-8">• Staff Payable (Allocated Unpaid)</td>
-                    <td className="py-2.5 px-4 text-center">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-[#FDF2F5] text-[#9D2558]">
+                  <tr className="hover:bg-[#FDF2F5]/30 transition-colors">
+                    <td className="py-3 px-4 font-medium text-slate-700">Allocated Tips Awaiting Payout</td>
+                    <td className="py-3 px-4 text-center">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200/60">
                         STAFF PAYABLE
                       </span>
                     </td>
-                    <td className="py-2.5 px-4 text-right font-mono font-bold text-[#9D2558]">
+                    <td className="py-3 px-4 text-right font-mono font-semibold text-blue-600 tabular-nums">
                       {formatCurrency(summary.allocatedUnpaidTips)}
                     </td>
-                    <td className="py-3.5 px-4 text-slate-400">Assigned entitlements awaiting disbursement</td>
+                    <td className="py-3 px-4 text-slate-500">Assigned to staff accounts; pending disbursement</td>
                   </tr>
                 </tbody>
               </table>
             ) : activeTab === 'COLLECTIONS' ? (
-              <table className="report-records w-full text-left border-collapse min-w-[900px] font-['Inter',sans-serif] text-[13px] antialiased">
+              <table className="report-records w-full text-left border-collapse min-w-[900px] text-xs">
                 <thead>
-                  <tr className="bg-[#FDF2F5] border-b border-[#F1DEE3] text-[#475569] font-medium text-[13px]">
-                    <th className="py-3.5 px-4">Receipt #</th>
-                    <th className="py-3.5 px-4">Date & Time</th>
-                    <th className="py-3.5 px-4">Invoice #</th>
-                    <th className="py-3.5 px-4">Client</th>
-                    <th className="py-3.5 px-4">Channel</th>
-                    <th className="py-3.5 px-4 text-right">Collected Amount</th>
-                    <th className="py-3.5 px-4 text-right">Allocated</th>
-                    <th className="py-3.5 px-4 text-right">Unallocated</th>
-                    <th className="py-3.5 px-4 text-center">Status</th>
+                  <tr className="border-b border-slate-200/80 bg-[#FDF2F5]/50 text-slate-600 font-bold">
+                    <th className="py-3 px-4">Receipt #</th>
+                    <th className="py-3 px-4">Date & Time</th>
+                    <th className="py-3 px-4">Invoice #</th>
+                    <th className="py-3 px-4">Client</th>
+                    <th className="py-3 px-4">Channel</th>
+                    <th className="py-3 px-4 text-right">Collected</th>
+                    <th className="py-3 px-4 text-right">Allocated</th>
+                    <th className="py-3 px-4 text-right">Unallocated</th>
+                    <th className="py-3 px-4 text-center">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-dashed divide-slate-200">
+                <tbody className="divide-y divide-slate-100">
                   {filteredReceipts.length === 0 ? (
                     <tr>
-                      <td colSpan={9} className="py-12 text-center text-slate-400">
-                        No tip receipts found matching the filter criteria.
+                      <td colSpan={9} className="py-16 text-center text-slate-400 font-medium">
+                        No tip receipts found matching criteria.
                       </td>
                     </tr>
                   ) : (
                     filteredReceipts.map((r) => (
-                      <tr key={r.id} className="hover:bg-[#FDF2F5]/20 transition-colors border-b border-dashed border-slate-200">
-                        <td className="py-3.5 px-4 font-mono font-semibold text-slate-900">{r.receiptNumber}</td>
-                        <td className="py-3.5 px-4 text-slate-600">
-                          {r.collectionDate} <span className="text-slate-400 text-[11px]">{r.collectionTime}</span>
-                        </td>
-                        <td className="py-3.5 px-4 font-mono text-slate-700">{r.invoiceNumber}</td>
-                        <td className="py-3.5 px-4 font-medium text-slate-900">{r.clientName}</td>
-                        <td className="py-3.5 px-4">
-                          <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium text-[11px]">
-                            {r.method === 'CASH' ? 'Cash Float' : r.paymentAccountName || 'Online Account'}
+                      <tr key={r.id} className="hover:bg-[#FDF2F5]/30 transition-colors">
+                        <td className="py-3 px-4 font-mono font-bold text-[#B82E69]">{r.receiptNumber}</td>
+                        <td className="py-3 px-4 whitespace-nowrap text-slate-600 font-mono">{r.collectionDate} <span className="text-slate-400 text-[11px]">{r.collectionTime}</span></td>
+                        <td className="py-3 px-4 font-mono text-slate-700">{r.invoiceNumber}</td>
+                        <td className="py-3 px-4 text-slate-800 font-medium">{r.clientName}</td>
+                        <td className="py-3 px-4">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
+                            {r.method === 'CASH' ? 'Cash Float' : 'Bank / Online'}
                           </span>
                         </td>
-                        <td className="py-3.5 px-4 text-right font-bold text-[#23151D]">
+                        <td className="py-3 px-4 text-right font-mono font-bold text-slate-900 tabular-nums">
                           {formatCurrency(r.collectedAmount)}
                         </td>
-                        <td className="py-3.5 px-4 text-right font-semibold text-[#9D2558]">
+                        <td className="py-3 px-4 text-right font-mono text-emerald-600 tabular-nums">
                           {formatCurrency(r.allocatedAmount)}
                         </td>
-                        <td className="py-3.5 px-4 text-right font-medium text-slate-600">
+                        <td className="py-3 px-4 text-right font-mono text-amber-600 tabular-nums">
                           {formatCurrency(r.unallocatedAmount)}
                         </td>
-                        <td className="py-3.5 px-4 text-center">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-[#FDF2F5] text-[#9D2558] border border-[#F1DEE3]">
+                        <td className="py-3 px-4 text-center">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FDF2F5] text-[#B82E69] border border-[#B82E69]/20">
                             {r.status}
                           </span>
                         </td>
@@ -732,20 +864,20 @@ export const TipsStatementPage: React.FC = () => {
                   )}
                 </tbody>
                 {filteredReceipts.length > 0 && (
-                  <tfoot className="bg-[#F8FAFC] font-bold text-[#23151D] border-t-2 border-slate-200 text-[13px]">
+                  <tfoot className="border-t-2 border-slate-200/80 bg-white/90 text-xs font-bold text-slate-800">
                     <tr>
                       <td className="py-3.5 px-4 text-left">Totals</td>
                       <td className="py-3.5 px-4">—</td>
                       <td className="py-3.5 px-4">{filteredReceipts.length} Receipts</td>
                       <td className="py-3.5 px-4">—</td>
                       <td className="py-3.5 px-4">—</td>
-                      <td className="py-3.5 px-4 text-right text-[#23151D]">
+                      <td className="py-3.5 px-4 text-right font-mono tabular-nums text-slate-900">
                         {formatCurrency(filteredReceipts.reduce((s, r) => s + r.collectedAmount, 0))}
                       </td>
-                      <td className="py-3.5 px-4 text-right text-[#9D2558]">
+                      <td className="py-3.5 px-4 text-right font-mono tabular-nums text-emerald-600">
                         {formatCurrency(filteredReceipts.reduce((s, r) => s + r.allocatedAmount, 0))}
                       </td>
-                      <td className="py-3.5 px-4 text-right">
+                      <td className="py-3.5 px-4 text-right font-mono tabular-nums text-amber-600">
                         {formatCurrency(filteredReceipts.reduce((s, r) => s + r.unallocatedAmount, 0))}
                       </td>
                       <td className="py-3.5 px-4"></td>
@@ -754,50 +886,50 @@ export const TipsStatementPage: React.FC = () => {
                 )}
               </table>
             ) : activeTab === 'ALLOCATIONS' ? (
-              <table className="report-records w-full text-left border-collapse min-w-[900px] font-['Inter',sans-serif] text-[13px] antialiased">
+              <table className="report-records w-full text-left border-collapse min-w-[900px] text-xs">
                 <thead>
-                  <tr className="bg-[#FDF2F5] border-b border-[#F1DEE3] text-[#475569] font-medium text-[13px]">
-                    <th className="py-3.5 px-4">Allocation #</th>
-                    <th className="py-3.5 px-4">Date</th>
-                    <th className="py-3.5 px-4">Tip Receipt #</th>
-                    <th className="py-3.5 px-4">Staff Recipient</th>
-                    <th className="py-3.5 px-4 text-center">Type</th>
-                    <th className="py-3.5 px-4 text-right">Allocated Amount</th>
-                    <th className="py-3.5 px-4 text-right">Disbursed (Paid)</th>
-                    <th className="py-3.5 px-4 text-right">Outstanding</th>
-                    <th className="py-3.5 px-4 text-center">Status</th>
+                  <tr className="border-b border-slate-200/80 bg-[#FDF2F5]/50 text-slate-600 font-bold">
+                    <th className="py-3 px-4">Allocation #</th>
+                    <th className="py-3 px-4">Date</th>
+                    <th className="py-3 px-4">Receipt #</th>
+                    <th className="py-3 px-4">Staff Recipient</th>
+                    <th className="py-3 px-4 text-center">Type</th>
+                    <th className="py-3 px-4 text-right">Allocated</th>
+                    <th className="py-3 px-4 text-right">Disbursed (Paid)</th>
+                    <th className="py-3 px-4 text-right">Outstanding</th>
+                    <th className="py-3 px-4 text-center">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-dashed divide-slate-200">
+                <tbody className="divide-y divide-slate-100">
                   {filteredAllocations.length === 0 ? (
                     <tr>
-                      <td colSpan={9} className="py-12 text-center text-slate-400">
-                        No tip allocations found matching the filter criteria.
+                      <td colSpan={9} className="py-16 text-center text-slate-400 font-medium">
+                        No tip allocations found matching criteria.
                       </td>
                     </tr>
                   ) : (
                     filteredAllocations.map((a) => (
-                      <tr key={a.id} className="hover:bg-[#FDF2F5]/20 transition-colors border-b border-dashed border-slate-200">
-                        <td className="py-3.5 px-4 font-mono font-semibold text-slate-900">{a.allocationNumber}</td>
-                        <td className="py-3.5 px-4 text-slate-600">{a.allocationDate}</td>
-                        <td className="py-3.5 px-4 font-mono text-slate-700">{a.tipReceiptNumber}</td>
-                        <td className="py-3.5 px-4 font-semibold text-[#23151D]">{a.staffName}</td>
-                        <td className="py-3.5 px-4 text-center">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700">
+                      <tr key={a.id} className="hover:bg-[#FDF2F5]/30 transition-colors">
+                        <td className="py-3 px-4 font-mono font-bold text-[#B82E69]">{a.allocationNumber}</td>
+                        <td className="py-3 px-4 whitespace-nowrap text-slate-600 font-mono">{a.allocationDate}</td>
+                        <td className="py-3 px-4 font-mono text-slate-700">{a.tipReceiptNumber}</td>
+                        <td className="py-3 px-4 font-semibold text-slate-900">{a.staffName}</td>
+                        <td className="py-3 px-4 text-center">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
                             {a.allocationType}
                           </span>
                         </td>
-                        <td className="py-3.5 px-4 text-right font-bold text-[#23151D]">
+                        <td className="py-3 px-4 text-right font-mono font-bold text-slate-900 tabular-nums">
                           {formatCurrency(a.amount)}
                         </td>
-                        <td className="py-3.5 px-4 text-right font-semibold text-slate-700">
+                        <td className="py-3 px-4 text-right font-mono font-semibold text-slate-600 tabular-nums">
                           {formatCurrency(a.paidAmount)}
                         </td>
-                        <td className="py-3.5 px-4 text-right font-bold text-[#9D2558]">
+                        <td className="py-3 px-4 text-right font-mono font-bold text-[#B82E69] tabular-nums">
                           {formatCurrency(a.outstandingAmount)}
                         </td>
-                        <td className="py-3.5 px-4 text-center">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-[#FDF2F5] text-[#9D2558] border border-[#F1DEE3]">
+                        <td className="py-3 px-4 text-center">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FDF2F5] text-[#B82E69] border border-[#B82E69]/20">
                             {a.status}
                           </span>
                         </td>
@@ -806,20 +938,20 @@ export const TipsStatementPage: React.FC = () => {
                   )}
                 </tbody>
                 {filteredAllocations.length > 0 && (
-                  <tfoot className="bg-[#F8FAFC] font-bold text-[#23151D] border-t-2 border-slate-200 text-[13px]">
+                  <tfoot className="border-t-2 border-slate-200/80 bg-white/90 text-xs font-bold text-slate-800">
                     <tr>
                       <td className="py-3.5 px-4 text-left">Totals</td>
                       <td className="py-3.5 px-4">—</td>
                       <td className="py-3.5 px-4">{filteredAllocations.length} Allocations</td>
                       <td className="py-3.5 px-4">—</td>
                       <td className="py-3.5 px-4">—</td>
-                      <td className="py-3.5 px-4 text-right text-[#23151D]">
+                      <td className="py-3.5 px-4 text-right font-mono tabular-nums text-slate-900">
                         {formatCurrency(filteredAllocations.reduce((s, a) => s + a.amount, 0))}
                       </td>
-                      <td className="py-3.5 px-4 text-right">
+                      <td className="py-3.5 px-4 text-right font-mono tabular-nums text-slate-600">
                         {formatCurrency(filteredAllocations.reduce((s, a) => s + a.paidAmount, 0))}
                       </td>
-                      <td className="py-3.5 px-4 text-right text-[#9D2558]">
+                      <td className="py-3.5 px-4 text-right font-mono tabular-nums text-[#B82E69]">
                         {formatCurrency(filteredAllocations.reduce((s, a) => s + a.outstandingAmount, 0))}
                       </td>
                       <td className="py-3.5 px-4"></td>
@@ -828,46 +960,44 @@ export const TipsStatementPage: React.FC = () => {
                 )}
               </table>
             ) : (
-              <table className="report-records w-full text-left border-collapse min-w-[900px] font-['Inter',sans-serif] text-[13px] antialiased">
+              <table className="report-records w-full text-left border-collapse min-w-[900px] text-xs">
                 <thead>
-                  <tr className="bg-[#FDF2F5] border-b border-[#F1DEE3] text-[#475569] font-medium text-[13px]">
-                    <th className="py-3.5 px-4">Payout #</th>
-                    <th className="py-3.5 px-4">Date & Time</th>
-                    <th className="py-3.5 px-4">Staff Recipient</th>
-                    <th className="py-3.5 px-4">Allocation #</th>
-                    <th className="py-3.5 px-4">Disbursement Source</th>
-                    <th className="py-3.5 px-4 text-right">Disbursed Amount</th>
-                    <th className="py-3.5 px-4">Processed By</th>
-                    <th className="py-3.5 px-4 text-center">Status</th>
+                  <tr className="border-b border-slate-200/80 bg-[#FDF2F5]/50 text-slate-600 font-bold">
+                    <th className="py-3 px-4">Payout #</th>
+                    <th className="py-3 px-4">Date & Time</th>
+                    <th className="py-3 px-4">Staff Recipient</th>
+                    <th className="py-3 px-4">Allocation #</th>
+                    <th className="py-3 px-4">Disbursement Source</th>
+                    <th className="py-3 px-4 text-right">Disbursed Amount</th>
+                    <th className="py-3 px-4">Processed By</th>
+                    <th className="py-3 px-4 text-center">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-dashed divide-slate-200">
+                <tbody className="divide-y divide-slate-100">
                   {filteredPayouts.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="py-12 text-center text-slate-400">
-                        No tip disbursements found matching the filter criteria.
+                      <td colSpan={8} className="py-16 text-center text-slate-400 font-medium">
+                        No tip disbursements found matching criteria.
                       </td>
                     </tr>
                   ) : (
                     filteredPayouts.map((p) => (
-                      <tr key={p.id} className="hover:bg-[#FDF2F5]/20 transition-colors border-b border-dashed border-slate-200">
-                        <td className="py-3.5 px-4 font-mono font-semibold text-slate-900">{p.payoutNumber}</td>
-                        <td className="py-3.5 px-4 text-slate-600">
-                          {p.payoutDate} <span className="text-slate-400 text-[11px]">{p.payoutTime}</span>
-                        </td>
-                        <td className="py-3.5 px-4 font-semibold text-[#23151D]">{p.staffName}</td>
-                        <td className="py-3.5 px-4 font-mono text-slate-700">{p.allocationNumber}</td>
-                        <td className="py-3.5 px-4">
-                          <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium text-[11px]">
+                      <tr key={p.id} className="hover:bg-[#FDF2F5]/30 transition-colors">
+                        <td className="py-3 px-4 font-mono font-bold text-[#B82E69]">{p.payoutNumber}</td>
+                        <td className="py-3 px-4 whitespace-nowrap text-slate-600 font-mono">{p.payoutDate} <span className="text-slate-400 text-[11px]">{p.payoutTime}</span></td>
+                        <td className="py-3 px-4 font-semibold text-slate-900">{p.staffName}</td>
+                        <td className="py-3 px-4 font-mono text-slate-700">{p.allocationNumber}</td>
+                        <td className="py-3 px-4">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
                             {p.method === 'CASH' ? 'Cash Drawer' : p.onlineAccountName || 'Bank Account'}
                           </span>
                         </td>
-                        <td className="py-3.5 px-4 text-right font-bold text-[#23151D]">
+                        <td className="py-3 px-4 text-right font-mono font-bold text-rose-600 tabular-nums">
                           {formatCurrency(p.amount)}
                         </td>
-                        <td className="py-3.5 px-4 text-slate-600">{p.paidByName}</td>
-                        <td className="py-3.5 px-4 text-center">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-[#FDF2F5] text-[#9D2558] border border-[#F1DEE3]">
+                        <td className="py-3 px-4 text-slate-600">{p.paidByName}</td>
+                        <td className="py-3 px-4 text-center">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
                             {p.status}
                           </span>
                         </td>
@@ -876,14 +1006,14 @@ export const TipsStatementPage: React.FC = () => {
                   )}
                 </tbody>
                 {filteredPayouts.length > 0 && (
-                  <tfoot className="bg-[#F8FAFC] font-bold text-[#23151D] border-t-2 border-slate-200 text-[13px]">
+                  <tfoot className="border-t-2 border-slate-200/80 bg-white/90 text-xs font-bold text-slate-800">
                     <tr>
                       <td className="py-3.5 px-4 text-left">Totals</td>
                       <td className="py-3.5 px-4">—</td>
                       <td className="py-3.5 px-4">{filteredPayouts.length} Disbursements</td>
                       <td className="py-3.5 px-4">—</td>
                       <td className="py-3.5 px-4">—</td>
-                      <td className="py-3.5 px-4 text-right text-[#23151D]">
+                      <td className="py-3.5 px-4 text-right font-mono font-bold tabular-nums text-rose-600">
                         {formatCurrency(filteredPayouts.reduce((s, p) => s + p.amount, 0))}
                       </td>
                       <td className="py-3.5 px-4">—</td>
@@ -904,3 +1034,5 @@ export const TipsStatementPage: React.FC = () => {
     </div>
   );
 };
+
+export default TipsStatementPage;

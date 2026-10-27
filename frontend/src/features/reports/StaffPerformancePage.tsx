@@ -20,6 +20,11 @@ import {
   FileSpreadsheet,
   FileText,
   Loader2,
+  TrendingUp,
+  Users,
+  Scissors,
+  Coins,
+  Clock,
 } from 'lucide-react';
 import { AccessDeniedView } from '../scaffold/AccessDeniedView';
 import {
@@ -32,10 +37,10 @@ import {
 } from './reportUtils';
 
 const selectClass =
-  'w-full text-xs border border-slate-300 rounded-md px-3 py-2 bg-white text-slate-700 focus:outline-hidden focus:ring-1 focus:ring-[#9D2558] focus:border-[#9D2558] transition-colors';
+  'w-full text-xs rounded-xl border border-white/80 bg-white/80 hover:bg-white px-3 py-2 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#B82E69]/20 focus:border-[#B82E69] shadow-2xs font-medium cursor-pointer transition-all';
 const inputClass =
-  'w-full text-xs border border-slate-300 rounded-md px-3 py-2 bg-white text-slate-700 focus:outline-hidden focus:ring-1 focus:ring-[#9D2558] focus:border-[#9D2558] transition-colors';
-const labelClass = 'block text-[11px] font-semibold text-[#23151D] mb-1.5';
+  'w-full text-xs rounded-xl border border-white/80 bg-white/80 hover:bg-white px-3 py-2 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#B82E69]/20 focus:border-[#B82E69] shadow-2xs font-medium transition-all';
+const labelClass = 'block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5';
 
 function formatCurrency(val: number): string {
   const num = Number(val) || 0;
@@ -467,20 +472,35 @@ export const StaffPerformancePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9] px-4 py-5 md:px-8 md:py-6 text-slate-800 font-sans">
-      {/* Top Header & Filters Card */}
-      <div className="bg-white rounded-xl shadow-xs border border-slate-200/90 p-5 md:p-6 mb-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
-          <div>
-            <h1 className="text-xl font-bold text-[#23151D] tracking-tight">
-              Staff Productivity & Performance Reports
-            </h1>
-            <p className="text-xs text-slate-500 mt-1">
-              Attributed net sales, direct & package service volume, commissions, gratuities, and operational hours.
-            </p>
+    <div className="w-full max-w-full space-y-6 text-slate-800 font-sans">
+      {/* ── 1. TOP HEADER BANNER (Frosted Glassmorphism) ── */}
+      <div className="relative overflow-hidden rounded-[24px] border border-white/90 bg-white/75 p-6 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-gradient-to-br from-[#B82E69]/10 via-[#D94883]/5 to-transparent blur-3xl" />
+
+        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#B82E69] to-[#9D2558] text-white shadow-lg shadow-[#B82E69]/25">
+              <Award className="h-6 w-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold tracking-tight text-[#18191B]">
+                  Staff Productivity & Performance Reports
+                </h1>
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FDF2F5] text-[#B82E69] border border-[#B82E69]/20 uppercase tracking-wider">
+                  Attributed Sales
+                </span>
+              </div>
+              <p className="text-xs text-[#78616C] font-medium mt-0.5">
+                Staff productivity audit: Direct & package service units, net revenue attribution, earned commission and tip allocations
+              </p>
+            </div>
           </div>
         </div>
+      </div>
 
+      {/* ── 2. FILTER CARD (Frosted Glass) ── */}
+      <div className="rounded-[24px] border border-white/90 bg-white/75 p-5 md:p-6 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
         <form onSubmit={handleApplyFilters}>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 items-end">
             {/* Branch */}
@@ -628,7 +648,7 @@ export const StaffPerformancePage: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full h-[35px] bg-[#9D2558] hover:bg-[#851C47] active:bg-[#002d6b] text-white text-xs font-semibold rounded-md shadow-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-60"
+                className="w-full h-9 bg-[#B82E69] hover:bg-[#A02358] active:bg-[#851C47] text-white font-semibold text-xs sm:text-sm rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-70"
               >
                 {loading ? (
                   <>
@@ -638,7 +658,7 @@ export const StaffPerformancePage: React.FC = () => {
                 ) : (
                   <>
                     <Filter className="w-3.5 h-3.5 fill-current" />
-                    <span>Filter</span>
+                    <span>Apply Filters</span>
                   </>
                 )}
               </button>
@@ -647,97 +667,200 @@ export const StaffPerformancePage: React.FC = () => {
         </form>
       </div>
 
-      {/* Main Content Area */}
-      {!hasFiltered ? (
-        /* Empty State before Filter clicked */
-        <div className="bg-white rounded-xl border border-slate-200/90 p-16 md:p-24 flex flex-col items-center justify-center min-h-[380px] shadow-xs text-center">
-          <div className="text-slate-400 mb-3">
-            <Filter className="w-14 h-14 stroke-[1.25] text-slate-400" />
+      {/* ── 3. ROW 3 PURE WHITE FROSTED BLUR KPI CARDS (when filtered) ── */}
+      {hasFiltered && filteredRecords.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          {/* Card 1: Attributed Net Sales */}
+          <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+            <div className="flex items-center justify-between relative z-10">
+              <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-emerald-600">
+                <TrendingUp className="w-4 h-4" />
+              </div>
+              <span className="bg-emerald-50 text-emerald-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                Attributed Sales
+              </span>
+            </div>
+            <div className="mt-3 relative z-10">
+              <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+                PKR {formatCurrency(aggregatedMetrics.totalNetSales)}
+              </span>
+              <span className="text-xs text-[#78616C] font-medium mt-1 block">
+                Gross: PKR {formatCurrency(aggregatedMetrics.totalGrossSales)}
+              </span>
+            </div>
           </div>
-          <p className="text-slate-400 text-sm font-medium">
-            Please apply filters to view reports
+
+          {/* Card 2: Total Service Units */}
+          <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+            <div className="flex items-center justify-between relative z-10">
+              <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-blue-600">
+                <Scissors className="w-4 h-4" />
+              </div>
+              <span className="bg-blue-50 text-blue-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                Volume
+              </span>
+            </div>
+            <div className="mt-3 relative z-10">
+              <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+                {aggregatedMetrics.totalUnits} Units
+              </span>
+              <span className="text-xs text-[#78616C] font-medium mt-1 block">
+                {aggregatedMetrics.totalDirectServices} direct · {aggregatedMetrics.totalPackageComponents} package
+              </span>
+            </div>
+          </div>
+
+          {/* Card 3: Unique Clients */}
+          <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+            <div className="flex items-center justify-between relative z-10">
+              <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-purple-600">
+                <Users className="w-4 h-4" />
+              </div>
+              <span className="bg-purple-50 text-purple-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                Clients
+              </span>
+            </div>
+            <div className="mt-3 relative z-10">
+              <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+                {aggregatedMetrics.totalUniqueClients}
+              </span>
+              <span className="text-xs text-[#78616C] font-medium mt-1 block">
+                Total unique clients served
+              </span>
+            </div>
+          </div>
+
+          {/* Card 4: Commissions */}
+          <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+            <div className="flex items-center justify-between relative z-10">
+              <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+                <Coins className="w-4 h-4" />
+              </div>
+              <span className="bg-[#FDF2F5] text-[#B82E69] shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                Commission
+              </span>
+            </div>
+            <div className="mt-3 relative z-10">
+              <span className="text-2xl sm:text-3xl font-extrabold text-[#B82E69] font-mono tabular-nums tracking-tight block">
+                PKR {formatCurrency(aggregatedMetrics.totalEstimatedCommission)}
+              </span>
+              <span className="text-xs text-[#78616C] font-medium mt-1 block">
+                Finalized: PKR {formatCurrency(aggregatedMetrics.totalFinalizedCommission)}
+              </span>
+            </div>
+          </div>
+
+          {/* Card 5: Gratuities & Tips */}
+          <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+            <div className="flex items-center justify-between relative z-10">
+              <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-amber-600">
+                <Clock className="w-4 h-4" />
+              </div>
+              <span className="bg-amber-50 text-amber-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                Gratuities
+              </span>
+            </div>
+            <div className="mt-3 relative z-10">
+              <span className="text-2xl sm:text-3xl font-extrabold text-amber-600 font-mono tabular-nums tracking-tight block">
+                PKR {formatCurrency(aggregatedMetrics.totalAllocatedTips)}
+              </span>
+              <span className="text-xs text-[#78616C] font-medium mt-1 block">
+                Hours: {aggregatedMetrics.totalWorkedHours}h (OT: {aggregatedMetrics.totalOvertimeMinutes}m)
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── 4. MAIN CONTENT AREA: TABLE & STATES ── */}
+      {!hasFiltered ? (
+        <div className="rounded-[24px] border border-white/90 bg-white/75 p-16 md:p-24 flex flex-col items-center justify-center min-h-[380px] backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] text-center">
+          <div className="w-16 h-16 rounded-2xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69] mb-4">
+            <Filter className="w-8 h-8 stroke-[1.5]" />
+          </div>
+          <h3 className="text-base font-bold text-[#18191B]">No Filter Applied</h3>
+          <p className="text-xs text-[#78616C] mt-1 max-w-sm">
+            Select a branch, staff, or date range above, then click &ldquo;Apply Filters&rdquo; to load staff performance calculations.
           </p>
         </div>
       ) : loading ? (
-        /* Loading Skeleton */
-        <div className="bg-white rounded-xl border border-slate-200/90 p-16 flex flex-col items-center justify-center min-h-[380px] shadow-xs text-center">
-          <div className="w-10 h-10 rounded-full border-3 border-[#F1DEE3] border-t-[#9D2558] animate-spin mb-3" />
-          <p className="text-slate-600 text-sm font-medium">
-            Calculating Staff Performance Metrics...
-          </p>
+        <div className="rounded-[24px] border border-white/90 bg-white/75 p-16 flex flex-col items-center justify-center min-h-[380px] backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] text-center">
+          <div className="w-12 h-12 rounded-2xl bg-[#FDF2F5] border border-white/80 flex items-center justify-center text-[#B82E69] mb-4 shadow-sm animate-pulse">
+            <Loader2 className="w-6 h-6 animate-spin text-[#B82E69]" />
+          </div>
+          <p className="text-sm font-bold text-[#18191B]">Calculating Staff Performance Metrics...</p>
+          <p className="text-xs text-[#78616C] mt-0.5">Aggregating attributed services and commissions from server</p>
         </div>
       ) : errorMessage ? (
-        /* Error Message */
-        <div className="bg-white rounded-xl border border-rose-200 p-8 shadow-xs text-center">
-          <p className="text-rose-600 text-sm font-medium mb-3">{errorMessage}</p>
+        <div className="rounded-[24px] border border-rose-200/80 bg-white/85 p-8 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035)] text-center">
+          <p className="text-rose-600 text-sm font-semibold mb-3">{errorMessage}</p>
           <button
             onClick={() => handleApplyFilters()}
-            className="px-4 py-1.5 bg-[#9D2558] text-white text-xs font-semibold rounded-md shadow-xs hover:bg-[#851C47]"
+            className="px-4 py-2 bg-[#B82E69] text-white text-xs font-semibold rounded-xl shadow-xs hover:bg-[#A02358] transition-colors cursor-pointer"
           >
-            Retry
+            Retry Query
           </button>
         </div>
       ) : (
-        /* Filtered Data Layout */
-        <div className="mb-8">
-          {/* Royal Blue Banner Header */}
-          <div className="bg-[#9D2558] text-white px-5 py-3 rounded-t-xl flex flex-wrap items-center justify-between gap-3 shadow-sm">
-            <div className="flex items-center gap-2.5">
-              <Award className="w-5 h-5 text-white/90" />
-              <span className="font-semibold text-sm tracking-wide">
-                Staff Productivity & Performance Reports ({filteredRecords.length} staff members)
-              </span>
+        /* Filtered Data Layout: Frosted Table Card */
+        <div className="rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] overflow-hidden">
+          {/* Header Bar */}
+          <div className="px-6 py-4 border-b border-white/80 bg-white/60 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2 font-bold text-sm tracking-tight text-[#18191B]">
+              <Award className="w-4 h-4 text-[#B82E69]" />
+              <span>Staff Productivity & Performance ({filteredRecords.length} staff members)</span>
             </div>
 
+            {/* Export Actions */}
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={handleExportExcel}
-                className="bg-[#009688] hover:bg-[#00897B] text-white text-xs font-semibold px-3.5 py-1.5 rounded-md flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/80 bg-white/80 hover:bg-white text-slate-700 shadow-2xs text-xs font-semibold transition-all cursor-pointer"
               >
-                <FileSpreadsheet className="w-3.5 h-3.5" />
-                CSV
+                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+                <span>CSV</span>
               </button>
               <button
                 type="button"
                 onClick={handleExportCSV}
-                className="bg-[#DC2626] hover:bg-[#B91C1C] text-white text-xs font-semibold px-3.5 py-1.5 rounded-md flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/80 bg-white/80 hover:bg-white text-slate-700 shadow-2xs text-xs font-semibold transition-all cursor-pointer"
               >
-                <FileText className="w-3.5 h-3.5" />
-                PDF
+                <FileText className="w-3.5 h-3.5 text-rose-600" />
+                <span>PDF</span>
               </button>
               <button
                 type="button"
                 onClick={handlePrint}
-                className="bg-[#4B5563] hover:bg-[#374151] text-white text-xs font-semibold px-3.5 py-1.5 rounded-md flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/80 bg-white/80 hover:bg-white text-slate-700 shadow-2xs text-xs font-semibold transition-all cursor-pointer"
               >
-                <Printer className="w-3.5 h-3.5" />
-                Print
+                <Printer className="w-3.5 h-3.5 text-slate-600" />
+                <span>Print</span>
               </button>
             </div>
           </div>
 
-          {/* Table Container with Horizontal Scroll */}
-          <div className="bg-white overflow-x-auto rounded-b-xl border border-t-0 border-slate-200/90 shadow-sm">
-            <table className="report-records w-full min-w-[1300px] text-left border-collapse font-['Inter',sans-serif] text-[13px] antialiased">
+          {/* Table Container */}
+          <div className="overflow-x-auto">
+            <table className="report-records w-full min-w-[1300px] text-left border-collapse text-xs">
               <thead>
-                <tr className="bg-[#FDF2F5] border-b border-[#F1DEE3] text-[#475569] font-medium text-[13px]">
-                  <th className="py-3.5 px-3 text-center w-8">#</th>
-                  <th className="py-3.5 px-4">Employee</th>
-                  <th className="py-3.5 px-4">Branch</th>
-                  <th className="py-3.5 px-4 text-center">Units (Dir / Pkg)</th>
-                  <th className="py-3.5 px-4 text-center">Clients</th>
-                  <th className="py-3.5 px-4 text-right">Attributed Net Sales</th>
-                  <th className="py-3.5 px-4 text-right">Commission (Est / Fin)</th>
-                  <th className="py-3.5 px-4 text-right">Tips (Alloc / Due)</th>
-                  <th className="py-3.5 px-4 text-center">Worked Hours</th>
-                  <th className="py-3.5 px-4 text-center">Action</th>
+                <tr className="border-b border-slate-200/80 bg-[#FDF2F5]/50 text-slate-600 font-bold">
+                  <th className="py-3 px-3 text-center w-8">#</th>
+                  <th className="py-3 px-4">Employee</th>
+                  <th className="py-3 px-4">Branch</th>
+                  <th className="py-3 px-4 text-center">Units (Dir / Pkg)</th>
+                  <th className="py-3 px-4 text-center">Clients</th>
+                  <th className="py-3 px-4 text-right">Attributed Net Sales</th>
+                  <th className="py-3 px-4 text-right">Commission (Est / Fin)</th>
+                  <th className="py-3 px-4 text-right">Tips (Alloc / Due)</th>
+                  <th className="py-3 px-4 text-center">Worked Hours</th>
+                  <th className="py-3 px-4 text-center">Action</th>
                 </tr>
               </thead>
-              <tbody className="text-[#334155]">
+              <tbody className="divide-y divide-slate-100">
                 {filteredRecords.length === 0 ? (
                   <tr>
-                    <td colSpan={10} className="py-12 text-center text-slate-400 font-medium">
+                    <td colSpan={10} className="py-16 text-center text-slate-400 font-medium">
                       No staff performance records found for the selected criteria.
                     </td>
                   </tr>
@@ -745,70 +868,70 @@ export const StaffPerformancePage: React.FC = () => {
                   filteredRecords.map((record, idx) => (
                     <tr
                       key={record.staffId}
-                      className="hover:bg-[#FDF2F5]/20 transition-colors border-b border-dashed border-slate-200 cursor-pointer"
+                      className="hover:bg-[#FDF2F5]/30 transition-colors cursor-pointer"
                       onClick={() => setSelectedStaffRecord(record)}
                     >
-                      <td className="py-3.5 px-3 text-center font-normal text-slate-400">
+                      <td className="py-3 px-3 text-center text-slate-400 font-mono">
                         {idx + 1}
                       </td>
-                      <td className="py-3.5 px-4">
-                        <div className="font-semibold text-slate-800 flex items-center gap-1.5">
-                          {record.staffName}
-                          <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-100 text-slate-500 font-normal">
+                      <td className="py-3 px-4">
+                        <div className="font-semibold text-slate-900 flex items-center gap-1.5">
+                          <span>{record.staffName}</span>
+                          <span className="text-[10px] px-1.5 py-0.2 rounded-full font-mono bg-slate-100 text-slate-600">
                             {record.staffCode}
                           </span>
                         </div>
                         <div className="text-[11px] text-slate-400">{record.roleTitle}</div>
                       </td>
-                      <td className="py-3.5 px-4 text-slate-600">
+                      <td className="py-3 px-4 text-slate-600">
                         {record.branchName}
                       </td>
-                      <td className="py-3.5 px-4 text-center">
-                        <div className="font-semibold text-slate-800">{record.totalServiceUnits}</div>
+                      <td className="py-3 px-4 text-center">
+                        <div className="font-semibold text-slate-900 font-mono">{record.totalServiceUnits}</div>
                         <div className="text-[11px] text-slate-400">
                           {record.directServicesCount} dir · {record.packageComponentsCount} pkg
                         </div>
                       </td>
-                      <td className="py-3.5 px-4 text-center font-medium text-slate-800">
+                      <td className="py-3 px-4 text-center font-semibold text-slate-800 font-mono">
                         {record.uniqueClientsCount}
                       </td>
-                      <td className="py-3.5 px-4 text-right">
-                        <div className="font-semibold text-slate-800 tabular-nums">{formatCurrency(record.attributedNetSales)}</div>
-                        <div className="text-[11px] text-slate-400 font-normal tabular-nums">
-                          Gross: {formatCurrency(record.attributedGrossSales)}
+                      <td className="py-3 px-4 text-right">
+                        <div className="font-semibold text-slate-900 font-mono tabular-nums">PKR {formatCurrency(record.attributedNetSales)}</div>
+                        <div className="text-[11px] text-slate-400 font-mono tabular-nums">
+                          Gross: PKR {formatCurrency(record.attributedGrossSales)}
                         </div>
                       </td>
-                      <td className="py-3.5 px-4 text-right">
-                        <div className="font-semibold text-[#10B981] tabular-nums">{formatCurrency(record.estimatedCommission)}</div>
-                        <div className="text-[11px] text-slate-500 tabular-nums">
-                          Fin: {formatCurrency(record.finalizedCommission)}
+                      <td className="py-3 px-4 text-right">
+                        <div className="font-bold text-emerald-600 font-mono tabular-nums">PKR {formatCurrency(record.estimatedCommission)}</div>
+                        <div className="text-[11px] text-slate-400 font-mono tabular-nums">
+                          Fin: PKR {formatCurrency(record.finalizedCommission)}
                         </div>
                       </td>
-                      <td className="py-3.5 px-4 text-right">
-                        <div className="font-semibold text-slate-800 tabular-nums">{formatCurrency(record.allocatedTips)}</div>
-                        <div className="text-[11px] text-slate-400 tabular-nums">
-                          Due: {formatCurrency(record.outstandingTips)}
+                      <td className="py-3 px-4 text-right">
+                        <div className="font-semibold text-slate-900 font-mono tabular-nums">PKR {formatCurrency(record.allocatedTips)}</div>
+                        <div className="text-[11px] text-slate-400 font-mono tabular-nums">
+                          Due: PKR {formatCurrency(record.outstandingTips)}
                         </div>
                       </td>
-                      <td className="py-3.5 px-4 text-center">
-                        <div className="font-medium text-slate-800">
+                      <td className="py-3 px-4 text-center">
+                        <div className="font-semibold text-slate-900 font-mono">
                           {record.workedHours}h
                         </div>
-                        <div className="text-[11px] text-slate-400">
+                        <div className="text-[11px] text-slate-400 font-mono">
                           OT: {record.approvedOvertimeMinutes}m
                         </div>
                       </td>
-                      <td className="py-3.5 px-4 text-center">
+                      <td className="py-3 px-4 text-center">
                         <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
                             setSelectedStaffRecord(record);
                           }}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#FDF2F5] text-[#9D2558] hover:bg-[#FCE8EC] font-semibold text-xs transition-colors cursor-pointer"
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#FDF2F5] text-[#B82E69] hover:bg-[#FCE8EC] font-semibold text-xs transition-colors cursor-pointer"
                         >
                           <Eye className="w-3.5 h-3.5" />
-                          Breakdown
+                          <span>Drilldown</span>
                         </button>
                       </td>
                     </tr>
@@ -816,28 +939,28 @@ export const StaffPerformancePage: React.FC = () => {
                 )}
               </tbody>
               {filteredRecords.length > 0 && (
-                <tfoot className="bg-[#F8FAFC] border-t-2 border-slate-200 font-['Inter',sans-serif] text-[13px] text-[#334155]">
+                <tfoot className="border-t-2 border-slate-200/80 bg-white/90 text-xs font-bold text-slate-800">
                   <tr>
-                    <td colSpan={3} className="py-3.5 px-4 font-bold text-slate-800 text-right uppercase tracking-wider">
-                      Totals:
+                    <td colSpan={3} className="py-3.5 px-4 text-right uppercase tracking-wider">
+                      TOTALS:
                     </td>
-                    <td className="py-3.5 px-4 text-center font-bold text-slate-800">
+                    <td className="py-3.5 px-4 text-center font-mono">
                       {aggregatedMetrics.totalUnits}
-                      <div className="text-[11px] font-normal text-slate-400">
+                      <div className="text-[10px] font-normal text-slate-400">
                         ({aggregatedMetrics.totalDirectServices} dir / {aggregatedMetrics.totalPackageComponents} pkg)
                       </div>
                     </td>
-                    <td className="py-3.5 px-4 text-center font-bold text-slate-800">{aggregatedMetrics.totalUniqueClients}</td>
-                    <td className="py-3.5 px-4 text-right tabular-nums font-bold text-slate-800">
-                      {formatCurrency(aggregatedMetrics.totalNetSales)}
+                    <td className="py-3.5 px-4 text-center font-mono">{aggregatedMetrics.totalUniqueClients}</td>
+                    <td className="py-3.5 px-4 text-right font-mono tabular-nums">
+                      PKR {formatCurrency(aggregatedMetrics.totalNetSales)}
                     </td>
-                    <td className="py-3.5 px-4 text-right tabular-nums font-bold text-[#10B981]">
-                      {formatCurrency(aggregatedMetrics.totalEstimatedCommission)}
+                    <td className="py-3.5 px-4 text-right font-mono tabular-nums text-emerald-600">
+                      PKR {formatCurrency(aggregatedMetrics.totalEstimatedCommission)}
                     </td>
-                    <td className="py-3.5 px-4 text-right tabular-nums font-bold text-slate-800">
-                      {formatCurrency(aggregatedMetrics.totalAllocatedTips)}
+                    <td className="py-3.5 px-4 text-right font-mono tabular-nums text-slate-900">
+                      PKR {formatCurrency(aggregatedMetrics.totalAllocatedTips)}
                     </td>
-                    <td className="py-3.5 px-4 text-center text-slate-600">
+                    <td className="py-3.5 px-4 text-center text-slate-600 font-mono">
                       OT: {aggregatedMetrics.totalOvertimeMinutes}m
                     </td>
                     <td className="py-3.5 px-4"></td>
@@ -849,29 +972,29 @@ export const StaffPerformancePage: React.FC = () => {
         </div>
       )}
 
-      {/* Employee Service Drilldown Modal */}
+      {/* Employee Service Drilldown Modal (Frosted Glass) */}
       {selectedStaffRecord && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-5xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-150 overflow-y-auto overscroll-contain">
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="rounded-[24px] border border-white/90 bg-white/95 p-6 backdrop-blur-2xl max-w-5xl w-full max-h-[92vh] flex flex-col shadow-[0_20px_50px_rgba(0,0,0,0.15),inset_0_1.5px_2px_rgba(255,255,255,1)] animate-in fade-in zoom-in-95 duration-150 overflow-y-auto overscroll-contain">
             {/* Modal Header */}
-            <div className="p-5 border-b border-slate-100 flex items-start justify-between">
+            <div className="pb-5 border-b border-slate-100 flex items-start justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-[#FDF2F5] text-[#9D2558] rounded-xl">
+                <div className="p-3 bg-[#FDF2F5] text-[#B82E69] rounded-2xl shadow-2xs border border-white/80">
                   <Award className="w-5 h-5" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-bold text-slate-900 tracking-tight">
+                    <h3 className="text-lg font-bold text-[#18191B] tracking-tight">
                       {selectedStaffRecord.staffName}
                     </h3>
-                    <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
+                    <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
                       {selectedStaffRecord.staffCode}
                     </span>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-[#FDF2F5] text-[#9D2558] font-medium">
+                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#FDF2F5] text-[#B82E69] font-bold border border-[#B82E69]/20">
                       {selectedStaffRecord.branchName}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-xs text-[#78616C] mt-0.5">
                     {selectedStaffRecord.roleTitle} · Detailed Service Ledger ({startDate} to {endDate})
                   </p>
                 </div>
@@ -881,71 +1004,31 @@ export const StaffPerformancePage: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleExportDrilldownCSV}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/80 bg-white text-slate-700 shadow-2xs text-xs font-semibold hover:bg-slate-50 transition-all cursor-pointer"
                 >
-                  <Download className="w-3.5 h-3.5" />
-                  Export Items CSV
+                  <Download className="w-3.5 h-3.5 text-[#B82E69]" />
+                  <span>Export CSV</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setSelectedStaffRecord(null)}
-                  className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+                  className="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
             </div>
 
-            {/* Modal Sub-Banner Summary Metrics */}
-            <div className="bg-slate-50/70 p-3.5 border-b border-slate-100 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-              <div>
-                <span className="text-[11px] text-slate-500 block uppercase font-medium">Attributed Net Sales</span>
-                <span className="text-base font-bold text-slate-900">
-                  {formatCurrency(selectedStaffRecord.attributedNetSales)}
-                </span>
-                <span className="text-[10px] text-slate-400 block">
-                  Gross: {formatCurrency(selectedStaffRecord.attributedGrossSales)}
-                </span>
-              </div>
-              <div>
-                <span className="text-[11px] text-slate-500 block uppercase font-medium">Total Units</span>
-                <span className="text-base font-bold text-slate-900">
-                  {selectedStaffRecord.totalServiceUnits} units
-                </span>
-                <span className="text-[10px] text-slate-400 block">
-                  {selectedStaffRecord.directServicesCount} Direct · {selectedStaffRecord.packageComponentsCount} Package
-                </span>
-              </div>
-              <div>
-                <span className="text-[11px] text-slate-500 block uppercase font-medium">Estimated Commission</span>
-                <span className="text-base font-bold text-[#9D2558]">
-                  {formatCurrency(selectedStaffRecord.estimatedCommission)}
-                </span>
-                <span className="text-[10px] text-slate-400 block">
-                  Finalized: {formatCurrency(selectedStaffRecord.finalizedCommission)}
-                </span>
-              </div>
-              <div>
-                <span className="text-[11px] text-slate-500 block uppercase font-medium">Gratuity Entitlement</span>
-                <span className="text-base font-bold text-[#23151D]">
-                  {formatCurrency(selectedStaffRecord.allocatedTips)}
-                </span>
-                <span className="text-[10px] text-slate-400 block">
-                  Paid: {formatCurrency(selectedStaffRecord.paidTips)} · Due: {formatCurrency(selectedStaffRecord.outstandingTips)}
-                </span>
-              </div>
-            </div>
-
-            {/* Drilldown Filters */}
-            <div className="p-3.5 border-b border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+            {/* Modal Filters */}
+            <div className="py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setDrilldownFilterType('ALL')}
-                  className={`px-3 py-1 rounded text-xs font-semibold transition-all cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     drilldownFilterType === 'ALL'
-                      ? 'bg-[#23151D] text-white'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      ? 'bg-[#B82E69] text-white shadow-2xs'
+                      : 'bg-slate-100 text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   All Items ({selectedStaffRecord.detailedServices.length})
@@ -953,86 +1036,84 @@ export const StaffPerformancePage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setDrilldownFilterType('SERVICE')}
-                  className={`px-3 py-1 rounded text-xs font-semibold transition-all cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     drilldownFilterType === 'SERVICE'
-                      ? 'bg-[#9D2558] text-white'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      ? 'bg-[#B82E69] text-white shadow-2xs'
+                      : 'bg-slate-100 text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  Direct Services ({selectedStaffRecord.directServicesCount})
+                  Direct Services
                 </button>
                 <button
                   type="button"
                   onClick={() => setDrilldownFilterType('PACKAGE_COMPONENT')}
-                  className={`px-3 py-1 rounded text-xs font-semibold transition-all cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     drilldownFilterType === 'PACKAGE_COMPONENT'
-                      ? 'bg-[#9D2558] text-white'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      ? 'bg-[#B82E69] text-white shadow-2xs'
+                      : 'bg-slate-100 text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  Package Components ({selectedStaffRecord.packageComponentsCount})
+                  Package Components
                 </button>
               </div>
 
-              <div className="relative w-full sm:w-64">
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
                 <input
                   type="text"
-                  placeholder="Search invoice or service name..."
+                  placeholder="Filter drilldown items..."
+                  className={`${inputClass} pl-8.5 w-60`}
                   value={drilldownSearch}
                   onChange={(e) => setDrilldownSearch(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 outline-none focus:bg-white placeholder:text-slate-400"
                 />
               </div>
             </div>
 
-            {/* Drilldown Table */}
-            <div className="p-4 flex-1 overflow-y-auto">
-              <table className="report-records w-full text-left border-collapse text-xs">
+            {/* Modal Table */}
+            <div className="overflow-x-auto pt-2">
+              <table className="w-full min-w-[850px] text-left border-collapse text-xs">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-100 text-[#23151D] font-semibold text-[11px]">
+                  <tr className="border-b border-slate-200/80 bg-[#FDF2F5]/50 text-slate-600 font-bold">
                     <th className="py-2.5 px-3">Date</th>
                     <th className="py-2.5 px-3">Invoice #</th>
                     <th className="py-2.5 px-3">Type</th>
-                    <th className="py-2.5 px-3">Service Name</th>
+                    <th className="py-2.5 px-3">Item Name</th>
                     <th className="py-2.5 px-3">Client</th>
-                    <th className="py-2.5 px-3 text-right">Gross</th>
+                    <th className="py-2.5 px-3 text-right">Price</th>
                     <th className="py-2.5 px-3 text-right">Discount</th>
                     <th className="py-2.5 px-3 text-right">Net Sales</th>
-                    <th className="py-2.5 px-3 text-right">Comm.</th>
-                    <th className="py-2.5 px-3 text-right">Tip</th>
+                    <th className="py-2.5 px-3 text-right">Commission</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 text-slate-700">
+                <tbody className="divide-y divide-slate-100">
                   {filteredDetailedServices.length === 0 ? (
                     <tr>
-                      <td colSpan={10} className="py-8 text-center text-slate-400">
-                        No service records found matching the filter.
+                      <td colSpan={9} className="py-12 text-center text-slate-400 font-medium">
+                        No service records found.
                       </td>
                     </tr>
                   ) : (
                     filteredDetailedServices.map((item, idx) => (
-                      <tr key={idx} className="hover:bg-slate-50/70 transition-colors">
-                        <td className="py-2 px-3 font-mono text-[11px] text-slate-600">{item.date}</td>
-                        <td className="py-2 px-3 font-mono text-[11px] font-medium text-slate-900">{item.invoiceNumber}</td>
-                        <td className="py-2 px-3">
+                      <tr key={idx} className="hover:bg-[#FDF2F5]/30 transition-colors">
+                        <td className="py-2.5 px-3 font-mono text-slate-600">{item.date}</td>
+                        <td className="py-2.5 px-3 font-mono font-bold text-[#B82E69]">{item.invoiceNumber}</td>
+                        <td className="py-2.5 px-3">
                           <span
-                            className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                               item.itemType === 'SERVICE'
-                                ? 'bg-[#FDF2F5] text-[#9D2558]'
+                                ? 'bg-[#FDF2F5] text-[#B82E69]'
                                 : 'bg-slate-100 text-slate-700'
                             }`}
                           >
-                            {item.itemType === 'SERVICE' ? 'Service' : 'Package'}
+                            {item.itemType === 'SERVICE' ? 'Direct' : 'Package'}
                           </span>
                         </td>
-                        <td className="py-2 px-3 font-medium text-slate-900">{item.serviceName}</td>
-                        <td className="py-2 px-3 text-slate-600">{item.clientName || 'Walk-in'}</td>
-                        <td className="py-2 px-3 text-right">{formatCurrency(item.cataloguePrice)}</td>
-                        <td className="py-2 px-3 text-right text-slate-500">{formatCurrency(item.discountAllocated)}</td>
-                        <td className="py-2 px-3 text-right font-bold text-[#23151D]">{formatCurrency(item.netSales)}</td>
-                        <td className="py-2 px-3 text-right text-[#9D2558] font-semibold">{formatCurrency(item.commissionEarned)}</td>
-                        <td className="py-2 px-3 text-right text-slate-700 font-semibold">—</td>
+                        <td className="py-2.5 px-3 font-semibold text-slate-900">{item.serviceName}</td>
+                        <td className="py-2.5 px-3 text-slate-700">{item.clientName || 'Walk-in'}</td>
+                        <td className="py-2.5 px-3 text-right font-mono tabular-nums text-slate-600">{formatCurrency(item.cataloguePrice)}</td>
+                        <td className="py-2.5 px-3 text-right font-mono tabular-nums text-slate-400">{formatCurrency(item.discountAllocated)}</td>
+                        <td className="py-2.5 px-3 text-right font-mono tabular-nums font-bold text-[#18191B]">{formatCurrency(item.netSales)}</td>
+                        <td className="py-2.5 px-3 text-right font-mono tabular-nums font-bold text-emerald-600">{formatCurrency(item.commissionEarned)}</td>
                       </tr>
                     ))
                   )}
@@ -1042,11 +1123,8 @@ export const StaffPerformancePage: React.FC = () => {
           </div>
         </div>
       )}
-
-      {/* Footer Branding */}
-      <div className="mt-8 text-center text-xs text-slate-400 pb-6">
-        © iSysware Management System
-      </div>
     </div>
   );
 };
+
+export default StaffPerformancePage;

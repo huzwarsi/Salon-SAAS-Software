@@ -1107,7 +1107,10 @@ export const PayrollPage: React.FC<PayrollPageProps> = ({ mode = 'GENERATE' }) =
           staffList={staffList}
           onlineAccounts={onlineAccounts}
           hasOpenDrawer={!!activeUserOpenDrawer}
-          onFeedback={(type, message) => setFeedback({ type, message })}
+          onFeedback={(type, message) => {
+            if (type === 'error') toast.error(message);
+            else toast.success(message);
+          }}
         />
       )}
 

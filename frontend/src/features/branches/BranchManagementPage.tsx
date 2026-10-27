@@ -422,82 +422,91 @@ export const BranchManagementPage: React.FC = () => {
   return (
     <div className="space-y-6 font-sans">
       {/* Page Title & Scope Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
-              Super Admin Exclusive
-            </span>
-            <span className="text-slate-300">·</span>
-            <span className="text-xs text-slate-500 font-medium">Administration</span>
+      <div className="relative overflow-hidden rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl p-6 sm:p-7 shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#B82E69] to-[#851C47] text-white flex items-center justify-center shadow-[0_8px_20px_rgba(184,46,105,0.22)] shrink-0">
+              <Building2 className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-[#B82E69] bg-[#FDF2F5] px-2.5 py-0.5 rounded-full border border-[#B82E69]/15">
+                  Super Admin Exclusive
+                </span>
+                <span className="text-slate-300">·</span>
+                <span className="text-xs text-[#78616C] font-medium">Administration</span>
+              </div>
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#18191B] mt-1">
+                Branches Management
+              </h1>
+              <p className="text-xs text-[#78616C] mt-0.5">
+                Configure multi-location physical salons, assign branch managers, and audit location active status.
+              </p>
+            </div>
           </div>
-          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-slate-900 mt-1">
-            Branches Management
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Configure multi-location physical salons, assign branch managers, and audit location active status.
-          </p>
-        </div>
 
-        <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto flex-wrap sm:flex-nowrap">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={loadData}
-            leftIcon={<RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />}
-          >
-            Refresh
-          </Button>
-          <Button
-            variant="default"
-            size="sm"
-            onClick={handleOpenAdd}
-            leftIcon={<Plus className="w-4 h-4" />}
-          >
-            Add Branch
-          </Button>
+          <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-auto flex-wrap sm:flex-nowrap">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={loadData}
+              leftIcon={<RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />}
+              className="text-xs font-semibold rounded-xl border-white/80 bg-white/70 hover:bg-white text-[#78616C]"
+            >
+              Refresh
+            </Button>
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handleOpenAdd}
+              leftIcon={<Plus className="w-4 h-4" />}
+              className="text-xs font-semibold rounded-xl bg-[#B82E69] hover:bg-[#A02358] text-white shadow-[0_4px_16px_rgba(184,46,105,0.22)]"
+            >
+              Add Branch
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Summary KPI Badges */}
+      {/* Summary Badges */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card padding="sm" className="flex items-center justify-between">
+        <div className="rounded-2xl border border-white/90 bg-white/75 backdrop-blur-2xl p-4 shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-slate-500 uppercase">Total Branches</p>
-            <p className="text-2xl font-semibold text-slate-900 mt-0.5">{branches.length}</p>
+            <p className="text-xs font-semibold text-[#78616C] uppercase tracking-wider">Total Branches</p>
+            <p className="text-2xl font-bold text-[#18191B] mt-1 tabular-nums">{branches.length}</p>
           </div>
-          <div className="p-2.5 rounded-lg bg-[#FDF2F5] text-[#9D2558]">
+          <div className="w-10 h-10 rounded-xl bg-[#FDF2F5] text-[#B82E69] flex items-center justify-center">
             <Building2 className="w-5 h-5" />
           </div>
-        </Card>
+        </div>
 
-        <Card padding="sm" className="flex items-center justify-between">
+        <div className="rounded-2xl border border-white/90 bg-white/75 backdrop-blur-2xl p-4 shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-slate-500 uppercase">Active Locations</p>
-            <p className="text-2xl font-semibold text-emerald-700 mt-0.5">
+            <p className="text-xs font-semibold text-[#78616C] uppercase tracking-wider">Active Locations</p>
+            <p className="text-2xl font-bold text-emerald-700 mt-1 tabular-nums">
               {branches.filter((b) => b.isActive).length}
             </p>
           </div>
-          <div className="p-2.5 rounded-lg bg-emerald-50 text-emerald-600">
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
             <CheckCircle2 className="w-5 h-5" />
           </div>
-        </Card>
+        </div>
 
-        <Card padding="sm" className="flex items-center justify-between">
+        <div className="rounded-2xl border border-white/90 bg-white/75 backdrop-blur-2xl p-4 shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-slate-500 uppercase">Inactive Locations</p>
-            <p className="text-2xl font-semibold text-slate-600 mt-0.5">
+            <p className="text-xs font-semibold text-[#78616C] uppercase tracking-wider">Inactive Locations</p>
+            <p className="text-2xl font-bold text-[#78616C] mt-1 tabular-nums">
               {branches.filter((b) => !b.isActive).length}
             </p>
           </div>
-          <div className="p-2.5 rounded-lg bg-slate-100 text-slate-500">
+          <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center">
             <PowerOff className="w-5 h-5" />
           </div>
-        </Card>
+        </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-xl border border-slate-200/80 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 rounded-2xl border border-white/90 bg-white/75 backdrop-blur-2xl p-4 shadow-2xs">
         <div className="relative flex-1 max-w-md">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <Input
@@ -528,7 +537,7 @@ export const BranchManagementPage: React.FC = () => {
       </div>
 
       {/* Branches Table */}
-      <Card padding="none" className="overflow-hidden">
+      <div className="rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] overflow-hidden">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
@@ -700,7 +709,7 @@ export const BranchManagementPage: React.FC = () => {
             </TableBody>
           </Table>
         </div>
-      </Card>
+      </div>
 
       {/* --- ADD BRANCH DIALOG --- */}
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>

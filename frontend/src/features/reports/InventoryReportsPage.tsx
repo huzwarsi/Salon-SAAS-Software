@@ -203,18 +203,36 @@ export const InventoryReportsPage: React.FC = () => {
   const totals = reportData?.totals;
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9] px-4 py-5 md:px-8 md:py-6 text-slate-800">
-      {/* Top Header Card with Title & Filters */}
-      <div className="bg-white rounded-xl shadow-xs border border-slate-200/90 p-5 md:p-6 mb-6">
-        <div className="mb-5">
-          <h1 className="text-xl font-bold text-[#23151D] tracking-tight">Inventory & Supply Chain Reports</h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Valuation at historical landed cost layers, stock movements, supplier ledgers, salon consumption, and expiry tracking.
-          </p>
-        </div>
+    <div className="w-full max-w-full space-y-6 text-slate-800 font-sans">
+      {/* ── 1. TOP HEADER BANNER (Frosted Glassmorphism) ── */}
+      <div className="relative overflow-hidden rounded-[24px] border border-white/90 bg-white/75 p-6 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-gradient-to-br from-[#B82E69]/10 via-[#D94883]/5 to-transparent blur-3xl" />
 
-        {/* Filters Form Row */}
-        <form onSubmit={(e) => handleApplyFilters(e)} className="space-y-3">
+        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#B82E69] to-[#9D2558] text-white shadow-lg shadow-[#B82E69]/25">
+              <Boxes className="h-6 w-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold tracking-tight text-[#18191B]">
+                  Inventory & Supply Chain Reports
+                </h1>
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FDF2F5] text-[#B82E69] border border-[#B82E69]/20 uppercase tracking-wider">
+                  FIFO & Landed Cost
+                </span>
+              </div>
+              <p className="text-xs text-[#78616C] font-medium mt-0.5">
+                Valuation at historical landed cost layers, stock movements, supplier ledgers, salon consumption, and expiry tracking
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 2. FILTER CARD (Frosted Glass) ── */}
+      <div className="rounded-[24px] border border-white/90 bg-white/75 p-5 md:p-6 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)]">
+        <form onSubmit={(e) => handleApplyFilters(e)} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
             {/* Branch */}
             <div>
@@ -242,10 +260,10 @@ export const InventoryReportsPage: React.FC = () => {
                   value={selectedSupplierId}
                   onChange={(e) => setSelectedSupplierId(e.target.value)}
                 >
-                  <option value="ALL">All Suppliers (Combined)</option>
+                  <option value="ALL">All Suppliers (Aggregate Ledger)</option>
                   {suppliers.map((s) => (
                     <option key={s.id} value={s.id}>
-                      {s.name} ({s.companyName || 'Vendor'})
+                      {s.name} ({(s as any).code || s.contactPerson || 'Vendor'})
                     </option>
                   ))}
                 </select>
@@ -261,26 +279,27 @@ export const InventoryReportsPage: React.FC = () => {
                     onChange={(e) => setSelectedCategory(e.target.value)}
                   >
                     <option value="ALL">All Categories</option>
-                    {(reportData?.categories || []).map((c: string) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
+                    <option value="HAIR_CARE">Hair Care</option>
+                    <option value="SKIN_CARE">Skin Care</option>
+                    <option value="COLOR">Hair Color / Dye</option>
+                    <option value="NAIL_CARE">Nails</option>
+                    <option value="TREATMENTS">Treatments</option>
+                    <option value="SPA_WELLNESS">Spa & Wellness</option>
+                    <option value="OTHER">Other Salon Supplies</option>
                   </select>
                 </div>
 
                 {/* Item Type */}
                 <div>
-                  <label className={labelClass}>Item Type</label>
+                  <label className={labelClass}>Item Intent</label>
                   <select
                     className={selectClass}
                     value={selectedItemType}
                     onChange={(e) => setSelectedItemType(e.target.value)}
                   >
                     <option value="ALL">All Types</option>
-                    <option value="RETAIL">Retail Products</option>
-                    <option value="CONSUMABLE">Salon Consumables</option>
-                    <option value="EQUIPMENT">Equipment / Assets</option>
+                    <option value="RETAIL">Retail Product (For Sale)</option>
+                    <option value="CONSUMABLE">In-House Consumable (Usage)</option>
                   </select>
                 </div>
               </>
@@ -335,11 +354,11 @@ export const InventoryReportsPage: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-3.5 items-end">
             {/* Search Query */}
-            <div className="md:col-span-5">
+            <div className="md:col-span-5 relative">
               <label className={labelClass}>Search</label>
               <input
                 type="text"
-                placeholder="Search SKU, item name, batch number..."
+                placeholder="Search item name, SKU, barcode, supplier, batch..."
                 className={inputClass}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -351,7 +370,7 @@ export const InventoryReportsPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-[35px] bg-[#9D2558] hover:bg-[#851C47] active:bg-[#002b66] text-white font-medium text-xs rounded-md shadow-xs flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-70"
+                className="w-full h-9 bg-[#B82E69] hover:bg-[#A02358] active:bg-[#851C47] text-white font-semibold text-xs sm:text-sm rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-70"
               >
                 {isLoading ? (
                   <>
@@ -361,7 +380,7 @@ export const InventoryReportsPage: React.FC = () => {
                 ) : (
                   <>
                     <Filter className="w-3.5 h-3.5 fill-current" />
-                    <span>Filter</span>
+                    <span>Apply Filters</span>
                   </>
                 )}
               </button>
@@ -370,45 +389,151 @@ export const InventoryReportsPage: React.FC = () => {
         </form>
       </div>
 
-      {/* Main Content Area */}
-      {!hasFiltered ? (
-        /* Empty State before Filter clicked */
-        <div className="bg-white rounded-xl border border-slate-200/90 p-16 md:p-24 flex flex-col items-center justify-center min-h-[380px] shadow-xs text-center">
-          <div className="text-slate-400 mb-3">
-            <Filter className="w-14 h-14 stroke-[1.25] text-slate-400" />
+      {/* ── 3. ROW 3 PURE WHITE FROSTED BLUR KPI CARDS (when filtered) ── */}
+      {hasFiltered && reportData && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          {/* Card 1: Valuation / Purchases Inflow */}
+          <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+            <div className="flex items-center justify-between relative z-10">
+              <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-blue-600">
+                <Boxes className="w-4 h-4" />
+              </div>
+              <span className="bg-blue-50 text-blue-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                Cost Valuation
+              </span>
+            </div>
+            <div className="mt-3 relative z-10">
+              <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+                PKR {formatPKR(totals?.costValue || totals?.totalPurchases || totals?.totalCost || 0)}
+              </span>
+              <span className="text-xs text-[#78616C] font-medium mt-1 block">
+                {activeTab === 'purchases' ? 'Total purchase acquisitions' : activeTab === 'consumption' ? 'Total salon consumption cost' : 'Landed cost asset valuation'}
+              </span>
+            </div>
           </div>
-          <p className="text-slate-400 text-sm font-medium">Please apply filters to view reports</p>
+
+          {/* Card 2: Retail Asset Potential */}
+          <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+            <div className="flex items-center justify-between relative z-10">
+              <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-purple-600">
+                <Boxes className="w-4 h-4" />
+              </div>
+              <span className="bg-purple-50 text-purple-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                Retail Potential
+              </span>
+            </div>
+            <div className="mt-3 relative z-10">
+              <span className="text-2xl sm:text-3xl font-extrabold text-[#18191B] font-mono tabular-nums tracking-tight block">
+                PKR {formatPKR(totals?.retailValue || totals?.paidAmount || 0)}
+              </span>
+              <span className="text-xs text-[#78616C] font-medium mt-1 block">
+                {activeTab === 'purchases' ? 'Paid to vendors' : 'Estimated catalog retail turnover'}
+              </span>
+            </div>
+          </div>
+
+          {/* Card 3: Potential Profit / Outstanding */}
+          <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+            <div className="flex items-center justify-between relative z-10">
+              <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-emerald-600">
+                <Boxes className="w-4 h-4" />
+              </div>
+              <span className="bg-emerald-50 text-emerald-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                Profit Margin
+              </span>
+            </div>
+            <div className="mt-3 relative z-10">
+              <span className="text-2xl sm:text-3xl font-extrabold text-emerald-600 font-mono tabular-nums tracking-tight block">
+                PKR {formatPKR(totals?.potentialProfit || totals?.outstandingAmount || 0)}
+              </span>
+              <span className="text-xs text-[#78616C] font-medium mt-1 block">
+                {activeTab === 'purchases' ? 'Vendor payables outstanding' : 'Expected gross inventory margin'}
+              </span>
+            </div>
+          </div>
+
+          {/* Card 4: Inventory Units */}
+          <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+            <div className="flex items-center justify-between relative z-10">
+              <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69]">
+                <Boxes className="w-4 h-4" />
+              </div>
+              <span className="bg-[#FDF2F5] text-[#B82E69] shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                On Hand Units
+              </span>
+            </div>
+            <div className="mt-3 relative z-10">
+              <span className="text-2xl sm:text-3xl font-extrabold text-[#B82E69] font-mono tabular-nums tracking-tight block">
+                {totals?.remainingQuantity?.toLocaleString() || totals?.totalConsumedQuantity?.toLocaleString() || 0}
+              </span>
+              <span className="text-xs text-[#78616C] font-medium mt-1 block">
+                Total physical unit count
+              </span>
+            </div>
+          </div>
+
+          {/* Card 5: Expiry & Risk Exposure */}
+          <div className="p-5 rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] hover:border-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+            <div className="flex items-center justify-between relative z-10">
+              <div className="w-8 h-8 rounded-xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-amber-600">
+                <AlertTriangle className="w-4 h-4" />
+              </div>
+              <span className="bg-amber-50 text-amber-700 shadow-2xs border border-white/60 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                Audit Scope
+              </span>
+            </div>
+            <div className="mt-3 relative z-10">
+              <span className="text-2xl sm:text-3xl font-extrabold text-amber-600 font-mono tabular-nums tracking-tight block">
+                {reportData.rows.length} Items
+              </span>
+              <span className="text-xs text-[#78616C] font-medium mt-1 block">
+                Audited ledger entries in period
+              </span>
+            </div>
+          </div>
         </div>
-      ) : isLoading ? (
-        /* Loading Skeleton */
-        <div className="bg-white rounded-xl border border-slate-200/90 p-16 flex flex-col items-center justify-center min-h-[380px] shadow-xs text-center">
-          <div className="w-10 h-10 rounded-full border-3 border-[#F1DEE3] border-t-[#9D2558] animate-spin mb-3" />
-          <p className="text-slate-600 text-sm font-medium">
-            Querying canonical database records for {activeTab} report...
+      )}
+
+      {/* ── 4. MAIN CONTENT AREA: TABLE & STATES ── */}
+      {!hasFiltered ? (
+        <div className="rounded-[24px] border border-white/90 bg-white/75 p-16 md:p-24 flex flex-col items-center justify-center min-h-[380px] backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] text-center">
+          <div className="w-16 h-16 rounded-2xl bg-white/90 shadow-2xs border border-white/80 flex items-center justify-center text-[#B82E69] mb-4">
+            <Filter className="w-8 h-8 stroke-[1.5]" />
+          </div>
+          <h3 className="text-base font-bold text-[#18191B]">No Filter Applied</h3>
+          <p className="text-xs text-[#78616C] mt-1 max-w-sm">
+            Select a branch, category, or date range above, then click &ldquo;Apply Filters&rdquo; to load inventory reports.
           </p>
         </div>
+      ) : isLoading ? (
+        <div className="rounded-[24px] border border-white/90 bg-white/75 p-16 flex flex-col items-center justify-center min-h-[380px] backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] text-center">
+          <div className="w-12 h-12 rounded-2xl bg-[#FDF2F5] border border-white/80 flex items-center justify-center text-[#B82E69] mb-4 shadow-sm animate-pulse">
+            <Loader2 className="w-6 h-6 animate-spin text-[#B82E69]" />
+          </div>
+          <p className="text-sm font-bold text-[#18191B]">Loading Inventory Reports...</p>
+          <p className="text-xs text-[#78616C] mt-0.5">Querying canonical database records for {activeTab} report...</p>
+        </div>
       ) : errorMessage ? (
-        /* Error Message */
-        <div className="bg-white rounded-xl border border-rose-200 p-8 shadow-xs text-center">
-          <p className="text-rose-600 text-sm font-medium mb-3">{errorMessage}</p>
+        <div className="rounded-[24px] border border-rose-200/80 bg-white/85 p-8 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035)] text-center">
+          <p className="text-rose-600 text-sm font-semibold mb-3">{errorMessage}</p>
           <button
             onClick={() => handleApplyFilters()}
-            className="px-4 py-1.5 bg-[#9D2558] text-white text-xs font-semibold rounded-md shadow-xs hover:bg-[#851C47]"
+            className="px-4 py-2 bg-[#B82E69] text-white text-xs font-semibold rounded-xl shadow-xs hover:bg-[#A02358] transition-colors cursor-pointer"
           >
-            Retry
+            Retry Query
           </button>
         </div>
       ) : (
-        /* Filtered Data Layout */
-        <div className="shadow-sm rounded-xl overflow-hidden border border-slate-200/90 mb-8 bg-white">
-          {/* Royal Blue Banner Header */}
-          <div className="bg-[#9D2558] text-white px-5 py-3 flex flex-wrap items-center justify-between gap-3 rounded-t-xl">
+        /* Filtered Data Layout: Frosted Table Card */
+        <div className="rounded-[24px] border border-white/90 bg-white/75 backdrop-blur-2xl shadow-[0_10px_35px_rgba(35,21,29,0.035),inset_0_1.5px_2px_rgba(255,255,255,1)] overflow-hidden">
+          {/* Header Bar with Sub-Report Tabs & Export Actions */}
+          <div className="px-6 py-4 border-b border-white/80 bg-white/60 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 font-bold text-sm tracking-wide text-white">
-                <Boxes className="w-4 h-4 stroke-[2.5]" />
+              <div className="flex items-center gap-2 font-bold text-sm tracking-tight text-[#18191B]">
+                <Boxes className="w-4 h-4 text-[#B82E69]" />
                 <span>Inventory Reports</span>
               </div>
-              <div className="flex flex-wrap items-center bg-black/15 p-0.5 rounded-lg border border-white/10 gap-0.5">
+              <div className="flex flex-wrap items-center bg-slate-100/70 p-1 rounded-xl border border-white/80 gap-1 text-xs">
                 {[
                   { id: 'valuation', label: 'Valuation & Layers' },
                   { id: 'movements', label: 'Movement Trail' },
@@ -421,10 +546,10 @@ export const InventoryReportsPage: React.FC = () => {
                     key={t.id}
                     type="button"
                     onClick={() => handleTabChange(t.id as InventorySubReportType)}
-                    className={`px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+                    className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
                       activeTab === t.id
-                        ? 'bg-white text-[#9D2558] shadow-xs'
-                        : 'text-white/80 hover:text-white'
+                        ? 'bg-white text-[#B82E69] shadow-2xs'
+                        : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
                     {t.label}
@@ -437,31 +562,31 @@ export const InventoryReportsPage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleExportCsv}
-                className="bg-[#009688] hover:bg-[#00897B] active:bg-[#00796B] text-white text-xs font-semibold px-3.5 py-1.5 rounded-md shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/80 bg-white/80 hover:bg-white text-slate-700 shadow-2xs text-xs font-semibold transition-all cursor-pointer"
               >
-                <FileSpreadsheet className="w-3.5 h-3.5" />
+                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
                 <span>CSV</span>
               </button>
               <button
                 type="button"
                 onClick={handleExportExcel}
-                className="bg-[#DC2626] hover:bg-[#B91C1C] active:bg-[#991B1B] text-white text-xs font-semibold px-3.5 py-1.5 rounded-md shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/80 bg-white/80 hover:bg-white text-slate-700 shadow-2xs text-xs font-semibold transition-all cursor-pointer"
               >
-                <FileText className="w-3.5 h-3.5" />
+                <FileText className="w-3.5 h-3.5 text-rose-600" />
                 <span>PDF</span>
               </button>
               <button
                 type="button"
                 onClick={handleExportPrint}
-                className="bg-[#4B5563] hover:bg-[#374151] active:bg-[#1F2937] text-white text-xs font-semibold px-3.5 py-1.5 rounded-md shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/80 bg-white/80 hover:bg-white text-slate-700 shadow-2xs text-xs font-semibold transition-all cursor-pointer"
               >
-                <Printer className="w-3.5 h-3.5" />
+                <Printer className="w-3.5 h-3.5 text-slate-600" />
                 <span>Print</span>
               </button>
             </div>
           </div>
 
-          {/* Table Container */}
+{/* Table Container */}
           <div className="bg-white overflow-x-auto rounded-b-xl border-t border-[#F1DEE3]/40">
             {activeTab === 'valuation' && (
               <table className="report-records w-full text-left border-collapse min-w-[1000px] font-['Inter',sans-serif] text-[13px] antialiased">
