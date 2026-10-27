@@ -292,6 +292,12 @@ export const updateStaff = async (id, input, actor) => {
       entity: 'Staff', entityId: id, branchId: staff.branchId,
       before: { ...before, branch: undefined, user: undefined }, after: { ...staff, branch: undefined, user: undefined },
     });
+    if (input.enablePortalAccess !== undefined && input.isActive !== false) {
+      const result = await configurePortalAccess(tx, id, {
+        enable: input.enablePortalAccess, identifier: input.portalIdentifier, password: input.portalPassword,
+      }, actor);
+      return result.staff;
+    }
     return toStaffDTO(staff);
   });
 };
@@ -309,7 +315,10 @@ export const deactivateStaff = async (id, actor, exitDate) => {
 };
 
 export const setPortalAccess = async (staffId, { enable, identifier, password }, actor) => {
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction((tx) => configurePortalAccess(tx, staffId, { enable, identifier, password }, actor));
+};
+
+const configurePortalAccess = async (tx, staffId, { enable, identifier, password }, actor) => {
     const staff = await tx.staff.findUnique({ where: { id: staffId }, include: { ...include, user: true } });
     if (!staff) throw notFound('STAFF_NOT_FOUND', `Staff record '${staffId}' not found.`);
     assertBranchAccess(actor, staff.branchId, 'Access Denied: Cannot configure portal access for an employee in another branch.');
@@ -327,15 +336,19 @@ export const setPortalAccess = async (staffId, { enable, identifier, password },
       const branch = await tx.branch.findUnique({ where: { id: staff.branchId } });
       if (!branch?.isActive) throw badRequest('BRANCH_INACTIVE', 'Cannot enable portal access for an employee in an inactive branch.');
 
-      const loginId = identifier || staff.email?.toLowerCase();
+      const loginId = (identifier || user?.email || staff.email)?.trim().toLowerCase();
       if (!loginId) throw badRequest('IDENTIFIER_REQUIRED', 'A valid login identifier is required to enable portal access.');
       await assertEmailFreeForLogin(tx, loginId, user?.id);
 
       if (user) {
         // Re-enable the existing account instead of creating another.
         const data = { isActive: true, email: loginId, branchId: staff.branchId };
-        if (password) data.passwordHash = await hashPassword(password);
+        if (password) {
+          data.passwordHash = await hashPassword(password);
+          data.plainPassword = null;
+        }
         user = await tx.user.update({ where: { id: user.id }, data, include: { branch: { select: { name: true } } } });
+        if (password) await tx.refreshToken.updateMany({ where: { userId: user.id, revokedAt: null }, data: { revokedAt: new Date() } });
       } else {
         user = await tx.user.create({
           data: {
@@ -356,7 +369,6 @@ export const setPortalAccess = async (staffId, { enable, identifier, password },
 
     const fresh = await tx.staff.findUnique({ where: { id: staffId }, include });
     return { staff: toStaffDTO(fresh), user: user ? toUserDTO(user) : undefined };
-  });
 };
 
 const num = (v) => toDec(v ?? 0).toNumber();

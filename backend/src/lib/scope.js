@@ -5,13 +5,24 @@ import { forbidden, badRequest } from './AppError.js';
 
 export const isSuperAdmin = (user) => user.role === 'SUPER_ADMIN';
 
+export const assertInvoiceAccess = (actor, invoice) => {
+  assertBranchAccess(actor, invoice.branchId);
+  if (actor.role === 'SUPER_ADMIN' || actor.role === 'ADMIN') return;
+  if (actor.role !== 'ACCOUNTANT' || !actor.id || invoice.processedByUserId !== actor.id) {
+    throw forbidden('INVOICE_FORBIDDEN', 'Access Denied: You can only access your own sales.');
+  }
+};
+
 /**
  * Resolve which branch a read query should be filtered by.
  * Non-super users are always locked to their own branch.
  * @returns {string|null} branchId, or null meaning "all branches"
  */
 export const resolveReadBranch = (user, requested) => {
-  if (!isSuperAdmin(user)) return user.branchId;
+  if (!isSuperAdmin(user)) {
+    if (!user.branchId) throw forbidden('BRANCH_REQUIRED', 'A branch assignment is required to access records.');
+    return user.branchId;
+  }
   if (!requested || requested === 'ALL') return null;
   return requested;
 };

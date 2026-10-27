@@ -73,7 +73,7 @@ export const DebitCreditStatementPage: React.FC<{ initialTab?: 'PAYMENT_ACCOUNTS
   }
 
   // Active Main Tab: 'PAYMENT_ACCOUNTS' | 'CASH_DRAWER'
-  const [activeTab, setActiveTab] = useState<'PAYMENT_ACCOUNTS' | 'CASH_DRAWER'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'PAYMENT_ACCOUNTS' | 'CASH_DRAWER'>(user.role === 'ACCOUNTANT' ? 'CASH_DRAWER' : initialTab);
 
   // Cash Drawer Sub-view: 'TRANSACTIONS' (Debit/Credit Ledger) | 'SHIFTS' (Shift Reconciliation)
   const [cashSubView, setCashSubView] = useState<'TRANSACTIONS' | 'SHIFTS'>('TRANSACTIONS');
@@ -386,7 +386,7 @@ export const DebitCreditStatementPage: React.FC<{ initialTab?: 'PAYMENT_ACCOUNTS
 
           {/* Master Tab Switcher */}
           <div className="inline-flex p-1.5 bg-white/80 rounded-2xl border border-slate-200/80 shadow-2xs gap-1">
-            <button
+            {user.role !== 'ACCOUNTANT' && <button
               type="button"
               onClick={() => handleTabChange('PAYMENT_ACCOUNTS')}
               className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
@@ -397,7 +397,7 @@ export const DebitCreditStatementPage: React.FC<{ initialTab?: 'PAYMENT_ACCOUNTS
             >
               <Landmark className="w-4 h-4" />
               <span>1. Payment Accounts</span>
-            </button>
+            </button>}
             <button
               type="button"
               onClick={() => handleTabChange('CASH_DRAWER')}

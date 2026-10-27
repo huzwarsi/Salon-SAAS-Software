@@ -474,7 +474,7 @@ export const StaffDirectoryPage: React.FC = () => {
     setPortalToggleData({
       enable: !staff.hasPortalAccess,
       identifier: staff.linkedUserEmail || staff.email || `${staff.name.toLowerCase().replace(/\s+/g, '.')}@isysware.com`,
-      password: 'Staff@2026',
+      password: staff.linkedUserId ? '' : 'Staff@2026',
     });
     setFormError(null);
     setFormSuccess(null);
@@ -678,6 +678,9 @@ export const StaffDirectoryPage: React.FC = () => {
 
           specialties: specialtiesArray,
           isActive: formData.isActive,
+          enablePortalAccess: formData.enablePortalAccess,
+          portalIdentifier: formData.enablePortalAccess ? formData.portalIdentifier.trim().toLowerCase() || undefined : undefined,
+          portalPassword: formData.enablePortalAccess ? formData.portalPassword.trim() || undefined : undefined,
         },
         user
       );
@@ -1466,7 +1469,7 @@ export const StaffDirectoryPage: React.FC = () => {
                       onChange={(e) => setFormData({ ...formData, portalIdentifier: e.target.value })}
                     />
 
-                    {isAddModalOpen && (
+                    {(isAddModalOpen || !selectedStaff?.linkedUserId) && (
                       <Input
                         label="Initial Password *"
                         type="text"

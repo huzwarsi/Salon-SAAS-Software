@@ -18,12 +18,14 @@ export function canAccessRoute(user: User | null, routePath: string): boolean {
   const path = routePath.split('?')[0].split('#')[0];
   if (['/admin/payment-accounts', '/admin/tax-settings'].includes(path)) return user.role === 'SUPER_ADMIN';
 
+  if (path === '/reports/payment-accounts') return user.role === 'SUPER_ADMIN' || user.role === 'ADMIN';
+
   // Root or base dashboard redirect is handled contextually
   if (path === '/' || path === '') return true;
 
   // Staff specific routes
   if (user.role === 'STAFF') {
-    const staffAllowed = ['/my-performance', '/my-attendance', '/my-reports', '/profile'];
+    const staffAllowed = ['/dashboard', '/my-performance', '/my-attendance', '/my-reports', '/profile'];
     return staffAllowed.includes(path);
   }
 

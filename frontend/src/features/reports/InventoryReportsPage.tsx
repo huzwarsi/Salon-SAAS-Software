@@ -56,7 +56,7 @@ export const InventoryReportsPage: React.FC = () => {
   const { user, activeBranchId, allBranches, demoDate } = useAuth();
 
   // Role Guard: SUPER_ADMIN, ADMIN, ACCOUNTANT (Staff cannot access)
-  if (!user || user.role === 'STAFF') {
+  if (!user || !['SUPER_ADMIN', 'ADMIN'].includes(user.role)) {
     return <AccessDeniedView attemptedPath="/reports/inventory" />;
   }
 

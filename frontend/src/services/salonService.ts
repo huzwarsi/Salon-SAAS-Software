@@ -326,7 +326,7 @@ export interface SalonServiceContract {
     },
     actor: User
   ): Promise<{ staff: StaffMember; user?: User }>;
-  updateStaffMember(id: string, params: Partial<StaffMember>, actor: User): Promise<StaffMember>;
+  updateStaffMember(id: string, params: Partial<StaffMember> & { enablePortalAccess?: boolean; portalIdentifier?: string; portalPassword?: string }, actor: User): Promise<StaffMember>;
   deactivateStaffMember(id: string, actor: User): Promise<{ success: boolean; message: string }>;
   setStaffPortalAccess(
     staffId: string,

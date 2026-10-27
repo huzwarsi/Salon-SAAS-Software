@@ -1176,13 +1176,14 @@ class MockSalonService implements SalonServiceContract {
     return { staff: { ...newStaff }, user: createdUser };
   }
 
-  async updateStaffMember(id: string, params: Partial<StaffMember>, actor?: User): Promise<StaffMember> {
+  async updateStaffMember(id: string, params: Partial<StaffMember> & { enablePortalAccess?: boolean; portalIdentifier?: string; portalPassword?: string }, actor?: User): Promise<StaffMember> {
     const authenticatedActor = this.getAuthenticatedActor(actor);
     if (authenticatedActor.role !== 'SUPER_ADMIN' && authenticatedActor.role !== 'ADMIN') {
       throw new Error('Access Denied: Only Administrators can update employee profiles.');
     }
 
     const store = mockStorage.getStore();
+    const originalStore = structuredClone(store);
     const index = store.staff.findIndex((s) => s.id === id);
     if (index === -1) {
       throw new Error(`Employee '${id}' not found.`);
@@ -1295,6 +1296,16 @@ class MockSalonService implements SalonServiceContract {
     }
 
     mockStorage.saveStore(store);
+    if (params.enablePortalAccess !== undefined && params.isActive !== false) {
+      try {
+        return (await this.setStaffPortalAccess(id, params.enablePortalAccess, {
+          identifier: params.portalIdentifier || '', password: params.portalPassword,
+        }, authenticatedActor)).staff;
+      } catch (error) {
+        mockStorage.saveStore(originalStore);
+        throw error;
+      }
+    }
     return { ...updated };
   }
 
@@ -1367,7 +1378,7 @@ class MockSalonService implements SalonServiceContract {
         throw new Error('Cannot enable portal access for an employee in an inactive branch.');
       }
 
-      const identifier = credentials?.identifier?.trim().toLowerCase() || staff.email?.trim().toLowerCase();
+      const identifier = credentials?.identifier?.trim().toLowerCase() || store.users.find((u) => u.staffId === staff.id)?.email || staff.email?.trim().toLowerCase();
       if (!identifier) {
         throw new Error('A valid login identifier is required to enable portal access.');
       }

@@ -378,7 +378,7 @@ export const NAVIGATION_GROUPS: NavGroup[] = [
             id: 'rep-op-profit',
             label: 'Operating Profit (P&L)',
             href: '/reports/operating-profit',
-            allowedRoles: ['SUPER_ADMIN', 'ADMIN', 'ACCOUNTANT'],
+            allowedRoles: ['SUPER_ADMIN', 'ADMIN'],
           },
           {
             id: 'rep-detailed-inc',
@@ -420,7 +420,7 @@ export const NAVIGATION_GROUPS: NavGroup[] = [
             id: 'rep-appts-audit',
             label: 'Appointments Report',
             href: '/reports/appointments',
-            allowedRoles: ['SUPER_ADMIN', 'ADMIN', 'ACCOUNTANT'],
+            allowedRoles: ['SUPER_ADMIN', 'ADMIN'],
           },
           {
             id: 'rep-st-perf',

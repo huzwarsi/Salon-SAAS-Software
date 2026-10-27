@@ -41,7 +41,7 @@ export const COGSReportPage: React.FC = () => {
   const { user, activeBranchId, allBranches, demoDate } = useAuth();
 
   // Role guard: Super Admin, Admin, and Accountant
-  if (!user || user.role === 'STAFF') {
+  if (!user || !['SUPER_ADMIN', 'ADMIN'].includes(user.role)) {
     return <AccessDeniedView attemptedPath="/reports/operating-profit" />;
   }
 

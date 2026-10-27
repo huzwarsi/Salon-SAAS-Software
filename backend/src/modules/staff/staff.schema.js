@@ -58,6 +58,9 @@ export const createStaffSchema = z.object({
 
 export const updateStaffSchema = z.object({
   ...optionalized,
+  enablePortalAccess: z.boolean().optional(),
+  portalIdentifier: z.string().trim().toLowerCase().optional(),
+  portalPassword: z.string().trim().min(6, 'Portal password must be at least 6 characters').optional(),
   branchId: z.string().optional(),
   isActive: z.boolean().optional(),
   exitDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Exit date must be YYYY-MM-DD').optional(),

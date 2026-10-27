@@ -75,10 +75,10 @@ describe('Financial Reports Suite API Contract (Sales, Income/Expense, Operating
   });
 
   describe('Operating Profit Report (/reports/operating-profit)', () => {
-    it('blocks staff and allows admin and accountant', async () => {
+    it('blocks staff and accountants and allows admin', async () => {
       expect((await as('staff').get('/reports/operating-profit')).status).toBe(403);
       expect((await as('admin').get('/reports/operating-profit?preset=THIS_MONTH')).status).toBe(200);
-      expect((await as('accountant').get('/reports/operating-profit?preset=THIS_MONTH')).status).toBe(200);
+      expect((await as('accountant').get('/reports/operating-profit?preset=THIS_MONTH')).status).toBe(403);
     });
 
     it('returns structured 5-section statement rows and detailed rows', async () => {
@@ -103,10 +103,10 @@ describe('Financial Reports Suite API Contract (Sales, Income/Expense, Operating
   });
 
   describe('Payment Accounts Report (/reports/payment-accounts)', () => {
-    it('blocks staff and allows admin and accountant', async () => {
+    it('blocks staff and accountants and allows admin', async () => {
       expect((await as('staff').get('/reports/payment-accounts')).status).toBe(403);
       expect((await as('admin').get('/reports/payment-accounts?preset=THIS_MONTH')).status).toBe(200);
-      expect((await as('accountant').get('/reports/payment-accounts?preset=THIS_MONTH')).status).toBe(200);
+      expect((await as('accountant').get('/reports/payment-accounts?preset=THIS_MONTH')).status).toBe(403);
     });
 
     it('returns accounts summary and reconciles closing balance', async () => {

@@ -2,6 +2,7 @@ import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useRouter } from '../../context/RouterContext';
 import { NAVIGATION_GROUPS } from '../../config/navigation';
+import { getDefaultRouteForRole } from '../../lib/permissions';
 import { NavIcon } from './NavIcon';
 import { Scissors, ChevronDown, Sparkles, LogOut } from 'lucide-react';
 
@@ -96,7 +97,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       >
         {/* Top Floating Logo Pill */}
         <div
-          onClick={() => handleItemClick('/dashboard')}
+          onClick={() => handleItemClick(user ? getDefaultRouteForRole(user.role) : '/')}
           title={brandName}
           className="w-11 h-11 rounded-2xl bg-white/90 backdrop-blur-xl shadow-sm flex items-center justify-center p-2 mx-auto cursor-pointer hover:scale-105 transition-all duration-200 shrink-0"
         >
@@ -141,7 +142,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="w-[54px] mx-auto rounded-2xl bg-white/90 backdrop-blur-xl shadow-sm py-2 px-1 flex flex-col items-center gap-1 shrink-0">
           <button
             type="button"
-            onClick={() => handleItemClick('/dashboard')}
+            onClick={() => handleItemClick(user ? getDefaultRouteForRole(user.role) : '/')}
             title="System Dashboard"
             className="w-9 h-9 rounded-xl flex items-center justify-center text-[#78616C] hover:text-[#18191B] hover:bg-[#FDF2F5] transition-colors cursor-pointer"
           >
@@ -172,7 +173,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     >
       {/* Brand Header */}
       <div className="h-16 flex items-center px-4 border-0 shrink-0 bg-transparent relative z-10">
-        <div className="flex items-center gap-3 overflow-hidden cursor-pointer" onClick={() => handleItemClick('/dashboard')}>
+        <div className="flex items-center gap-3 overflow-hidden cursor-pointer" onClick={() => handleItemClick(user ? getDefaultRouteForRole(user.role) : '/')}>
           {logoUrl ? (
             <div className="w-9.5 h-9.5 rounded-xl bg-white shadow-2xs flex items-center justify-center p-1 shrink-0 overflow-hidden">
               <img src={logoUrl} alt={brandName} className="w-full h-full object-contain" />

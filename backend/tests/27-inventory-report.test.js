@@ -2,12 +2,12 @@ import { describe, it, expect } from 'vitest';
 import { as } from './helpers.js';
 
 describe('Inventory & Supply Chain Reports Suite API Contract', () => {
-  it('blocks staff from accessing inventory reports', async () => {
-    const res = await as('staff').get('/reports/inventory');
+  it.each(['staff', 'accountant'])('blocks %s from accessing inventory reports', async role => {
+    const res = await as(role).get('/reports/inventory');
     expect(res.status).toBe(403);
   });
 
-  it('allows admin and accountant to retrieve valuation report', async () => {
+  it('allows admin to retrieve valuation report', async () => {
     const res = await as('admin').get('/reports/inventory?type=valuation&preset=THIS_MONTH');
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty('data');
@@ -64,7 +64,7 @@ describe('Inventory & Supply Chain Reports Suite API Contract', () => {
   });
 
   it('allows retrieving consumption and expiry reports', async () => {
-    const consRes = await as('accountant').get('/reports/inventory?type=consumption&preset=THIS_MONTH');
+    const consRes = await as('admin').get('/reports/inventory?type=consumption&preset=THIS_MONTH');
     expect(consRes.status).toBe(200);
     expect(consRes.body.data).toHaveProperty('kpis');
     expect(typeof consRes.body.data.kpis.totalMaterialCost).toBe('number');

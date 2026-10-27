@@ -11,7 +11,7 @@ describe('Reporting Suite Reconciliation Gate (§14)', () => {
     expect((await as('accountant').get('/reports/attendance?preset=THIS_MONTH')).status).toBe(403);
   });
 
-  it('allows administrators and accountants to access financial and operating reports', async () => {
+  it('allows administrators to access financial and operating reports', async () => {
     for (const path of [
       '/reports/sales-invoices?preset=THIS_MONTH',
       '/reports/income-expense?preset=THIS_MONTH',

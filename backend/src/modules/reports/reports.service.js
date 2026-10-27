@@ -17,8 +17,7 @@ const n = (d) => round2(d ?? 0).toNumber();
 const range = (startDate, endDate) => ({ gte: dateOnly(startDate), lte: dateOnly(endDate) });
 
 const denyNonAdmins = (actor, what) => {
-  if (actor.role === 'STAFF') throw forbidden('FORBIDDEN', `Access Denied: Staff members cannot access ${what}.`);
-  if (actor.role === 'ACCOUNTANT') throw forbidden('FORBIDDEN', `Access Denied: Accountants cannot access ${what}.`);
+  if (!['SUPER_ADMIN', 'ADMIN'].includes(actor.role)) throw forbidden('FORBIDDEN', `Access Denied: Only administrators can access ${what}.`);
 };
 
 // ═══ APPOINTMENT REPORT ═══════════════════════════════════════════════════════
@@ -1483,6 +1482,7 @@ const computePeriodMetrics = async (branchId, fromStr, toStr, fromDate, toDate) 
 };
 
 export const operatingProfitReport = async (actor, query = {}) => {
+  denyNonAdmins(actor, 'operating profit reports');
   const ctx = await resolveReportContext(actor, query, 'RECOGNITION');
   const prior = resolvePriorPeriodDates(ctx.fromStr, ctx.toStr);
 
@@ -1706,6 +1706,7 @@ export const operatingProfitReport = async (actor, query = {}) => {
 // ═══ PAYMENT ACCOUNTS LEDGER REPORT ══════════════════════════════════════════
 
 export const paymentAccountsReport = async (actor, query = {}) => {
+  denyNonAdmins(actor, 'payment account reports');
   const ctx = await resolveReportContext(actor, query, 'MOVEMENT_TIMESTAMP');
   const branchFilter = ctx.branchId ? { branchId: ctx.branchId } : {};
 
@@ -2507,9 +2508,7 @@ export const detailedExpensesReport = async (actor, query = {}) => {
 
 // ═══ INVENTORY & SUPPLY CHAIN REPORTS SUITE ══════════════════════════════════
 export const inventoryReport = async (actor, query = {}) => {
-  if (actor.role === 'STAFF') {
-    throw forbidden('FORBIDDEN', 'Access Denied: Staff members cannot access inventory reports.');
-  }
+  denyNonAdmins(actor, 'inventory reports');
 
   const subType = query.type || 'valuation';
   const ctx = await resolveReportContext(actor, query, subType === 'valuation' || subType === 'expiry' ? 'AS_OF' : 'TRANSACTION');

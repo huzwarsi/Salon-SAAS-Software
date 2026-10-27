@@ -140,12 +140,20 @@ const withBalances = async (accounts, mapper, branchId) => {
 export const listPaymentAccounts = async (actor, branchId) => {
   const b = resolveReadBranch(actor, branchId);
   const accounts = await prisma.paymentAccount.findMany({ where: b ? membership(b) : {}, include: { branches: true }, orderBy: { createdAt: 'asc' } });
+  if (actor.role === 'ACCOUNTANT') return accounts.map((account) => {
+    const { currentBalance, ...option } = toPaymentAccountDTO(account, 0);
+    return option;
+  });
   return withBalances(accounts, toPaymentAccountDTO, b);
 };
 
 export const listOnlineAccounts = async (actor, branchId) => {
   const b = resolveReadBranch(actor, branchId);
   const accounts = await prisma.paymentAccount.findMany({ where: b ? membership(b) : {}, include: { branches: true }, orderBy: { createdAt: 'asc' } });
+  if (actor.role === 'ACCOUNTANT') return accounts.map((account) => {
+    const { currentBalance, ...option } = toOnlineAccountDTO(account, 0);
+    return option;
+  });
   return withBalances(accounts, toOnlineAccountDTO, b);
 };
 
