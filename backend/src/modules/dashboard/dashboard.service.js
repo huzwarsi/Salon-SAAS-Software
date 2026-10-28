@@ -219,6 +219,7 @@ const loadBranch = async (actor, branchId) => {
 };
 
 const pkr = (v) => `PKR ${Number(v).toLocaleString('en-PK')}`;
+const addDays = (date, k) => ymd(new Date(dateOnly(date).getTime() + k * 86400000));
 
 export const adminDashboard = async (actor, { branchId } = {}) => {
   if (!['SUPER_ADMIN', 'ADMIN'].includes(actor.role)) throw forbidden('FORBIDDEN', 'Access Denied: Branch dashboard is restricted to administrators.');
@@ -248,7 +249,76 @@ export const adminDashboard = async (actor, { branchId } = {}) => {
   const names = await prisma.staff.findMany({ where: { id: { in: present.map((p) => p.staffId) } }, select: { name: true } });
   const staffAttendanceSummary = { presentCount: present.length, totalCount, onDutyStaffNames: names.map((s) => s.name) };
 
+  // 7 Days Booking and Appointment Alerts
+  const todayDateOnly = dateOnly(date);
+  const sevenDaysAheadDate = dateOnly(addDays(date, 7));
+
+  const [upcomingBookings, upcomingAppointments] = await Promise.all([
+    prisma.booking.findMany({
+      where: {
+        ...scope,
+        status: { notIn: ['CANCELLED', 'COMPLETED'] },
+        eventDate: {
+          gte: todayDateOnly,
+          lte: sevenDaysAheadDate,
+        },
+      },
+      orderBy: [{ eventDate: 'asc' }, { serviceTime: 'asc' }],
+      take: 15,
+    }),
+    prisma.appointment.findMany({
+      where: {
+        ...scope,
+        status: { in: ['CONFIRMED', 'PENDING'] },
+        date: {
+          gte: todayDateOnly,
+          lte: sevenDaysAheadDate,
+        },
+      },
+      orderBy: [{ date: 'asc' }, { startTime: 'asc' }],
+      take: 15,
+    }),
+  ]);
+
+  const bookingAlerts = upcomingBookings.map((b) => {
+    const diffMs = new Date(b.eventDate).getTime() - todayDateOnly.getTime();
+    const diffDays = Math.max(0, Math.round(diffMs / 86400000));
+    const dayLabel = diffDays === 0 ? 'Today' : diffDays === 1 ? 'Tomorrow' : `in ${diffDays} days`;
+    const eventDateStr = new Date(b.eventDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+    return {
+      id: `booking-${b.id}`,
+      type: 'BOOKING_REMINDER',
+      title: `Upcoming Booking (${dayLabel})`,
+      description: `${b.clientName} · ${b.bookingNumber} (${b.type}) scheduled on ${eventDateStr} at ${b.serviceTime}. Total: ${pkr(b.totalAmount)}.`,
+      urgency: diffDays <= 2 ? 'high' : 'medium',
+      href: `/operations/bookings?search=${encodeURIComponent(b.bookingNumber)}`,
+      daysRemaining: diffDays,
+      isBookingAlert: true,
+      bookingNumber: b.bookingNumber,
+    };
+  });
+
+  const appointmentAlerts = upcomingAppointments.map((a) => {
+    const diffMs = new Date(a.date).getTime() - todayDateOnly.getTime();
+    const diffDays = Math.max(0, Math.round(diffMs / 86400000));
+    const dayLabel = diffDays === 0 ? 'Today' : diffDays === 1 ? 'Tomorrow' : `in ${diffDays} days`;
+    const appDateStr = new Date(a.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+    return {
+      id: `appointment-${a.id}`,
+      type: 'BOOKING_REMINDER',
+      title: `Upcoming Appointment (${dayLabel})`,
+      description: `${a.clientName} · ${a.appointmentNumber} scheduled on ${appDateStr} at ${a.startTime}. Price: ${pkr(a.price)}.`,
+      urgency: diffDays <= 2 ? 'high' : 'medium',
+      href: `/operations/appointments?date=${new Date(a.date).toISOString().slice(0, 10)}`,
+      daysRemaining: diffDays,
+      isBookingAlert: true,
+      bookingNumber: a.appointmentNumber,
+    };
+  });
+
   const pendingActions = [
+    ...bookingAlerts,
+    ...appointmentAlerts,
     ...(pending.length ? [{
       id: 'pa-settlement', title: 'Pending Cash Settlement',
       description: pending.length === 1
@@ -329,7 +399,6 @@ const monthBounds = (date) => {
   const last = new Date(Date.UTC(y, m, 0)).getUTCDate();
   return { start: `${date.slice(0, 7)}-01`, end: `${date.slice(0, 7)}-${String(last).padStart(2, '0')}` };
 };
-const addDays = (date, k) => ymd(new Date(dateOnly(date).getTime() + k * 86400000));
 
 export const staffDashboard = async (actor) => {
   if (!actor.staffId) throw forbidden('FORBIDDEN', 'Staff record associated with the authenticated user could not be found.');

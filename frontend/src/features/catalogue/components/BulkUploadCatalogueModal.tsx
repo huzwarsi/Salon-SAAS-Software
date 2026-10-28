@@ -1,6 +1,7 @@
+import React, { useState, useRef } from 'react';
+import * as XLSX from 'xlsx';
 import { BranchActionField } from '@/components/BranchActionField';
 import { useBranchAction } from '@/hooks/useBranchAction';
-import React, { useState, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { salonService } from '@/services';
 import { toast } from '@/context/ToastContext';
@@ -37,6 +38,8 @@ import {
   Loader2,
   Trash2,
   FileText,
+  Check,
+  Sparkles,
 } from 'lucide-react';
 
 interface BulkUploadCatalogueModalProps {
@@ -54,73 +57,120 @@ interface ParsedServiceRow {
   name: string;
   category: string;
   price: number;
-  durationMinutes: number;
-  code?: string;
-  description?: string;
-  taxTreatment: 'BRANCH_DEFAULT' | 'SPECIFIC_RULE' | 'EXEMPT';
-  isActive: boolean;
+  isNewCategory: boolean;
   isValid: boolean;
   error?: string;
 }
 
 interface ParsedPackageComponent {
-  serviceIdentifier: string; // name or code
+  serviceIdentifier: string;
   matchedService?: ServiceItem;
   quantity: number;
-  allocationPercentage?: number;
+  allocationPercentage: number;
 }
 
 interface ParsedPackageRow {
   rowNumber: number;
   name: string;
   price: number;
-  code?: string;
-  description?: string;
-  taxTreatment: 'BRANCH_DEFAULT' | 'SPECIFIC_RULE' | 'EXEMPT';
-  isActive: boolean;
   components: ParsedPackageComponent[];
   isValid: boolean;
   error?: string;
 }
 
 /**
- * Robust CSV line tokenizer respecting quoted strings with commas and escaped quotes.
+ * Tokenize service string into individual services with optional multipliers:
+ * Handles: "Hair Cut, Beard Grooming" or "2x Blowdry; 1x Hair Treatment" or "Hair Cut: 2, Shave: 1"
  */
-function parseCSVLine(line: string): string[] {
-  const values: string[] = [];
-  let current = '';
-  let inQuotes = false;
+function parseServiceTokens(servicesText: string): { serviceIdentifier: string; quantity: number }[] {
+  if (!servicesText || !servicesText.trim()) return [];
+  const rawTokens = servicesText
+    .split(/[,;\n\r]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
 
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i];
-    if (char === '"') {
-      if (inQuotes && line[i + 1] === '"') {
-        current += '"';
-        i++; // skip escaped quote
-      } else {
-        inQuotes = !inQuotes;
-      }
-    } else if (char === ',' && !inQuotes) {
-      values.push(current.trim());
-      current = '';
+  return rawTokens.map((raw) => {
+    let name = raw.trim();
+    let qty = 1;
+    const prefixMatch = name.match(/^(\d+)\s*[xX*]\s*(.+)$/);
+    if (prefixMatch) {
+      qty = parseInt(prefixMatch[1], 10) || 1;
+      name = prefixMatch[2].trim();
     } else {
-      current += char;
+      const suffixMatch = name.match(/^(.+?)\s*(?:[xX*:]|\()\s*(\d+)\s*\)?$/);
+      if (suffixMatch) {
+        name = suffixMatch[1].trim();
+        qty = parseInt(suffixMatch[2], 10) || 1;
+      }
     }
-  }
-  values.push(current.trim());
-  return values;
+    return { serviceIdentifier: name, quantity: qty > 0 ? qty : 1 };
+  });
 }
 
-function parseCSVText(text: string): string[][] {
+/**
+ * Dynamically computes equal allocations summing to exactly 100%
+ */
+function computeEqualAllocations(count: number): number[] {
+  if (count <= 0) return [];
+  const base = Math.floor((100 / count) * 100) / 100;
+  const allocations: number[] = [];
+  let sum = 0;
+  for (let i = 0; i < count - 1; i++) {
+    allocations.push(base);
+    sum += base;
+  }
+  allocations.push(Math.round((100 - sum) * 100) / 100);
+  return allocations;
+}
+
+/**
+ * Robust CSV/TSV tokenizer respecting quotes and delimiters
+ */
+function tokenizeGrid(text: string): string[][] {
   const lines = text
     .split(/\r?\n/)
     .map((l) => l.trim())
     .filter((l) => l.length > 0);
-  return lines.map(parseCSVLine);
+
+  if (lines.length === 0) return [];
+
+  // Check if content is Tab-Separated (e.g. copied directly from Excel)
+  const isTSV = lines.some((l) => l.includes('\t'));
+
+  if (isTSV) {
+    return lines.map((line) => line.split('\t').map((c) => c.trim().replace(/^"(.*)"$/, '$1')));
+  }
+
+  return lines.map((line) => {
+    const values: string[] = [];
+    let current = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      if (char === '"') {
+        if (inQuotes && line[i + 1] === '"') {
+          current += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (char === ',' && !inQuotes) {
+        values.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    values.push(current.trim());
+    return values;
+  });
 }
 
 const loadImportBranch = async (branchId: string) => {
-  const [services, packages] = await Promise.all([salonService.getServices(branchId), salonService.getPackages(branchId)]);
+  const [services, packages] = await Promise.all([
+    salonService.getServices(branchId),
+    salonService.getPackages(branchId),
+  ]);
   return { services, packages };
 };
 
@@ -128,9 +178,9 @@ export const BulkUploadCatalogueModal: React.FC<BulkUploadCatalogueModalProps> =
   isOpen,
   onClose,
   initialType = 'SERVICES',
-  branchId: readBranchId,
-  existingServices: readServices,
-  existingPackages: readPackages,
+  branchId: _readBranchId,
+  existingServices: _readServices,
+  existingPackages: _readPackages,
   onSuccess,
 }) => {
   const { user } = useAuth();
@@ -138,19 +188,20 @@ export const BulkUploadCatalogueModal: React.FC<BulkUploadCatalogueModalProps> =
   const branchId = actionScope.branchId;
   const existingServices = actionScope.data?.services || [];
   const existingPackages = actionScope.data?.packages || [];
+
   const [activeTab, setActiveTab] = useState<'SERVICES' | 'PACKAGES'>(initialType);
   const [rawText, setRawText] = useState('');
   const [fileName, setFileName] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Parsed state
+  // Parsed rows
   const [parsedServices, setParsedServices] = useState<ParsedServiceRow[]>([]);
   const [parsedPackages, setParsedPackages] = useState<ParsedPackageRow[]>([]);
 
-  // When tab changes, reset state
   const handleTabChange = (val: string) => {
-    setActiveTab(val as 'SERVICES' | 'PACKAGES');
+    const nextTab = val as 'SERVICES' | 'PACKAGES';
+    setActiveTab(nextTab);
     setRawText('');
     setFileName(null);
     setParsedServices([]);
@@ -158,88 +209,96 @@ export const BulkUploadCatalogueModal: React.FC<BulkUploadCatalogueModalProps> =
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  // ── CSV Escaping & Helpers ────────────────────────────────────────────────
-  const escapeCell = (val: unknown): string => {
-    if (val === null || val === undefined) return '';
-    const str = String(val);
-    if (/[",\n\r]/.test(str)) {
-      return `"${str.replace(/"/g, '""')}"`;
-    }
-    return str;
+  // ── Template Generation & Download (Excel & CSV) ─────────────────────────
+
+  const downloadServicesTemplateExcel = () => {
+    const headers = ['Name', 'Price', 'Category'];
+    const rows = [
+      ['Hair Cut & Styling', 1500, 'Hair Services'],
+      ['Beard Grooming & Shape', 800, 'Men Grooming'],
+      ['Hydra Facial Glow', 4500, 'Facials & Skin'],
+      ['Classic Manicure', 1200, 'Nail Care'],
+    ];
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+    ws['!cols'] = [{ wch: 30 }, { wch: 15 }, { wch: 25 }];
+    XLSX.utils.book_append_sheet(wb, ws, 'Services');
+    XLSX.writeFile(wb, 'services_bulk_import_template.xlsx');
   };
 
-  // ── CSV Export / Templates ────────────────────────────────────────────────
-  const downloadServicesTemplate = () => {
-    const branchServices = existingServices.filter((s) => !branchId || s.branchId === branchId);
-    const targetServices = branchServices.length > 0 ? branchServices : existingServices;
+  const downloadServicesTemplateCsv = () => {
+    const headers = ['Name', 'Price', 'Category'];
+    const rows = [
+      ['Hair Cut & Styling', '1500', 'Hair Services'],
+      ['Beard Grooming & Shape', '800', 'Men Grooming'],
+      ['Hydra Facial Glow', '4500', 'Facials & Skin'],
+      ['Classic Manicure', '1200', 'Nail Care'],
+    ];
 
-    const headers = ['Name', 'Category', 'Price', 'Duration', 'Code', 'Description', 'TaxTreatment', 'Status'];
-    let rows: string[][] = [];
+    const csvContent =
+      '\uFEFF' +
+      [headers.join(','), ...rows.map((r) => r.map((c) => `"${c.replace(/"/g, '""')}"`).join(','))].join(
+        '\n'
+      );
 
-    if (targetServices.length > 0) {
-      rows = targetServices.map((s) => [
-        s.name,
-        s.category || 'General',
-        String(s.price),
-        String(s.durationMinutes),
-        s.code || '',
-        s.description || '',
-        s.taxTreatment || 'BRANCH_DEFAULT',
-        s.isActive ? 'Active' : 'Inactive',
-      ]);
-    } else {
-      rows = [
-        ['Hair Cut & Style', 'Hair Services', '1500', '45', 'HAIR-01', 'Standard hair cut and styling', 'BRANCH_DEFAULT', 'Active'],
-        ['Beard Grooming', 'Grooming', '800', '30', 'GRM-01', 'Beard trim and shape up', 'BRANCH_DEFAULT', 'Active'],
-      ];
-    }
-
-    const csvContent = '\uFEFF' + [
-      headers.map(escapeCell).join(','),
-      ...rows.map((r) => r.map(escapeCell).join(',')),
-    ].join('\n');
-
-    downloadFile(csvContent, targetServices.length > 0 ? 'services_catalogue_export.csv' : 'services_bulk_import_template.csv');
+    downloadBlob(csvContent, 'services_bulk_import_template.csv', 'text/csv;charset=utf-8;');
   };
 
-  const downloadPackagesTemplate = () => {
-    const branchPackages = existingPackages.filter((p) => !branchId || p.branchId === branchId);
-    const targetPackages = branchPackages.length > 0 ? branchPackages : existingPackages;
+  const downloadPackagesTemplateExcel = () => {
+    const headers = ['Name', 'Services', 'Price'];
+    const branchActiveServices = existingServices.filter((s) => s.branchId === branchId && s.isActive);
+    let sampleServicesStr1 = 'Hydra Facial Glow, Classic Manicure';
+    let sampleServicesStr2 = 'Hair Cut & Styling, Beard Grooming & Shape';
 
-    const headers = ['Name', 'Price', 'Components', 'Code', 'Description', 'TaxTreatment', 'Status'];
-    let rows: string[][] = [];
-
-    if (targetPackages.length > 0) {
-      rows = targetPackages.map((p) => {
-        const comps = (p.components || [])
-          .map((c) => `${c.serviceName}:${c.quantity || 1}:${c.allocationPercentage || 0}`)
-          .join(';');
-        return [
-          p.name,
-          String(p.price),
-          comps,
-          p.code || '',
-          p.description || '',
-          p.taxTreatment || 'BRANCH_DEFAULT',
-          p.isActive ? 'Active' : 'Inactive',
-        ];
-      });
-    } else {
-      rows = [
-        ['Bridal Glow', '12000', 'Hydra Facial:1:50;Classic Manicure:1:50', 'PKG-01', 'Complete bridal pamper package', 'BRANCH_DEFAULT', 'Active'],
-      ];
+    if (branchActiveServices.length >= 2) {
+      sampleServicesStr1 = `${branchActiveServices[0].name}, ${branchActiveServices[1].name}`;
+    }
+    if (branchActiveServices.length >= 4) {
+      sampleServicesStr2 = `${branchActiveServices[2].name}, ${branchActiveServices[3].name}`;
     }
 
-    const csvContent = '\uFEFF' + [
-      headers.map(escapeCell).join(','),
-      ...rows.map((r) => r.map(escapeCell).join(',')),
-    ].join('\n');
+    const rows = [
+      ['Bridal Pamper Glow', sampleServicesStr1, 12000],
+      ['Groom Complete Styling', sampleServicesStr2, 3500],
+    ];
 
-    downloadFile(csvContent, targetPackages.length > 0 ? 'packages_catalogue_export.csv' : 'packages_bulk_import_template.csv');
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+    ws['!cols'] = [{ wch: 30 }, { wch: 50 }, { wch: 15 }];
+    XLSX.utils.book_append_sheet(wb, ws, 'Packages');
+    XLSX.writeFile(wb, 'packages_bulk_import_template.xlsx');
   };
 
-  const downloadFile = (content: string, filename: string) => {
-    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+  const downloadPackagesTemplateCsv = () => {
+    const headers = ['Name', 'Services', 'Price'];
+    const branchActiveServices = existingServices.filter((s) => s.branchId === branchId && s.isActive);
+    let sampleServicesStr1 = 'Hydra Facial Glow, Classic Manicure';
+    let sampleServicesStr2 = 'Hair Cut & Styling, Beard Grooming & Shape';
+
+    if (branchActiveServices.length >= 2) {
+      sampleServicesStr1 = `${branchActiveServices[0].name}, ${branchActiveServices[1].name}`;
+    }
+    if (branchActiveServices.length >= 4) {
+      sampleServicesStr2 = `${branchActiveServices[2].name}, ${branchActiveServices[3].name}`;
+    }
+
+    const rows = [
+      ['Bridal Pamper Glow', sampleServicesStr1, '12000'],
+      ['Groom Complete Styling', sampleServicesStr2, '3500'],
+    ];
+
+    const csvContent =
+      '\uFEFF' +
+      [headers.join(','), ...rows.map((r) => r.map((c) => `"${c.replace(/"/g, '""')}"`).join(','))].join(
+        '\n'
+      );
+
+    downloadBlob(csvContent, 'packages_bulk_import_template.csv', 'text/csv;charset=utf-8;');
+  };
+
+  const downloadBlob = (content: string, filename: string, type: string) => {
+    const blob = new Blob([content], { type });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
@@ -250,103 +309,125 @@ export const BulkUploadCatalogueModal: React.FC<BulkUploadCatalogueModalProps> =
     URL.revokeObjectURL(url);
   };
 
-  // ── File upload handler ───────────────────────────────────────────────────
+  // ── File Upload Handler (.xlsx, .xls, .csv, .tsv) ─────────────────────────
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
     setFileName(file.name);
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const content = event.target?.result as string;
-      setRawText(content);
-      parseContent(content, activeTab);
-    };
-    reader.readAsText(file);
+    const isExcel = /\.(xlsx|xls)$/i.test(file.name);
+
+    if (isExcel) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const buffer = event.target?.result as ArrayBuffer;
+          const workbook = XLSX.read(buffer, { type: 'array' });
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          const grid: any[][] = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' });
+          processGrid(grid, activeTab);
+          setRawText(`[Uploaded Excel file: ${file.name} with ${grid.length} rows]`);
+        } catch (err: any) {
+          toast.error(`Failed to read Excel file: ${err.message || 'Corrupted file'}`);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    } else {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const text = (event.target?.result as string) || '';
+        setRawText(text);
+        const grid = tokenizeGrid(text);
+        processGrid(grid, activeTab);
+      };
+      reader.readAsText(file);
+    }
   };
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const content = e.target.value;
-    setRawText(content);
+    const text = e.target.value;
+    setRawText(text);
     setFileName(null);
-    parseContent(content, activeTab);
+    const grid = tokenizeGrid(text);
+    processGrid(grid, activeTab);
   };
 
-  // ── CSV Parsing Logic ─────────────────────────────────────────────────────
-  const parseContent = (content: string, type: 'SERVICES' | 'PACKAGES') => {
-    const grid = parseCSVText(content);
+  // ── Grid Processing & Schema Validation ───────────────────────────────────
+
+  const processGrid = (rawGrid: any[][], type: 'SERVICES' | 'PACKAGES') => {
+    if (!rawGrid || rawGrid.length < 2) {
+      if (type === 'SERVICES') setParsedServices([]);
+      else setParsedPackages([]);
+      return;
+    }
+
+    // Clean empty rows
+    const grid = rawGrid.filter((row) => row && row.some((cell) => String(cell).trim().length > 0));
     if (grid.length < 2) {
       if (type === 'SERVICES') setParsedServices([]);
       else setParsedPackages([]);
       return;
     }
 
-    const header = grid[0].map((h) => h.toLowerCase().replace(/[^a-z0-9]/g, ''));
-    const rows = grid.slice(1);
+    const header = grid[0].map((h) =>
+      String(h || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '')
+    );
+    const dataRows = grid.slice(1);
 
     if (type === 'SERVICES') {
-      const nameIdx = header.findIndex((h) => h.includes('name') || h === 'service');
-      const catIdx = header.findIndex((h) => h.includes('cat'));
-      const priceIdx = header.findIndex((h) => h.includes('price') || h.includes('rate') || h.includes('cost'));
-      const durationIdx = header.findIndex((h) => h.includes('dur') || h.includes('min') || h.includes('time'));
-      const codeIdx = header.findIndex((h) => h.includes('code') || h === 'id');
-      const descIdx = header.findIndex((h) => h.includes('desc'));
-      const taxIdx = header.findIndex((h) => h.includes('tax'));
-      const statusIdx = header.findIndex((h) => h.includes('status') || h.includes('active'));
-
-      const existingCodes = new Set(
-        existingServices
-          .filter((s) => s.branchId === branchId)
-          .map((s) => s.code.toUpperCase())
+      // Columns: name, price, category
+      let nameIdx = header.findIndex((h) => h.includes('name') || h === 'service');
+      let priceIdx = header.findIndex(
+        (h) => h.includes('price') || h.includes('rate') || h.includes('cost') || h.includes('amount')
       );
-      const seenCodesInBatch = new Set<string>();
+      let catIdx = header.findIndex((h) => h.includes('cat') || h.includes('group'));
 
-      const parsed: ParsedServiceRow[] = rows.map((cols, idx) => {
-        const rowNum = idx + 2;
-        const name = (nameIdx >= 0 ? cols[nameIdx] : cols[0]) || '';
-        const category = (catIdx >= 0 ? cols[catIdx] : 'General') || 'General';
-        const rawPrice = priceIdx >= 0 ? cols[priceIdx] : cols[1];
-        const price = Number(rawPrice);
-        const rawDur = durationIdx >= 0 ? cols[durationIdx] : '30';
-        const duration = Number(rawDur) || 30;
-        const code = (codeIdx >= 0 ? cols[codeIdx] : '')?.toUpperCase() || undefined;
-        const description = descIdx >= 0 ? cols[descIdx] : '';
-        const rawTax = (taxIdx >= 0 ? cols[taxIdx] : '')?.toUpperCase();
-        const taxTreatment: 'BRANCH_DEFAULT' | 'SPECIFIC_RULE' | 'EXEMPT' =
-          rawTax === 'EXEMPT' ? 'EXEMPT' : rawTax === 'SPECIFIC_RULE' ? 'SPECIFIC_RULE' : 'BRANCH_DEFAULT';
-        const rawStatus = (statusIdx >= 0 ? cols[statusIdx] : '')?.toLowerCase();
-        const isActive = rawStatus === 'inactive' || rawStatus === 'false' ? false : true;
+      // If headers not named as expected, fallback to column order
+      if (nameIdx === -1 && priceIdx === -1 && catIdx === -1) {
+        nameIdx = 0;
+        priceIdx = 1;
+        catIdx = 2;
+      } else {
+        if (nameIdx === -1) nameIdx = 0;
+        if (priceIdx === -1) priceIdx = 1;
+        if (catIdx === -1) catIdx = 2;
+      }
 
-        let error: string | undefined;
+      const branchCategories = new Set(
+        existingServices
+          .filter((s) => !branchId || s.branchId === branchId)
+          .map((s) => (s.category || '').trim().toLowerCase())
+      );
+
+      const parsed: ParsedServiceRow[] = dataRows.map((cols, idx) => {
+        const rowNumber = idx + 2;
+        const rawName = String(cols[nameIdx] !== undefined ? cols[nameIdx] : '').trim();
+        const rawPrice = cols[priceIdx] !== undefined ? cols[priceIdx] : '';
+        const priceNum = Number(String(rawPrice).replace(/[^0-9.-]/g, ''));
+        const rawCat = String(cols[catIdx] !== undefined && cols[catIdx] !== '' ? cols[catIdx] : 'General').trim();
+
         let isValid = true;
+        let error: string | undefined;
 
-        if (!name.trim()) {
+        if (!rawName) {
           isValid = false;
-          error = 'Service name is missing.';
-        } else if (isNaN(price) || price < 0) {
+          error = 'Service name is required.';
+        } else if (isNaN(priceNum) || priceNum < 0) {
           isValid = false;
-          error = 'Price must be a valid non-negative number.';
-        } else if (code) {
-          if (existingCodes.has(code)) {
-            isValid = false;
-            error = `Code '${code}' is already registered in this branch.`;
-          } else if (seenCodesInBatch.has(code)) {
-            isValid = false;
-            error = `Duplicate code '${code}' in import file.`;
-          } else {
-            seenCodesInBatch.add(code);
-          }
+          error = 'Valid price is required (non-negative number).';
         }
 
+        const isNewCategory = rawCat ? !branchCategories.has(rawCat.toLowerCase()) : false;
+
         return {
-          rowNumber: rowNum,
-          name: name.trim(),
-          category: category.trim(),
-          price: isNaN(price) ? 0 : price,
-          durationMinutes: duration,
-          code,
-          description: description?.trim(),
-          taxTreatment,
-          isActive,
+          rowNumber,
+          name: rawName,
+          price: isNaN(priceNum) ? 0 : priceNum,
+          category: rawCat || 'General',
+          isNewCategory,
           isValid,
           error,
         };
@@ -355,108 +436,90 @@ export const BulkUploadCatalogueModal: React.FC<BulkUploadCatalogueModalProps> =
       setParsedServices(parsed);
     } else {
       // PACKAGES
-      const nameIdx = header.findIndex((h) => h.includes('name') || h === 'package');
-      const priceIdx = header.findIndex((h) => h.includes('price') || h.includes('rate') || h.includes('cost'));
-      const compIdx = header.findIndex((h) => h.includes('comp') || h.includes('service') || h.includes('item'));
-      const codeIdx = header.findIndex((h) => h.includes('code') || h === 'id');
-      const descIdx = header.findIndex((h) => h.includes('desc'));
-      const taxIdx = header.findIndex((h) => h.includes('tax'));
-      const statusIdx = header.findIndex((h) => h.includes('status') || h.includes('active'));
-
-      const existingCodes = new Set(
-        existingPackages
-          .filter((p) => p.branchId === branchId)
-          .map((p) => p.code.toUpperCase())
+      // Columns: name, services, price
+      let nameIdx = header.findIndex((h) => h.includes('name') || h === 'package');
+      let servicesIdx = header.findIndex(
+        (h) => h.includes('service') || h.includes('comp') || h.includes('item')
       );
-      const branchServices = existingServices.filter((s) => s.branchId === branchId);
-      const seenCodesInBatch = new Set<string>();
+      let priceIdx = header.findIndex(
+        (h) => h.includes('price') || h.includes('rate') || h.includes('cost') || h.includes('amount')
+      );
 
-      const parsed: ParsedPackageRow[] = rows.map((cols, idx) => {
-        const rowNum = idx + 2;
-        const name = (nameIdx >= 0 ? cols[nameIdx] : cols[0]) || '';
-        const rawPrice = priceIdx >= 0 ? cols[priceIdx] : cols[1];
-        const price = Number(rawPrice);
-        const rawComps = (compIdx >= 0 ? cols[compIdx] : cols[2]) || '';
-        const code = (codeIdx >= 0 ? cols[codeIdx] : '')?.toUpperCase() || undefined;
-        const description = descIdx >= 0 ? cols[descIdx] : '';
-        const rawTax = (taxIdx >= 0 ? cols[taxIdx] : '')?.toUpperCase();
-        const taxTreatment: 'BRANCH_DEFAULT' | 'SPECIFIC_RULE' | 'EXEMPT' =
-          rawTax === 'EXEMPT' ? 'EXEMPT' : rawTax === 'SPECIFIC_RULE' ? 'SPECIFIC_RULE' : 'BRANCH_DEFAULT';
-        const rawStatus = (statusIdx >= 0 ? cols[statusIdx] : '')?.toLowerCase();
-        const isActive = rawStatus === 'inactive' || rawStatus === 'false' ? false : true;
+      if (nameIdx === -1 && servicesIdx === -1 && priceIdx === -1) {
+        nameIdx = 0;
+        servicesIdx = 1;
+        priceIdx = 2;
+      } else {
+        if (nameIdx === -1) nameIdx = 0;
+        if (servicesIdx === -1) servicesIdx = 1;
+        if (priceIdx === -1) priceIdx = 2;
+      }
 
-        let error: string | undefined;
+      const branchServices = existingServices.filter((s) => !branchId || s.branchId === branchId);
+
+      const parsed: ParsedPackageRow[] = dataRows.map((cols, idx) => {
+        const rowNumber = idx + 2;
+        const rawName = String(cols[nameIdx] !== undefined ? cols[nameIdx] : '').trim();
+        const rawServices = String(cols[servicesIdx] !== undefined ? cols[servicesIdx] : '').trim();
+        const rawPrice = cols[priceIdx] !== undefined ? cols[priceIdx] : '';
+        const priceNum = Number(String(rawPrice).replace(/[^0-9.-]/g, ''));
+
         let isValid = true;
+        let error: string | undefined;
 
-        if (!name.trim()) {
+        if (!rawName) {
           isValid = false;
-          error = 'Package name is missing.';
-        } else if (isNaN(price) || price < 0) {
+          error = 'Package name is required.';
+        } else if (isNaN(priceNum) || priceNum < 0) {
           isValid = false;
-          error = 'Price must be a valid non-negative number.';
-        } else if (code) {
-          if (existingCodes.has(code)) {
-            isValid = false;
-            error = `Code '${code}' is already registered in this branch.`;
-          } else if (seenCodesInBatch.has(code)) {
-            isValid = false;
-            error = `Duplicate code '${code}' in import file.`;
-          } else {
-            seenCodesInBatch.add(code);
-          }
+          error = 'Valid price is required (non-negative number).';
+        } else if (!rawServices) {
+          isValid = false;
+          error = 'At least one service must be specified in the Services column.';
         }
 
-        // Parse components: format "Service1:Qty:Alloc; Service2:Qty:Alloc" or "Service1; Service2"
-        const componentTokens = rawComps
-          .split(';')
-          .map((c) => c.trim())
-          .filter(Boolean);
+        // Tokenize services
+        const tokens = parseServiceTokens(rawServices);
+        const allocations = computeEqualAllocations(tokens.length);
+
+        if (tokens.length === 0 && isValid) {
+          isValid = false;
+          error = 'No services found in Services column.';
+        }
 
         const components: ParsedPackageComponent[] = [];
 
-        if (componentTokens.length === 0 && isValid) {
-          isValid = false;
-          error = 'No component services specified (Components column is empty).';
-        } else {
-          for (const token of componentTokens) {
-            const parts = token.split(':').map((p) => p.trim());
-            const identifier = parts[0];
-            const qty = parts[1] ? parseInt(parts[1], 10) || 1 : 1;
-            const alloc = parts[2] ? parseFloat(parts[2]) : undefined;
+        for (let i = 0; i < tokens.length; i++) {
+          const t = tokens[i];
+          const query = t.serviceIdentifier.trim();
+          const targetName = query.toLowerCase();
+          const targetCode = query.toUpperCase();
 
-            // Match against branch services by code or name or id
-            const matched = branchServices.find(
-              (s) =>
-                s.code.toUpperCase() === identifier.toUpperCase() ||
-                s.name.toLowerCase() === identifier.toLowerCase() ||
-                s.id === identifier
-            );
+          const matched = branchServices.find(
+            (s) =>
+              s.code.toUpperCase() === targetCode ||
+              s.name.trim().toLowerCase() === targetName ||
+              s.id === query ||
+              s.name.toLowerCase().replace(/[^a-z0-9]/g, '') === targetName.replace(/[^a-z0-9]/g, '')
+          );
 
-            if (!matched && isValid) {
-              isValid = false;
-              error = `Component service '${identifier}' not found in branch services.`;
-            } else if (matched && !matched.isActive && isValid) {
-              isValid = false;
-              error = `Component service '${matched.name}' is deactivated.`;
-            }
-
-            components.push({
-              serviceIdentifier: identifier,
-              matchedService: matched,
-              quantity: qty,
-              allocationPercentage: alloc,
-            });
+          if (!query && isValid) {
+            isValid = false;
+            error = 'Service name cannot be empty.';
           }
+
+          components.push({
+            serviceIdentifier: query,
+            matchedService: matched,
+            quantity: t.quantity,
+            allocationPercentage: allocations[i] || 0,
+          });
         }
 
         return {
-          rowNumber: rowNum,
-          name: name.trim(),
-          price: isNaN(price) ? 0 : price,
-          code,
-          description: description?.trim(),
-          taxTreatment,
-          isActive,
+          rowNumber,
+          name: rawName,
+          price: isNaN(priceNum) ? 0 : priceNum,
           components,
           isValid,
           error,
@@ -468,8 +531,10 @@ export const BulkUploadCatalogueModal: React.FC<BulkUploadCatalogueModalProps> =
   };
 
   // ── Import Submission ─────────────────────────────────────────────────────
+
   const handleConfirmImport = async () => {
     if (!actionScope.validate()) return;
+
     if (activeTab === 'SERVICES') {
       const validRows = parsedServices.filter((s) => s.isValid);
       if (validRows.length === 0) {
@@ -483,16 +548,13 @@ export const BulkUploadCatalogueModal: React.FC<BulkUploadCatalogueModalProps> =
           name: r.name,
           category: r.category,
           price: r.price,
-          durationMinutes: r.durationMinutes,
-          code: r.code,
-          description: r.description,
-          taxTreatment: r.taxTreatment,
-          isActive: r.isActive,
+          durationMinutes: 30,
+          isActive: true,
         }));
 
         const result = await salonService.bulkImportServices(branchId, payload, user || undefined);
         toast.success(
-          `Services Import Complete! Accepted: ${result.acceptedRows}, Skipped/Duplicate: ${result.duplicateRows}, Rejected: ${result.rejectedRows}`
+          `Services Bulk Import Complete: ${result.acceptedRows} accepted, ${result.duplicateRows} skipped, ${result.rejectedRows} rejected.`
         );
         onSuccess();
         onClose();
@@ -513,14 +575,12 @@ export const BulkUploadCatalogueModal: React.FC<BulkUploadCatalogueModalProps> =
         const payload = validRows.map((r) => ({
           name: r.name,
           price: r.price,
-          code: r.code,
-          description: r.description,
-          taxTreatment: r.taxTreatment,
-          isActive: r.isActive,
+          isActive: true,
+          services: r.components.map((c) => c.matchedService?.name || c.serviceIdentifier).join(', '),
           components: r.components.map((c) => ({
             serviceId: c.matchedService?.id,
             serviceCode: c.matchedService?.code || c.serviceIdentifier,
-            serviceName: c.matchedService?.name,
+            serviceName: c.matchedService?.name || c.serviceIdentifier,
             quantity: c.quantity,
             allocationPercentage: c.allocationPercentage,
           })),
@@ -528,7 +588,7 @@ export const BulkUploadCatalogueModal: React.FC<BulkUploadCatalogueModalProps> =
 
         const result = await salonService.bulkImportPackages(branchId, payload, user || undefined);
         toast.success(
-          `Packages Import Complete! Accepted: ${result.acceptedRows}, Skipped/Duplicate: ${result.duplicateRows}, Rejected: ${result.rejectedRows}`
+          `Packages Bulk Import Complete: ${result.acceptedRows} accepted, ${result.duplicateRows} skipped, ${result.rejectedRows} rejected.`
         );
         onSuccess();
         onClose();
@@ -547,262 +607,305 @@ export const BulkUploadCatalogueModal: React.FC<BulkUploadCatalogueModalProps> =
       : parsedPackages.filter((p) => p.isValid).length;
   const currentInvalidCount = currentParsedCount - currentValidCount;
 
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="w-[96vw] max-w-3xl max-h-[88vh] overflow-y-auto overflow-x-hidden p-4 sm:p-6 min-w-0 flex flex-col gap-3.5">
+        <DialogHeader className="shrink-0">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#FDF2F5] text-[#9D2558] flex items-center justify-center">
-              <FileSpreadsheet className="w-4 h-4" />
+            <div className="w-9 h-9 rounded-xl bg-[#FDF2F5] text-[#9D2558] flex items-center justify-center shadow-xs shrink-0">
+              <FileSpreadsheet className="w-5 h-5" />
             </div>
-            <div>
-              <DialogTitle className="text-lg font-semibold text-slate-900">
-                Bulk Upload via CSV
+            <div className="min-w-0 flex-1 pr-6">
+              <DialogTitle className="text-base sm:text-lg font-bold text-slate-900 truncate">
+                Bulk Upload Catalogue (Excel & CSV)
               </DialogTitle>
-              <DialogDescription className="text-xs text-slate-500">
-                Upload or paste comma-separated records to add multiple standalone services or package bundles at once.
+              <DialogDescription className="text-xs text-slate-500 line-clamp-1">
+                Import services with (Name, Price, Category) or packages with (Name, Services, Price).
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        {/* TAB SELECTOR: SERVICES vs PACKAGES */}
-        <BranchActionField value={branchId} disabled={isSubmitting} onChange={(id) => { actionScope.setBranchId(id); handleTabChange(activeTab); }} />
-        {actionScope.error && <p role="alert" className="text-xs text-rose-600">{actionScope.error}</p>}
-        <fieldset disabled={!actionScope.ready}>
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="mt-2">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
-            <TabsList className="bg-slate-100 p-1">
-              <TabsTrigger value="SERVICES" className="text-xs gap-1.5 py-1 px-3">
-                <Scissors className="w-3.5 h-3.5 text-[#9D2558]" />
-                Services CSV
-              </TabsTrigger>
-              <TabsTrigger value="PACKAGES" className="text-xs gap-1.5 py-1 px-3">
-                <Package className="w-3.5 h-3.5 text-[#9D2558]" />
-                Packages CSV
-              </TabsTrigger>
-            </TabsList>
+        {/* Branch Selector */}
+        <div className="shrink-0">
+          <BranchActionField
+            value={branchId}
+            disabled={isSubmitting}
+            onChange={(id) => {
+              actionScope.setBranchId(id);
+              handleTabChange(activeTab);
+            }}
+          />
+        </div>
+        {actionScope.error && (
+          <p role="alert" className="text-xs text-rose-600 font-medium shrink-0">
+            {actionScope.error}
+          </p>
+        )}
 
-            <Button
-              variant="outline"
-              size="sm"
-              leftIcon={<Download className="w-3.5 h-3.5 text-slate-500" />}
-              onClick={activeTab === 'SERVICES' ? downloadServicesTemplate : downloadPackagesTemplate}
-              className="text-xs h-8"
-            >
-              Download {activeTab === 'SERVICES' ? 'Services' : 'Packages'} Template (.CSV)
-            </Button>
-          </div>
+        <fieldset disabled={!actionScope.ready} className="space-y-3.5 min-w-0 flex-1">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="mt-1 min-w-0">
+            {/* TAB SELECTOR & TEMPLATE DOWNLOADS */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-slate-200 min-w-0">
+              <TabsList className="bg-slate-100 p-1 rounded-xl flex-wrap h-auto min-w-0">
+                <TabsTrigger value="SERVICES" className="text-xs font-semibold gap-1.5 py-1 px-2.5">
+                  <Scissors className="w-3.5 h-3.5 text-[#9D2558]" />
+                  <span>Services</span>
+                  <span className="text-[10px] text-slate-500 font-normal hidden md:inline">(Name, Price, Category)</span>
+                </TabsTrigger>
+                <TabsTrigger value="PACKAGES" className="text-xs font-semibold gap-1.5 py-1 px-2.5">
+                  <Package className="w-3.5 h-3.5 text-[#9D2558]" />
+                  <span>Packages</span>
+                  <span className="text-[10px] text-slate-500 font-normal hidden md:inline">(Name, Services, Price)</span>
+                </TabsTrigger>
+              </TabsList>
 
-          {/* INPUT CONTAINER */}
-          <div className="space-y-4 pt-4">
-            {/* FILE UPLOAD / DRAG AREA */}
-            <div className="flex flex-col sm:flex-row items-center gap-3">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".csv,text/csv"
-                onChange={handleFileUpload}
-                className="hidden"
-                id="csv-file-input"
-              />
-              <label
-                htmlFor="csv-file-input"
-                className="flex items-center gap-2 px-4 py-2 border border-dashed border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50 cursor-pointer transition-colors"
-              >
-                <Upload className="w-4 h-4 text-[#9D2558]" />
-                <span>Choose .CSV File</span>
-              </label>
-
-              {fileName && (
-                <div className="flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200">
-                  <FileText className="w-3.5 h-3.5 text-emerald-600" />
-                  <span className="font-medium">{fileName}</span>
-                </div>
-              )}
-
-              {rawText && (
+              <div className="flex items-center gap-1.5 flex-wrap shrink-0">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  leftIcon={<Download className="w-3.5 h-3.5 text-emerald-600" />}
+                  onClick={activeTab === 'SERVICES' ? downloadServicesTemplateExcel : downloadPackagesTemplateExcel}
+                  className="text-xs h-7 px-2 font-semibold border-emerald-200 hover:bg-emerald-50 text-emerald-800"
+                  title="Download clean Excel .XLSX template"
+                >
+                  Download Excel
+                </Button>
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => {
-                    setRawText('');
-                    setFileName(null);
-                    setParsedServices([]);
-                    setParsedPackages([]);
-                    if (fileInputRef.current) fileInputRef.current.value = '';
-                  }}
-                  className="text-xs text-slate-500 hover:text-rose-600 ml-auto h-8 gap-1"
+                  leftIcon={<Download className="w-3.5 h-3.5 text-slate-500" />}
+                  onClick={activeTab === 'SERVICES' ? downloadServicesTemplateCsv : downloadPackagesTemplateCsv}
+                  className="text-xs h-7 px-2 text-slate-600"
+                  title="Download CSV template"
                 >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  Clear Data
+                  Download CSV
                 </Button>
+              </div>
+            </div>
+
+            {/* INPUT ACTIONS */}
+            <div className="space-y-4 pt-3">
+              {/* FILE UPLOAD / DRAG AREA */}
+              <div className="flex flex-col sm:flex-row items-center gap-3">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".xlsx,.xls,.csv,.tsv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  id="catalogue-file-input"
+                />
+                <label
+                  htmlFor="catalogue-file-input"
+                  className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-[#9D2558]/30 hover:border-[#9D2558] bg-[#FDF2F5]/30 hover:bg-[#FDF2F5]/60 rounded-xl text-xs font-semibold text-[#9D2558] cursor-pointer transition-all shadow-2xs"
+                >
+                  <Upload className="w-4 h-4 text-[#9D2558]" />
+                  <span>Choose Excel (.xlsx) or CSV File</span>
+                </label>
+
+                {fileName && (
+                  <div className="flex items-center gap-1.5 text-xs text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200 font-medium">
+                    <FileText className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>{fileName}</span>
+                  </div>
+                )}
+
+                {rawText && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setRawText('');
+                      setFileName(null);
+                      setParsedServices([]);
+                      setParsedPackages([]);
+                      if (fileInputRef.current) fileInputRef.current.value = '';
+                    }}
+                    className="text-xs text-slate-500 hover:text-rose-600 ml-auto h-8 gap-1 font-medium"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Clear
+                  </Button>
+                )}
+              </div>
+
+              {/* RAW PASTE TEXTAREA */}
+              <div className="min-w-0">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1 min-w-0">
+                  <span className="text-xs font-semibold text-slate-700 truncate">
+                    Or Copy & Paste Directly from Excel / CSV:
+                  </span>
+                  <span className="text-[11px] text-slate-400 shrink-0">
+                    {activeTab === 'SERVICES'
+                      ? 'Format: Name, Price, Category'
+                      : 'Format: Name, Services, Price'}
+                  </span>
+                </div>
+                <textarea
+                  value={rawText}
+                  onChange={handleTextChange}
+                  placeholder={
+                    activeTab === 'SERVICES'
+                      ? `Name,Price,Category\nHair Cut & Style,1500,Hair Services\nBeard Grooming,800,Men Grooming\nHydra Facial,4500,Facials`
+                      : `Name,Services,Price\n"Bridal Glow","Hydra Facial, Classic Manicure",12000\n"Men Pamper","Hair Cut & Style, Beard Grooming",2200`
+                  }
+                  rows={3}
+                  className="w-full max-w-full font-mono text-xs p-2.5 sm:p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#9D2558]/20 focus:border-[#9D2558] transition-all bg-slate-50/70 box-border resize-y min-h-[80px] max-h-[160px]"
+                />
+              </div>
+
+              {/* STATS BADGES */}
+              {currentParsedCount > 0 && (
+                <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
+                  <span className="text-xs font-bold text-slate-800">Preview:</span>
+                  <Badge variant="neutral" className="text-xs font-semibold">
+                    Total Rows: {currentParsedCount}
+                  </Badge>
+                  <Badge
+                    variant="primary"
+                    className="text-xs bg-emerald-50 text-emerald-800 border-emerald-200 font-semibold"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-emerald-600" />
+                    Ready to Import: {currentValidCount}
+                  </Badge>
+                  {currentInvalidCount > 0 && (
+                    <Badge variant="destructive" className="text-xs font-semibold">
+                      <AlertCircle className="w-3.5 h-3.5 mr-1" />
+                      Errors: {currentInvalidCount}
+                    </Badge>
+                  )}
+                  {currentInvalidCount > 0 && (
+                    <span className="text-[11px] text-rose-500 font-medium ml-1">
+                      (Rows with errors will be skipped)
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* LIVE PREVIEW TABLE */}
+              {currentParsedCount > 0 && (
+                <div className="border border-slate-200 rounded-xl overflow-hidden max-h-64 overflow-y-auto shadow-2xs">
+                  <Table>
+                    <TableHeader className="bg-slate-100/80 sticky top-0 z-10 backdrop-blur-xs">
+                      <TableRow className="text-xs">
+                        <TableHead className="w-12 text-center">#</TableHead>
+                        <TableHead>{activeTab === 'SERVICES' ? 'Service Name' : 'Package Name'}</TableHead>
+                        {activeTab === 'SERVICES' ? (
+                          <TableHead>Category</TableHead>
+                        ) : (
+                          <TableHead>Included Services</TableHead>
+                        )}
+                        <TableHead>Price</TableHead>
+                        <TableHead className="text-right">Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {activeTab === 'SERVICES'
+                        ? parsedServices.map((row) => (
+                            <TableRow
+                              key={row.rowNumber}
+                              className={`text-xs ${!row.isValid ? 'bg-rose-50/60' : 'hover:bg-slate-50/60'}`}
+                            >
+                              <TableCell className="font-mono text-slate-400 text-center">
+                                {row.rowNumber}
+                              </TableCell>
+                              <TableCell className="font-semibold text-slate-900">
+                                {row.name || <span className="text-rose-400 italic">Missing Name</span>}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-1.5">
+                                  <Badge variant="neutral" className="text-[11px] font-medium bg-slate-100">
+                                    {row.category}
+                                  </Badge>
+                                  {row.isNewCategory && (
+                                    <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-violet-100 text-violet-800 border border-violet-200">
+                                      <Sparkles className="w-2.5 h-2.5" />
+                                      New
+                                    </span>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell className="font-bold text-slate-900 font-mono">
+                                {formatCurrency(row.price)}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                {row.isValid ? (
+                                  <Badge
+                                    variant="primary"
+                                    className="text-[11px] bg-emerald-50 text-emerald-800 border-emerald-200 inline-flex items-center gap-1 font-semibold"
+                                  >
+                                    <Check className="w-3 h-3 text-emerald-600" />
+                                    Valid
+                                  </Badge>
+                                ) : (
+                                  <span className="text-xs text-rose-600 font-semibold inline-flex items-center justify-end gap-1">
+                                    <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                                    {row.error}
+                                  </span>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        : parsedPackages.map((row) => (
+                            <TableRow
+                              key={row.rowNumber}
+                              className={`text-xs ${!row.isValid ? 'bg-rose-50/60' : 'hover:bg-slate-50/60'}`}
+                            >
+                              <TableCell className="font-mono text-slate-400 text-center">
+                                {row.rowNumber}
+                              </TableCell>
+                              <TableCell className="font-semibold text-slate-900">
+                                {row.name || <span className="text-rose-400 italic">Missing Name</span>}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex flex-wrap gap-1 max-w-sm">
+                                  {row.components.map((c, i) => (
+                                    <Badge
+                                      key={i}
+                                      variant="neutral"
+                                      className="text-[10px] font-normal bg-slate-100 text-slate-800 border-slate-200"
+                                    >
+                                      <Check className="w-2.5 h-2.5 mr-0.5 text-emerald-600 inline" />
+                                      <span>{c.matchedService?.name || c.serviceIdentifier}</span>
+                                      {c.quantity > 1 ? ` (x${c.quantity})` : ''}
+                                      {c.allocationPercentage > 0 ? ` · ${c.allocationPercentage}%` : ''}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </TableCell>
+                              <TableCell className="font-bold text-slate-900 font-mono">
+                                {formatCurrency(row.price)}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                {row.isValid ? (
+                                  <Badge
+                                    variant="primary"
+                                    className="text-[11px] bg-emerald-50 text-emerald-800 border-emerald-200 inline-flex items-center gap-1 font-semibold"
+                                  >
+                                    <Check className="w-3 h-3 text-emerald-600" />
+                                    Valid
+                                  </Badge>
+                                ) : (
+                                  <span className="text-xs text-rose-600 font-semibold inline-flex items-center justify-end gap-1">
+                                    <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                                    {row.error}
+                                  </span>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                    </TableBody>
+                  </Table>
+                </div>
               )}
             </div>
-
-            {/* RAW TEXTAREA */}
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[11px] font-medium text-slate-600">
-                  Or Paste CSV Content Directly:
-                </span>
-                <span className="text-[11px] text-slate-400">
-                  First row must contain header names
-                </span>
-              </div>
-              <textarea
-                value={rawText}
-                onChange={handleTextChange}
-                placeholder={
-                  activeTab === 'SERVICES'
-                    ? `Name,Category,Price,Duration,Code,Description\nHair Cut & Style,Hair Services,1500,45,HAIR-01,Standard hair cut\nBeard Grooming,Grooming,800,30,GRM-01,Trim and shape`
-                    : `Name,Price,Components,Code,Description\n"Bridal Glow",12000,"Hydra Facial;Classic Manicure;Hair Cut & Style",PKG-01,"Complete package"\n"Groom Special",4500,"Hair Cut & Style:1:60;Beard Grooming:1:40",PKG-02,"Hair and beard"`
-                }
-                rows={5}
-                className="w-full font-mono text-xs p-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#9D2558]/20 focus:border-[#9D2558] transition-all bg-slate-50/50"
-              />
-            </div>
-
-            {/* PREVIEW SUMMARY BADGES */}
-            {currentParsedCount > 0 && (
-              <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
-                <span className="text-xs font-semibold text-slate-700">Preview:</span>
-                <Badge variant="neutral" className="text-xs">
-                  Total: {currentParsedCount}
-                </Badge>
-                <Badge variant="primary" className="text-xs bg-emerald-50 text-emerald-700 border-emerald-200">
-                  <CheckCircle2 className="w-3 h-3 mr-1 text-emerald-600" />
-                  Ready: {currentValidCount}
-                </Badge>
-                {currentInvalidCount > 0 && (
-                  <Badge variant="destructive" className="text-xs">
-                    <AlertCircle className="w-3 h-3 mr-1" />
-                    Errors: {currentInvalidCount}
-                  </Badge>
-                )}
-                {currentInvalidCount > 0 && (
-                  <span className="text-[11px] text-rose-500 italic ml-2">
-                    (Invalid rows will be skipped or rejected upon import)
-                  </span>
-                )}
-              </div>
-            )}
-
-            {/* PREVIEW TABLE */}
-            {currentParsedCount > 0 && (
-              <div className="border border-slate-200 rounded-lg overflow-hidden max-h-60 overflow-y-auto">
-                <Table>
-                  <TableHeader className="bg-slate-50 sticky top-0 z-10">
-                    <TableRow className="text-[11px]">
-                      <TableHead className="w-10">#</TableHead>
-                      <TableHead>Name</TableHead>
-                      {activeTab === 'SERVICES' ? (
-                        <>
-                          <TableHead>Category</TableHead>
-                          <TableHead>Duration</TableHead>
-                        </>
-                      ) : (
-                        <TableHead>Component Services</TableHead>
-                      )}
-                      <TableHead>Price</TableHead>
-                      <TableHead>Code</TableHead>
-                      <TableHead className="text-right">Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {activeTab === 'SERVICES'
-                      ? parsedServices.map((row) => (
-                          <TableRow
-                            key={row.rowNumber}
-                            className={`text-xs ${!row.isValid ? 'bg-rose-50/50' : ''}`}
-                          >
-                            <TableCell className="font-mono text-slate-400 text-[11px]">
-                              {row.rowNumber}
-                            </TableCell>
-                            <TableCell className="font-medium text-slate-800">
-                              {row.name || <span className="text-rose-400 italic">Missing</span>}
-                            </TableCell>
-                            <TableCell className="text-slate-600">
-                              <Badge variant="neutral" className="text-[10px]">
-                                {row.category}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-slate-600">{row.durationMinutes}m</TableCell>
-                            <TableCell className="font-semibold text-slate-900">
-                              {formatCurrency(row.price)}
-                            </TableCell>
-                            <TableCell className="font-mono text-[11px] text-slate-500">
-                              {row.code || <span className="text-slate-400 italic">Auto</span>}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              {row.isValid ? (
-                                <Badge variant="primary" className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200">
-                                  Valid
-                                </Badge>
-                              ) : (
-                                <span className="text-[11px] text-rose-600 flex items-center justify-end gap-1">
-                                  <AlertCircle className="w-3 h-3 flex-shrink-0" />
-                                  {row.error}
-                                </span>
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      : parsedPackages.map((row) => (
-                          <TableRow
-                            key={row.rowNumber}
-                            className={`text-xs ${!row.isValid ? 'bg-rose-50/50' : ''}`}
-                          >
-                            <TableCell className="font-mono text-slate-400 text-[11px]">
-                              {row.rowNumber}
-                            </TableCell>
-                            <TableCell className="font-medium text-slate-800">
-                              {row.name || <span className="text-rose-400 italic">Missing</span>}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex flex-wrap gap-1 max-w-xs">
-                                {row.components.map((c, i) => (
-                                  <Badge
-                                    key={i}
-                                    variant={c.matchedService ? 'neutral' : 'destructive'}
-                                    className="text-[9px] font-normal"
-                                  >
-                                    {c.matchedService?.name || c.serviceIdentifier}
-                                    {c.quantity > 1 ? ` (x${c.quantity})` : ''}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </TableCell>
-                            <TableCell className="font-semibold text-slate-900">
-                              {formatCurrency(row.price)}
-                            </TableCell>
-                            <TableCell className="font-mono text-[11px] text-slate-500">
-                              {row.code || <span className="text-slate-400 italic">Auto</span>}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              {row.isValid ? (
-                                <Badge variant="primary" className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200">
-                                  Valid
-                                </Badge>
-                              ) : (
-                                <span className="text-[11px] text-rose-600 flex items-center justify-end gap-1">
-                                  <AlertCircle className="w-3 h-3 flex-shrink-0" />
-                                  {row.error}
-                                </span>
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </div>
-        </Tabs>
-
+          </Tabs>
         </fieldset>
-        <DialogFooter className="mt-4 pt-3 border-t border-slate-200">
-          <Button variant="outline" size="sm" onClick={onClose} disabled={isSubmitting}>
+
+        <DialogFooter className="mt-3 pt-3 border-t border-slate-200 flex flex-row items-center justify-end gap-2 w-full shrink-0 flex-wrap">
+          <Button variant="outline" size="sm" onClick={onClose} disabled={isSubmitting} className="text-xs h-8 px-3">
             Cancel
           </Button>
           <Button
@@ -810,6 +913,7 @@ export const BulkUploadCatalogueModal: React.FC<BulkUploadCatalogueModalProps> =
             size="sm"
             onClick={handleConfirmImport}
             disabled={isSubmitting || !actionScope.ready || currentValidCount === 0}
+            className="text-xs font-semibold bg-[#9D2558] hover:bg-[#851F4A] text-white shadow-xs h-8 px-3 whitespace-nowrap shrink-0"
             leftIcon={
               isSubmitting ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />

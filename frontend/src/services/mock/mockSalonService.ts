@@ -1650,7 +1650,59 @@ class MockSalonService implements SalonServiceContract {
     );
     const unpaidInvCount = branchInvoices.filter((i) => i.status === 'UNPAID' || i.status === 'PARTIAL').length;
 
+    // 7 Days Upcoming Bookings & Appointments Alerts
+    const todayMs = new Date(targetDate).getTime();
+    const sevenDaysMs = todayMs + 7 * 86400000;
+
+    const upcomingBookings = (store.bookings || []).filter((b: any) => {
+      if (b.branchId !== branch.id) return false;
+      if (b.status === 'CANCELLED' || b.status === 'COMPLETED') return false;
+      const bDateMs = new Date(b.eventDate).getTime();
+      return bDateMs >= todayMs && bDateMs <= sevenDaysMs;
+    });
+
+    const upcomingAppointments = (store.appointments || []).filter((a: any) => {
+      if (a.branchId !== branch.id) return false;
+      if (a.status === 'CANCELLED' || a.status === 'NO_SHOW') return false;
+      const aDateMs = new Date(a.date).getTime();
+      return aDateMs >= todayMs && aDateMs <= sevenDaysMs;
+    });
+
+    const bookingAlerts = upcomingBookings.map((b: any) => {
+      const diffDays = Math.max(0, Math.ceil((new Date(b.eventDate).getTime() - todayMs) / 86400000));
+      const dayLabel = diffDays === 0 ? 'Today' : diffDays === 1 ? 'Tomorrow' : `in ${diffDays} days`;
+      return {
+        id: `booking-${b.id}`,
+        type: 'BOOKING_REMINDER',
+        title: `Upcoming Booking (${dayLabel})`,
+        description: `${b.clientName} (${b.bookingNumber}) scheduled for ${b.eventDate} at ${b.serviceTime || 'counter'}. Total: PKR ${(Number(b.totalAmount) || 0).toLocaleString('en-PK')}.`,
+        urgency: diffDays <= 2 ? ('high' as const) : ('medium' as const),
+        href: `/operations/bookings?search=${encodeURIComponent(b.bookingNumber)}`,
+        isBookingAlert: true,
+        bookingNumber: b.bookingNumber,
+        daysRemaining: diffDays,
+      };
+    });
+
+    const appointmentAlerts = upcomingAppointments.map((a: any) => {
+      const diffDays = Math.max(0, Math.ceil((new Date(a.date).getTime() - todayMs) / 86400000));
+      const dayLabel = diffDays === 0 ? 'Today' : diffDays === 1 ? 'Tomorrow' : `in ${diffDays} days`;
+      return {
+        id: `appointment-${a.id}`,
+        type: 'BOOKING_REMINDER',
+        title: `Upcoming Appointment (${dayLabel})`,
+        description: `${a.clientName} (${a.appointmentNumber}) scheduled for ${a.date} at ${a.startTime}. Price: PKR ${(Number(a.price) || 0).toLocaleString('en-PK')}.`,
+        urgency: diffDays <= 2 ? ('high' as const) : ('medium' as const),
+        href: `/operations/appointments?date=${a.date}`,
+        isBookingAlert: true,
+        bookingNumber: a.appointmentNumber,
+        daysRemaining: diffDays,
+      };
+    });
+
     const pendingActions = [
+      ...bookingAlerts,
+      ...appointmentAlerts,
       ...(pendingSettlement
         ? [
             {
@@ -1917,10 +1969,13 @@ class MockSalonService implements SalonServiceContract {
 
   async getServices(branchId: string | 'ALL'): Promise<ServiceItem[]> {
     const store = mockStorage.getStore();
+    const isVisibleService = (s: ServiceItem) =>
+      !s.description?.startsWith('PACKAGE_EXCLUSIVE') &&
+      !s.description?.startsWith('Auto-created');
     if (branchId === 'ALL') {
-      return [...store.services];
+      return store.services.filter(isVisibleService);
     }
-    return store.services.filter((s) => s.branchId === branchId);
+    return store.services.filter((s) => s.branchId === branchId && isVisibleService(s));
   }
 
   async getService(id: string): Promise<ServiceItem | null> {
@@ -2428,7 +2483,34 @@ class MockSalonService implements SalonServiceContract {
         }
         existingCodes.add(code);
 
-        if (!row.components || !Array.isArray(row.components) || row.components.length === 0) {
+        let inputComponents = row.components;
+        if ((!inputComponents || !Array.isArray(inputComponents) || inputComponents.length === 0) && row.services) {
+          const rawTokens = Array.isArray(row.services)
+            ? row.services
+            : String(row.services)
+                .split(/[,;\n\r]+/)
+                .map((s: string) => s.trim())
+                .filter(Boolean);
+
+          inputComponents = rawTokens.map((rawToken: string) => {
+            let sName = String(rawToken).trim();
+            let qty = 1;
+            const prefixMatch = sName.match(/^(\d+)\s*[xX*]\s*(.+)$/);
+            if (prefixMatch) {
+              qty = parseInt(prefixMatch[1], 10) || 1;
+              sName = prefixMatch[2].trim();
+            } else {
+              const suffixMatch = sName.match(/^(.+?)\s*(?:[xX*:]|\()\s*(\d+)\s*\)?$/);
+              if (suffixMatch) {
+                sName = suffixMatch[1].trim();
+                qty = parseInt(suffixMatch[2], 10) || 1;
+              }
+            }
+            return { serviceName: sName, quantity: qty };
+          });
+        }
+
+        if (!inputComponents || !Array.isArray(inputComponents) || inputComponents.length === 0) {
           rejectedRows++;
           details.push({ rowNumber: rowNum, name, status: 'REJECTED', reason: 'Package must have at least one component service.' });
           continue;
@@ -2437,20 +2519,43 @@ class MockSalonService implements SalonServiceContract {
         const resolvedComponents: PackageComponent[] = [];
         let compError = null;
 
-        for (const c of row.components) {
-          const srv = branchServices.find((s) =>
+        for (const c of inputComponents) {
+          const targetName = (c.serviceName || '').trim().toLowerCase();
+          const targetCode = (c.serviceCode || c.serviceIdentifier || '').trim().toUpperCase();
+
+          let srv = branchServices.find((s) =>
             (c.serviceId && s.id === c.serviceId) ||
-            (c.serviceCode && s.code.toUpperCase() === c.serviceCode.trim().toUpperCase()) ||
-            (c.serviceName && s.name.toLowerCase() === c.serviceName.trim().toLowerCase())
+            (targetCode && s.code.toUpperCase() === targetCode) ||
+            (targetName && s.name.trim().toLowerCase() === targetName) ||
+            (targetName && s.code.toUpperCase() === targetName.toUpperCase())
           );
 
           if (!srv) {
-            compError = `Component '${c.serviceCode || c.serviceName || c.serviceId}' not found in active branch services.`;
-            break;
+            const rawServiceName = (c.serviceName || c.serviceCode || c.serviceIdentifier || '').trim();
+            if (!rawServiceName) {
+              compError = 'Component service name is missing.';
+              break;
+            }
+            const newCode = `SVR-${(services.length + 1).toString().padStart(4, '0')}`;
+            srv = {
+              id: `srv-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+              branchId: effectiveBranchId,
+              categoryId: 'cat-general',
+              category: 'General',
+              code: newCode,
+              name: rawServiceName,
+              description: 'PACKAGE_EXCLUSIVE',
+              durationMinutes: 30,
+              price: 0,
+              taxTreatment: 'BRANCH_DEFAULT',
+              isActive: true,
+            };
+            services.push(srv);
+            branchServices.push(srv);
           }
+
           if (!srv.isActive) {
-            compError = `Cannot include deactivated service '${srv.name}' in package.`;
-            break;
+            srv.isActive = true;
           }
 
           resolvedComponents.push({

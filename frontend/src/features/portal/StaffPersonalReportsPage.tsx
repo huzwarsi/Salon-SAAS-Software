@@ -822,10 +822,10 @@ export const StaffPersonalReportsPage: React.FC = () => {
                   Attendance & Overtime
                 </span>
                 <div className="text-2xl font-extrabold text-[#18191B] font-mono tabular-nums mt-1">
-                  {performanceRecord.attendanceDaysPresent} Days
+                  {performanceRecord.presentDays} Days
                 </div>
                 <p className="text-[11px] text-[#78616C]">
-                  {performanceRecord.approvedOvertimeMinutes} mins OT · {performanceRecord.lateCount} late punches
+                  {performanceRecord.approvedOvertimeMinutes} mins OT · {performanceRecord.latePunchesCount} late punches
                 </p>
               </div>
             </div>

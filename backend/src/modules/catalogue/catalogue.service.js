@@ -67,7 +67,22 @@ export const createCategory = async ({ branchId: requested, name }, actor) => {
 
 export const listServices = async (actor, branchId) => {
   const b = resolveReadBranch(actor, branchId);
-  const services = await prisma.service.findMany({ where: b ? { branchId: b } : {}, include: serviceInclude, orderBy: { code: 'asc' } });
+  const services = await prisma.service.findMany({
+    where: {
+      ...(b ? { branchId: b } : {}),
+      OR: [
+        { description: null },
+        {
+          AND: [
+            { NOT: { description: { startsWith: 'PACKAGE_EXCLUSIVE' } } },
+            { NOT: { description: { startsWith: 'Auto-created' } } },
+          ],
+        },
+      ],
+    },
+    include: serviceInclude,
+    orderBy: { code: 'asc' },
+  });
   return services.map(toServiceDTO);
 };
 
@@ -416,7 +431,34 @@ export const bulkImportPackages = async ({ branchId: requested, rows }, actor) =
         }
         seenCodes.add(code);
 
-        if (!row.components || !Array.isArray(row.components) || row.components.length === 0) {
+        let inputComponents = row.components;
+        if ((!inputComponents || !Array.isArray(inputComponents) || inputComponents.length === 0) && row.services) {
+          const rawTokens = Array.isArray(row.services)
+            ? row.services
+            : String(row.services)
+                .split(/[,;\n\r]+/)
+                .map((s) => s.trim())
+                .filter(Boolean);
+
+          inputComponents = rawTokens.map((rawToken) => {
+            let sName = String(rawToken).trim();
+            let qty = 1;
+            const prefixMatch = sName.match(/^(\d+)\s*[xX*]\s*(.+)$/);
+            if (prefixMatch) {
+              qty = parseInt(prefixMatch[1], 10) || 1;
+              sName = prefixMatch[2].trim();
+            } else {
+              const suffixMatch = sName.match(/^(.+?)\s*(?:[xX*:]|\()\s*(\d+)\s*\)?$/);
+              if (suffixMatch) {
+                sName = suffixMatch[1].trim();
+                qty = parseInt(suffixMatch[2], 10) || 1;
+              }
+            }
+            return { serviceName: sName, quantity: qty };
+          });
+        }
+
+        if (!inputComponents || !Array.isArray(inputComponents) || inputComponents.length === 0) {
           rejected++;
           details.push({ rowNumber: rowNum, name, status: 'REJECTED', reason: 'Package must have at least one component service.' });
           continue;
@@ -425,23 +467,51 @@ export const bulkImportPackages = async ({ branchId: requested, rows }, actor) =
         const resolvedComponents = [];
         let compError = null;
 
-        for (const c of row.components) {
+        for (const c of inputComponents) {
           let srv = null;
+          const targetName = (c.serviceName || c.serviceIdentifier || '').trim().toLowerCase();
+          const targetCode = (c.serviceCode || c.serviceIdentifier || '').trim().toUpperCase();
+
           if (c.serviceId && serviceById.has(c.serviceId)) {
             srv = serviceById.get(c.serviceId);
-          } else if (c.serviceCode && serviceByCode.has(c.serviceCode.trim().toUpperCase())) {
-            srv = serviceByCode.get(c.serviceCode.trim().toUpperCase());
-          } else if (c.serviceName && serviceByName.has(c.serviceName.trim().toLowerCase())) {
-            srv = serviceByName.get(c.serviceName.trim().toLowerCase());
+          } else if (targetCode && serviceByCode.has(targetCode)) {
+            srv = serviceByCode.get(targetCode);
+          } else if (targetName && serviceByName.has(targetName)) {
+            srv = serviceByName.get(targetName);
+          } else if (targetName && serviceByCode.has(targetName.toUpperCase())) {
+            srv = serviceByCode.get(targetName.toUpperCase());
           }
 
           if (!srv) {
-            compError = `Component '${c.serviceCode || c.serviceName || c.serviceId}' not found in active branch services.`;
-            break;
+            const rawServiceName = (c.serviceName || c.serviceCode || c.serviceIdentifier || '').trim();
+            if (!rawServiceName) {
+              compError = 'Component service name is missing.';
+              break;
+            }
+            const sCode = await generateNextServiceCode(tx);
+            const defaultCategoryId = await categoryIdFor(tx, branchId, 'General');
+            srv = await tx.service.create({
+              data: {
+                branchId,
+                categoryId: defaultCategoryId,
+                code: sCode,
+                name: rawServiceName,
+                description: `PACKAGE_EXCLUSIVE`,
+                durationMinutes: 30,
+                price: round2(0),
+                taxTreatment: 'BRANCH_DEFAULT',
+                isActive: true,
+              },
+              include: serviceInclude,
+            });
+            serviceById.set(srv.id, srv);
+            serviceByCode.set(srv.code.toUpperCase(), srv);
+            serviceByName.set(srv.name.trim().toLowerCase(), srv);
           }
+
           if (!srv.isActive) {
-            compError = `Cannot include deactivated service '${srv.name}' in package.`;
-            break;
+            await tx.service.update({ where: { id: srv.id }, data: { isActive: true } });
+            srv.isActive = true;
           }
 
           resolvedComponents.push({

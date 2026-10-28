@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildClientLedger } from '../../frontend/src/features/clients/clientLedger.ts';
+import { buildClientLedger, buildConsolidatedClientLedger } from '../../frontend/src/features/clients/clientLedger.ts';
 const payment = (id, amount, extra = {}) => ({ id, amount, date: '2026-10-25', time: '10:00 AM', method: 'CASH', ...extra });
 const booking = (id, extra = {}) => ({ id, bookingNumber: id, type: 'BRIDAL', status: 'CONFIRMED', eventDate: '2026-11-01', cancellationCharge: 0, payments: [], history: [], ...extra });
 const invoice = (id, extra = {}) => ({ id, invoiceNumber: id, date: '2026-10-25', time: '11:00 AM', total: 1000, tip: 0, status: 'PARTIAL', amountDue: 1000, payments: [], refunds: [], ...extra });
@@ -38,3 +38,66 @@ describe('Client ledger booking, refund and invoice reconciliation', () => {
     expect(buildClientLedger({ invoices: [inv] }).map(e => e.id)).toEqual(['pay-late', 'pay-early', 'inv-timing']);
   });
 });
+
+describe('Consolidated Client Ledger (Khata View)', () => {
+  it('consolidates linked booking and invoice with exact user example: 10,000 total | 5,000 advance | 5,000 further payment | 10,000 paid | 0 remaining', () => {
+    const details = {
+      client: { name: 'Aaliyan' },
+      bookings: [
+        booking('bkg-1', {
+          bookingNumber: 'BKG-0006',
+          totalAmount: 10000,
+          advancePaid: 5000,
+          payments: [
+            payment('adv-1', 5000, { receiptNumber: 'BPR-0006', time: '10:00 AM' }),
+          ],
+        }),
+      ],
+      invoices: [
+        invoice('inv-1', {
+          invoiceNumber: 'INV-0005',
+          bookingId: 'bkg-1',
+          total: 10000,
+          subtotal: 10000,
+          advanceAdjusted: 5000,
+          amountDue: 0,
+          status: 'PAID',
+          payments: [
+            payment('pay-1', 5000, { receiptNumber: 'RCP-0005', time: '12:00 PM', billAmountAllocated: 5000 }),
+          ],
+        }),
+      ],
+    };
+
+    const rows = buildConsolidatedClientLedger(details);
+    expect(rows).toHaveLength(1);
+
+    const row = rows[0];
+    expect(row.clientName).toBe('Aaliyan');
+    expect(row.reference).toBe('INV-0005 (BKG-0006)');
+    expect(row.totalAmount).toBe(10000);
+    expect(row.advancePaid).toBe(5000);
+    expect(row.furtherPayments).toBe(5000);
+    expect(row.totalPaid).toBe(10000);
+    expect(row.remainingBalance).toBe(0);
+    expect(row.status).toBe('PAID');
+
+    // Preserves original installment records in expandable history
+    expect(row.installments.length).toBeGreaterThanOrEqual(2);
+    const advanceRec = row.installments.find(i => i.type === 'BOOKING_ADVANCE');
+    expect(advanceRec).toBeDefined();
+    expect(advanceRec?.amount).toBe(5000);
+    expect(advanceRec?.receiptNumber).toBe('BPR-0006');
+
+    const furtherRec = row.installments.find(i => i.type === 'POS_PAYMENT');
+    expect(furtherRec).toBeDefined();
+    expect(furtherRec?.amount).toBe(5000);
+    expect(furtherRec?.receiptNumber).toBe('RCP-0005');
+
+    // Advance adjustment is tracked as audit record without double-counting
+    const auditRec = row.installments.find(i => i.isAuditOnly);
+    expect(auditRec).toBeDefined();
+    expect(auditRec?.amount).toBe(5000);
+  });
+});
+

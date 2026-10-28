@@ -23,6 +23,7 @@ import {
   Calendar,
   RotateCcw,
   Bell,
+  X,
 } from 'lucide-react';
 import { ResetDataModal } from '@/components/modals/ResetDataModal';
 
@@ -46,10 +47,22 @@ export const Header: React.FC<HeaderProps> = ({
     id: string;
     title: string;
     description: string;
-    count: number;
+    count?: number;
     urgency: 'high' | 'medium' | 'low';
     href: string;
+    isBookingAlert?: boolean;
+    daysRemaining?: number;
+    bookingNumber?: string;
   }>>([]);
+
+  const [, setClearedIds] = useState<string[]>(() => {
+    try {
+      const stored = localStorage.getItem('salonos_cleared_notifications');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
 
   const fetchNotifications = useCallback(() => {
     if (!user || user.role === 'STAFF') return;
@@ -60,12 +73,39 @@ export const Header: React.FC<HeaderProps> = ({
 
     salonService.getAdminDashboardData(branchToFetch)
       .then((data) => {
-        setNotifications(data?.pendingActions || []);
+        let storedCleared: string[] = [];
+        try {
+          storedCleared = JSON.parse(localStorage.getItem('salonos_cleared_notifications') || '[]');
+        } catch {}
+        const actions = (data?.pendingActions || []).filter((item: any) => !storedCleared.includes(item.id));
+        setNotifications(actions);
       })
       .catch((err) => {
         console.error('Failed to load header notifications:', err);
       });
   }, [user, activeBranchId, allBranches]);
+
+  const handleClearNotification = (id: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    try {
+      const stored: string[] = JSON.parse(localStorage.getItem('salonos_cleared_notifications') || '[]');
+      const updated = Array.from(new Set([...stored, id]));
+      localStorage.setItem('salonos_cleared_notifications', JSON.stringify(updated));
+      setClearedIds(updated);
+    } catch {}
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  };
+
+  const handleClearAll = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    try {
+      const stored: string[] = JSON.parse(localStorage.getItem('salonos_cleared_notifications') || '[]');
+      const updated = Array.from(new Set([...stored, ...notifications.map((n) => n.id)]));
+      localStorage.setItem('salonos_cleared_notifications', JSON.stringify(updated));
+      setClearedIds(updated);
+    } catch {}
+    setNotifications([]);
+  };
 
   useEffect(() => {
     fetchNotifications();
@@ -206,81 +246,131 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         )}
 
-        {/* NOTIFICATIONS BELL DROPDOWN (SHADCN MORPHISM) */}
-        {(user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN' || user?.role === 'ACCOUNTANT') && (
-          <DropdownMenu modal={false} onOpenChange={(open) => { if (open) fetchNotifications(); }}>
-            <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                className="w-9 h-9 rounded-xl border-0 bg-white/80 backdrop-blur-xl shadow-2xs flex items-center justify-center text-[#78616C] hover:text-[#18191B] hover:bg-white transition-all cursor-pointer relative outline-none"
-                title="Notifications & Operational Alerts"
+        {/* NOTIFICATIONS BELL DROPDOWN (SHADCN MORPHISM WITH BLINKING ALERT) */}
+        {(user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN' || user?.role === 'ACCOUNTANT') && (() => {
+          const hasBookingAlert = notifications.some((n) => n.isBookingAlert || n.id.startsWith('booking-') || n.id.startsWith('appointment-'));
+
+          return (
+            <DropdownMenu modal={false} onOpenChange={(open) => { if (open) fetchNotifications(); }}>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className={`w-9 h-9 rounded-xl border-0 bg-white/80 backdrop-blur-xl shadow-2xs flex items-center justify-center transition-all cursor-pointer relative outline-none ${
+                    hasBookingAlert
+                      ? 'ring-2 ring-[#B82E69]/70 shadow-[0_0_14px_rgba(184,46,105,0.4)] animate-pulse hover:ring-[#B82E69]'
+                      : notifications.length > 0
+                      ? 'hover:bg-white text-[#18191B]'
+                      : 'text-[#78616C] hover:text-[#18191B] hover:bg-white'
+                  }`}
+                  title="Notifications & Operational Alerts"
+                >
+                  <Bell className={`w-4 h-4 transition-colors ${hasBookingAlert ? 'text-[#B82E69] animate-bounce' : 'text-slate-600'}`} />
+                  {notifications.length > 0 && (
+                    <span className="absolute -top-1 -right-1 flex h-4 w-4 pointer-events-none">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#B82E69] opacity-75" />
+                      <span className="relative inline-flex rounded-full h-4 w-4 bg-gradient-to-r from-[#B82E69] to-[#9D2558] text-[9px] font-black text-white items-center justify-center ring-2 ring-white shadow-xs">
+                        {notifications.length}
+                      </span>
+                    </span>
+                  )}
+                </button>
+              </DropdownMenuTrigger>
+
+              <DropdownMenuContent
+                align="end"
+                onCloseAutoFocus={(e) => e.preventDefault()}
+                className="w-88 p-0 border-0 bg-white/95 backdrop-blur-2xl shadow-[0_20px_50px_rgba(35,21,29,0.12)] rounded-2xl"
               >
-                <Bell className="w-4 h-4 text-slate-600" />
-                {notifications.length > 0 && (
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#B82E69] ring-2 ring-white animate-pulse" />
-                )}
-              </button>
-            </DropdownMenuTrigger>
-
-            <DropdownMenuContent
-              align="end"
-              onCloseAutoFocus={(e) => e.preventDefault()}
-              className="w-84 p-0 border-0 bg-white/85 backdrop-blur-2xl shadow-[0_20px_50px_rgba(35,21,29,0.08)]"
-            >
-              <div className="flex items-center justify-between p-3.5 border-b border-[#F1DEE3]/40 bg-white/50 backdrop-blur-md rounded-t-2xl">
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-[#FDF2F5] text-[#B82E69] flex items-center justify-center border-0 shadow-2xs">
-                    <Bell className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-xs font-bold text-[#18191B]">Notifications & Alerts</span>
-                </div>
-                {notifications.length > 0 ? (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FDF2F5] text-[#B82E69] border-0">
-                    {notifications.length} Pending
-                  </span>
-                ) : (
-                  <span className="text-[10px] text-[#A38D98] font-medium">All caught up</span>
-                )}
-              </div>
-
-              <div className="max-h-72 overflow-y-auto divide-y divide-[#F1DEE3]/30 p-1">
-                {notifications.length === 0 ? (
-                  <div className="py-8 px-4 text-center">
-                    <p className="text-xs font-bold text-[#18191B]">No active alerts</p>
-                    <p className="text-[11px] text-[#78616C] mt-0.5">
-                      All daily collections, invoices and verifications are up to date.
-                    </p>
-                  </div>
-                ) : (
-                  notifications.map((item) => (
-                    <div key={item.id} className="p-3 hover:bg-[#FDF2F5]/50 rounded-xl transition-colors space-y-1.5">
-                      <div className="flex items-center justify-between gap-1">
-                        <span className="text-xs font-bold text-[#18191B]">{item.title}</span>
-                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
-                          item.urgency === 'high'
-                            ? 'bg-rose-50 text-rose-600'
-                            : 'bg-amber-50 text-amber-700'
-                        }`}>
-                          {item.urgency === 'high' ? 'High' : 'Action'}
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-[#78616C] leading-relaxed">{item.description}</p>
-                      <div className="pt-1 flex justify-end">
-                        <button
-                          type="button"
-                          onClick={() => navigate(item.href)}
-                          className="px-3 py-1 rounded-lg text-[11px] font-bold bg-[#B82E69] hover:bg-[#9D2558] text-white shadow-2xs transition-colors cursor-pointer"
-                        >
-                          Resolve
-                        </button>
-                      </div>
+                <div className="flex items-center justify-between p-3.5 border-b border-[#F1DEE3]/40 bg-white/60 backdrop-blur-md rounded-t-2xl">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-[#FDF2F5] text-[#B82E69] flex items-center justify-center border-0 shadow-2xs">
+                      <Bell className="w-3.5 h-3.5" />
                     </div>
-                  ))
-                )}
-              </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
+                    <span className="text-xs font-bold text-[#18191B]">Notifications & Alerts</span>
+                  </div>
+                  {notifications.length > 0 ? (
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FDF2F5] text-[#B82E69] border-0">
+                        {notifications.length} Pending
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleClearAll}
+                        className="text-[10px] text-[#A38D98] hover:text-[#B82E69] font-bold px-1.5 py-0.5 rounded-md hover:bg-rose-50 transition-colors cursor-pointer"
+                        title="Clear All Notifications"
+                      >
+                        Clear All
+                      </button>
+                    </div>
+                  ) : (
+                    <span className="text-[10px] text-[#A38D98] font-medium">All caught up</span>
+                  )}
+                </div>
+
+                <div className="max-h-80 overflow-y-auto divide-y divide-[#F1DEE3]/30 p-1.5">
+                  {notifications.length === 0 ? (
+                    <div className="py-8 px-4 text-center">
+                      <p className="text-xs font-bold text-[#18191B]">No active alerts</p>
+                      <p className="text-[11px] text-[#78616C] mt-0.5">
+                        All daily collections, invoices and upcoming bookings are up to date.
+                      </p>
+                    </div>
+                  ) : (
+                    notifications.map((item) => (
+                      <div
+                        key={item.id}
+                        className={`p-3 rounded-xl transition-all space-y-2 mb-1 ${
+                          item.isBookingAlert
+                            ? 'bg-gradient-to-br from-rose-50/70 via-white/80 to-[#FDF2F5]/90 border border-rose-200/80 shadow-2xs'
+                            : 'hover:bg-[#FDF2F5]/50'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-1">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            {item.isBookingAlert && (
+                              <span className="w-2 h-2 rounded-full bg-[#B82E69] animate-ping shrink-0" />
+                            )}
+                            <span className="text-xs font-bold text-[#18191B] truncate">{item.title}</span>
+                          </div>
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider shrink-0 ${
+                              item.isBookingAlert
+                                ? 'bg-rose-100 text-rose-700 font-extrabold'
+                                : item.urgency === 'high'
+                                ? 'bg-rose-50 text-rose-600'
+                                : 'bg-amber-50 text-amber-700'
+                            }`}
+                          >
+                            {item.isBookingAlert ? `${item.daysRemaining}d Left` : item.urgency === 'high' ? 'High' : 'Action'}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-[#78616C] leading-relaxed">{item.description}</p>
+                        <div className="pt-1 flex items-center justify-between gap-2 border-t border-rose-100/40">
+                          <button
+                            type="button"
+                            onClick={(e) => handleClearNotification(item.id, e)}
+                            className="px-2.5 py-1 rounded-lg text-[10px] font-bold text-slate-500 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
+                            title="Clear this notification"
+                          >
+                            <X className="w-3 h-3" />
+                            Clear
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => navigate(item.href)}
+                            className="px-3 py-1 rounded-lg text-[11px] font-bold bg-[#B82E69] hover:bg-[#9D2558] text-white shadow-2xs transition-colors cursor-pointer"
+                          >
+                            {item.isBookingAlert ? 'View Booking' : 'Resolve'}
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          );
+        })()}
 
         {/* USER PROFILE MENU (SHADCN MORPHISM PILL & MENU) */}
         <DropdownMenu modal={false}>

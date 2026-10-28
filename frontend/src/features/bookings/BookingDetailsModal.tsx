@@ -28,7 +28,6 @@ import {
   XCircle,
   UserX,
   AlertCircle,
-  X,
   RotateCcw,
 } from 'lucide-react';
 
@@ -128,7 +127,7 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
                 {booking.clientName}
               </DialogTitle>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 pr-6">
               {getStatusBadge(booking.status)}
               <Badge
                 variant="outline"
@@ -140,15 +139,6 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
               >
                 {isBilled ? 'BILLED' : 'UNBILLED'}
               </Badge>
-              <button
-                type="button"
-                onClick={onClose}
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors ml-1 cursor-pointer"
-                title="Close"
-                aria-label="Close"
-              >
-                <X className="w-5 h-5" />
-              </button>
             </div>
           </div>
         </DialogHeader>

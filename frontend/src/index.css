@@ -62,7 +62,7 @@
 
   html {
     scrollbar-gutter: stable;
-    overflow-y: scroll;
+    overflow-y: auto;
   }
 
   /* Completely disable Radix UI's body scroll-lock margin/padding injection */
@@ -71,7 +71,7 @@
     margin-right: 0px !important;
     margin-left: 0px !important;
     padding-right: 0px !important;
-    overflow-y: scroll !important;
+    overflow-y: auto !important;
   }
 
   html, body {
@@ -181,83 +181,153 @@
   font-weight: 600;
 }
 
-/* Custom subtle scrollbar */
-::-webkit-scrollbar {
+/* ── THEME-ALIGNED LUXURY LIGHT SCROLLBAR DESIGN ── */
+/* Modern Chromium (Chrome, Edge), Safari & WebKit */
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
   width: 6px;
-  height: 6px;
+  height: 5px;
 }
-::-webkit-scrollbar-track {
+
+::-webkit-scrollbar-button,
+*::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+::-webkit-scrollbar-track,
+*::-webkit-scrollbar-track {
   background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
   border-radius: 9999px;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+
+::-webkit-scrollbar-thumb,
+*::-webkit-scrollbar-thumb {
+  background: #E8BFCD; /* Soft, warm luxury rose-blush */
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover,
+*::-webkit-scrollbar-thumb:hover {
+  background: #C4728F; /* Elegant medium rose */
+}
+
+::-webkit-scrollbar-thumb:active,
+*::-webkit-scrollbar-thumb:active {
+  background: #9D2558; /* Signature brand berry */
+}
+
+::-webkit-scrollbar-corner,
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Fallback for Firefox (only applies where -webkit-scrollbar is not supported) */
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #E8BFCD transparent;
+  }
 }
 
 /* POS Cart Dedicated Sleek Visible Scrollbar */
 .pos-cart-scroller {
-  scrollbar-width: thin;
-  scrollbar-color: #C4728F #FDF2F5;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
 .pos-cart-scroller::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
+  width: 5px;
+}
+.pos-cart-scroller::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 .pos-cart-scroller::-webkit-scrollbar-track {
-  background: #FDF2F5;
+  background: rgba(253, 242, 245, 0.7);
   border-radius: 9999px;
 }
 .pos-cart-scroller::-webkit-scrollbar-thumb {
-  background: #C4728F;
+  background: #E8BFCD;
   border-radius: 9999px;
+  transition: background-color 0.2s ease;
 }
 .pos-cart-scroller::-webkit-scrollbar-thumb:hover {
+  background: #C4728F;
+}
+.pos-cart-scroller::-webkit-scrollbar-thumb:active {
   background: #9D2558;
 }
 
 /* Sidebar Dedicated Sleek Scrollbar */
 .sidebar-scroller {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+  scroll-behavior: smooth;
 }
 .sidebar-scroller::-webkit-scrollbar {
   width: 3.5px;
+}
+.sidebar-scroller::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 .sidebar-scroller::-webkit-scrollbar-track {
   background: transparent;
 }
 .sidebar-scroller::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(157, 37, 88, 0.2);
   border-radius: 9999px;
+  transition: background-color 0.2s ease;
 }
 .sidebar-scroller::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.35);
+  background: rgba(157, 37, 88, 0.45);
 }
-
 
 /* POS Category Pills Dedicated Visible Horizontal Scrollbar */
 .pos-category-scroller {
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 #f1f5f9;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
 }
 .pos-category-scroller::-webkit-scrollbar {
-  height: 5px;
+  height: 4px;
+}
+.pos-category-scroller::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 .pos-category-scroller::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: rgba(253, 242, 245, 0.85);
   border-radius: 9999px;
+  margin: 0 4px;
 }
 .pos-category-scroller::-webkit-scrollbar-thumb {
-  background: #94a3b8;
+  background: #E8BFCD;
   border-radius: 9999px;
+  transition: background-color 0.2s ease;
 }
 .pos-category-scroller::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+  background: #C4728F;
+}
+.pos-category-scroller::-webkit-scrollbar-thumb:active {
+  background: #9D2558;
+}
+
+/* Scrollbar None Utilities */
+.scrollbar-none,
+.no-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+.scrollbar-none::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 @media print {

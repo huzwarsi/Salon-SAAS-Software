@@ -951,7 +951,7 @@ export const ServicesPackagesPage: React.FC = () => {
                     setIsBulkUploadModalOpen(true);
                   }}
                 >
-                  Bulk Upload (CSV)
+                  Bulk Upload (Excel / CSV)
                 </Button>
                 <Button
                   variant="primary"
@@ -1002,7 +1002,7 @@ export const ServicesPackagesPage: React.FC = () => {
                     setIsBulkUploadModalOpen(true);
                   }}
                 >
-                  Bulk Upload (CSV)
+                  Bulk Upload (Excel / CSV)
                 </Button>
                 <Button
                   variant="primary"

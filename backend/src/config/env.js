@@ -1,9 +1,17 @@
 // src/config/env.js
 // Centralised environment variable access — fail fast if critical vars are missing.
 
+import 'dotenv/config';
+
 const required = (key) => {
   const val = process.env[key];
-  if (!val) throw new Error(`Missing required env var: ${key}`);
+  if (!val) {
+    if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+      console.warn(`[WARN] Missing environment variable: ${key}. Configure this in your Vercel Project Settings.`);
+      return '';
+    }
+    throw new Error(`Missing required env var: ${key}`);
+  }
   return val;
 };
 

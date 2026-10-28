@@ -191,4 +191,62 @@ describe('Step 6 · Services & Packages', () => {
     expect(res.body.data.acceptedRows).toBe(1);
     expect(res.body.data.totalRows).toBe(1);
   });
+
+  it('supports bulk import of services with only name, price, and category', async () => {
+    const res = await as('admin').post('/services/bulk-import', {
+      rows: [
+        { name: 'Simple Hair Spa', price: 3500, category: 'Hair Treatments' },
+        { name: 'Simple Beard Trim', price: 900, category: 'Men Grooming' },
+      ],
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.data.acceptedRows).toBe(2);
+    expect(res.body.data.details[0].code).toMatch(/^SVR-/i);
+  });
+
+  it('supports bulk import of packages with only name, services, and price', async () => {
+    const res = await as('admin').post('/packages/bulk-import', {
+      rows: [
+        {
+          name: 'Simple Spa Combo',
+          services: 'Simple Hair Spa, Simple Beard Trim',
+          price: 4000,
+        },
+      ],
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.data.acceptedRows).toBe(1);
+    expect(res.body.data.details[0].code).toMatch(/^PKG-/i);
+  });
+
+  it('supports bulk import of packages with exclusive services without adding them to services catalogue', async () => {
+    const res = await as('admin').post('/packages/bulk-import', {
+      rows: [
+        {
+          name: 'DEAL 01 Unlisted Hair Combo',
+          services: 'Lash Lift, Special Shave',
+          price: 601.85,
+        },
+      ],
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.data.acceptedRows).toBe(1);
+    expect(res.body.data.details[0].name).toBe('DEAL 01 Unlisted Hair Combo');
+
+    // Verify existing service Lash Lift is in catalogue, but package-exclusive Special Shave is NOT added to services catalogue
+    const srvRes = await as('admin').get('/services');
+    expect(srvRes.status).toBe(200);
+    const lashSrv = srvRes.body.data.find((s) => s.name === 'Lash Lift');
+    expect(lashSrv).toBeDefined();
+    const shaveSrv = srvRes.body.data.find((s) => s.name === 'Special Shave');
+    expect(shaveSrv).toBeUndefined();
+
+    // Verify Special Shave exists inside the package itself
+    const pkgRes = await as('admin').get('/packages');
+    expect(pkgRes.status).toBe(200);
+    const pkg = pkgRes.body.data.find((p) => p.name === 'DEAL 01 Unlisted Hair Combo');
+    expect(pkg).toBeDefined();
+    expect(pkg.components.some((c) => c.serviceName === 'Special Shave')).toBe(true);
+  });
 });
+

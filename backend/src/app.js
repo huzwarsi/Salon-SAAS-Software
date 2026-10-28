@@ -42,13 +42,26 @@ app.use(cookieParser());
 // ── Logging ───────────────────────────────────────────────────────────────────
 if (env.nodeEnv !== 'test') app.use(morgan(env.isDev ? 'dev' : 'combined'));
 
-// ── Health & Root ─────────────────────────────────────────────────────────────
-app.get('/', (req, res) => {
-  res.json({ status: 'ok', message: 'SalonOS API Server is running', timestamp: new Date().toISOString() });
+// ── Serverless URL normalization ──────────────────────────────────────────────
+app.use((req, res, next) => {
+  if (req.url.startsWith('/api/index.js')) {
+    req.url = req.url.replace('/api/index.js', '') || '/';
+  }
+  next();
 });
 
-// ── API routes ────────────────────────────────────────────────────────────────
-app.use('/api/v1', apiRouter);
+// ── Health & Root ─────────────────────────────────────────────────────────────
+app.get(['/', '/api', '/api/v1'], (req, res) => {
+  res.json({
+    status: 'ok',
+    message: 'SalonOS API Server is running',
+    environment: env.nodeEnv,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// ── API routes (Dual-mounted for standalone and Vercel serverless rewrites) ───
+app.use(['/api/v1', '/v1'], apiRouter);
 
 // ── Error handling ────────────────────────────────────────────────────────────
 app.use(notFound);

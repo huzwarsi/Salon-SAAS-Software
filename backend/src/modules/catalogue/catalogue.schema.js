@@ -103,7 +103,10 @@ export const bulkImportPackagesSchema = z.object({
     taxTreatment: taxTreatment.optional(),
     specificTaxRuleId: z.string().nullable().optional(),
     isActive: z.boolean().optional(),
-    components: z.array(bulkPackageComponent).min(1, 'Package must contain at least one component service.'),
+    services: z.union([z.string(), z.array(z.string())]).optional(),
+    components: z.array(bulkPackageComponent).optional(),
+  }).refine((data) => (data.components && data.components.length > 0) || (data.services && (Array.isArray(data.services) ? data.services.length > 0 : data.services.trim().length > 0)), {
+    message: 'Package must contain at least one component service or services list.',
   }).passthrough()).min(1, 'At least one package row is required.').max(5000),
 });
 

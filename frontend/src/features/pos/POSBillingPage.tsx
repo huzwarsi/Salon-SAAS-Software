@@ -3706,7 +3706,7 @@ export const POSBillingPage: React.FC = () => {
 
       {/* 11. Mobile Cart Drawer Sheet (strictly mobile only) */}
       <Sheet open={mobileCartOpen} onOpenChange={setMobileCartOpen}>
-        <SheetContent side="bottom" className="lg:hidden h-[92vh] max-h-[92vh] p-0 flex flex-col rounded-t-[32px] overflow-hidden bg-[#FAF6F7] z-50 border-t border-white/90 shadow-2xl">
+        <SheetContent hideCloseButton side="bottom" className="lg:hidden h-[92vh] max-h-[92vh] p-0 flex flex-col rounded-t-[32px] overflow-hidden bg-[#FAF6F7] z-50 border-t border-white/90 shadow-2xl">
           <div className="flex-1 min-h-0 flex flex-col p-3.5 sm:p-4 overflow-hidden">
             {renderCartPanel(true)}
           </div>

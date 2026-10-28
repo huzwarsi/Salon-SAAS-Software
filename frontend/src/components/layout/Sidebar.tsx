@@ -189,8 +189,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 {brandName}
               </span>
             </div>
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.7)] shrink-0" />
+            <div className="mt-0.5">
               <p className="text-[11px] text-[#78616C] font-medium truncate">
                 {currentBranch?.city ? `${currentBranch.city} Branch` : 'Management System'}
               </p>

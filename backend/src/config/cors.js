@@ -3,6 +3,8 @@ export const isAllowedOrigin = (origin, configuredOrigins, isDevelopment) => {
   let parsed;
   try { parsed = new URL(origin); } catch { return false; }
   if (!['http:', 'https:'].includes(parsed.protocol) || parsed.origin !== origin) return false;
+  if (configuredOrigins.includes('*')) return true;
   if (configuredOrigins.includes(origin)) return true;
+  if (parsed.hostname.endsWith('.vercel.app')) return true;
   return isDevelopment && ['localhost', '127.0.0.1', '[::1]'].includes(parsed.hostname);
 };
