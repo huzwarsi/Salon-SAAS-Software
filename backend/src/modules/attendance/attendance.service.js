@@ -447,7 +447,7 @@ export const bulkSaveAttendance = async ({ branchId: requested, date, records },
     }
 
     return { savedCount };
-  });
+  }, { maxWait: 10000, timeout: 30000 });
 };
 
 export const importCSV = async ({ branchId: requested, rows }, actor) => {
@@ -502,7 +502,7 @@ export const importCSV = async ({ branchId: requested, rows }, actor) => {
     }
     await auditLog(tx, { userId: actor.id, userName: actor.name, action: 'ATTENDANCE_IMPORTED', entity: 'AttendanceRecord', entityId: 'csv', branchId, after: { accepted, duplicates, rejected } });
     return { totalRows: rows.length, acceptedRows: accepted, duplicateRows: duplicates, rejectedRows: rejected, details };
-  });
+  }, { maxWait: 10000, timeout: 30000 });
 };
 
 // ═══ LEAVES ═══════════════════════════════════════════════════════════════════
